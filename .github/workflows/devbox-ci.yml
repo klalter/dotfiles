@@ -1,0 +1,30 @@
+name: devbox-ci
+
+# Runs the deterministic devbox test suite on every push/PR. Two jobs:
+#   * unit        — fast, Docker-free tiers (static, bootstrap plan, CLI, compose)
+#   * integration — really builds the image and runs the box (DinD + browser)
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  unit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Run deterministic tiers
+        run: ./tests/run.sh --no-integration
+
+  integration:
+    runs-on: ubuntu-24.04
+    needs: unit
+    steps:
+      - uses: actions/checkout@v4
+      - name: Show Docker version
+        run: docker version
+      - name: Build the image and run the box (DinD + browser)
+        run: ./tests/run.sh --require-integration test_90
