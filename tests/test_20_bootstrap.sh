@@ -29,6 +29,10 @@ case "\$1" in
   *) exit 0 ;;
 esac
 EOF
+  # A sudo shim that simply runs its arguments with PATH intact. The real sudo
+  # resets PATH (secure_path) and would reach the host's real docker, defeating
+  # this simulation when the suite runs as a non-root user (e.g. in CI).
+  printf '#!/usr/bin/env bash\nexec "$@"\n' > "$d/sudo"
   # Stubs for the install path so nothing real happens even if dry-run is off.
   for tool in apt-get gpg tee systemctl usermod install; do
     printf '#!/usr/bin/env bash\nexit 0\n' > "$d/$tool"
