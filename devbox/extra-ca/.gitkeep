@@ -1,0 +1,3 @@
+# Drop additional trusted CA certificates (*.crt) in this directory if your
+# build runs behind a TLS-intercepting proxy. Empty by default — leave it so
+# unless you actually need it. Files other than *.crt are ignored.

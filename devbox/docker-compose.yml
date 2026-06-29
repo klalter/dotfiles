@@ -1,0 +1,41 @@
+# devbox/docker-compose.yml
+# Defines the ephemeral devbox service. `devbox up` brings this up, `devbox down`
+# removes it together with its volumes — nothing is left on the host.
+#
+# Everything here is geared toward reproducibility and ephemerality:
+#   * the image is built from the Dockerfile in this directory
+#   * privileged + the docker volume let the container run its own dockerd (DinD)
+#   * the workspace lives in a named volume that `down -v` deletes
+services:
+  devbox:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ${DEVBOX_IMAGE:-devbox:latest}
+    container_name: ${DEVBOX_PROJECT:-devbox}-devbox
+    # Required for Docker-in-Docker: the in-container dockerd needs privileges
+    # to set up cgroups, networking and the overlay storage driver.
+    privileged: true
+    # Keep the box up so `devbox shell` / `devbox doctor` can attach.
+    command: ["sleep", "infinity"]
+    environment:
+      # The bundled CLI talks to the in-container daemon over this socket.
+      DOCKER_HOST: unix:///var/run/docker.sock
+      # Optional: mount a tar here to make the selftest run fully offline.
+      DEVBOX_SELFTEST_IMAGE_TAR: ${DEVBOX_SELFTEST_IMAGE_TAR:-}
+    volumes:
+      # Ephemeral workspace — removed by `devbox down -v`.
+      - devbox-workspace:/workspace
+      # Ephemeral docker storage for the inner daemon (DinD state).
+      - devbox-docker:/var/lib/docker
+    # Sensible health signal: the box is healthy once dockerd answers.
+    healthcheck:
+      test: ["CMD", "docker", "info"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 5s
+
+volumes:
+  devbox-workspace:
+  devbox-docker:
