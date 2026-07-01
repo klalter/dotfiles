@@ -1,0 +1,30 @@
+{
+  "name": "dotfiles",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "lts" },
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+
+  // Make dotfiles scripts available in every shell — including non-interactive
+  // ones (tasks, terminals that don't source .bashrc). install.sh also appends
+  // to .bashrc so `source ~/.bashrc` / new login shells keep working too.
+  "remoteEnv": {
+    "PATH": "${containerEnv:PATH}:/workspaces/dotfiles/scripts"
+  },
+
+  // onCreateCommand runs once after the container is first created.
+  // install.sh: adds scripts/ to .bashrc, wires up GITHUB_TOKEN.
+  // npm install -g: puts `claude` and `cld` on the PATH system-wide.
+  "onCreateCommand": "bash /workspaces/dotfiles/install.sh",
+  "postCreateCommand": "npm install -g @anthropic-ai/claude-code",
+
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  }
+}
