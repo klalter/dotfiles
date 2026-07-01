@@ -1,0 +1,39 @@
+/* slidev-addon-drawio — Dark Theme */
+/* Professional dark surface, cyan accents */
+
+.drawio-theme-dark {
+  --drawio-theme-bg: #0F172A;
+  --drawio-theme-border: #334155;
+  --drawio-theme-shadow: 0 4px 24px rgba(0, 0, 0, 0.4),
+                          0 1px 4px rgba(0, 0, 0, 0.3);
+  --drawio-theme-shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.55),
+                               0 4px 12px rgba(0, 0, 0, 0.4);
+  --drawio-theme-edit-bg: #06B6D4;
+  --drawio-theme-edit-text: #0f172a;
+  --drawio-theme-edit-hover-bg: #0891B2;
+  --drawio-theme-edit-shadow: 0 2px 12px rgba(6, 182, 212, 0.4);
+  --drawio-theme-edit-shadow-hover: 0 4px 20px rgba(6, 182, 212, 0.6);
+  --drawio-theme-loading: #475569;
+  --drawio-theme-overlay: rgba(0, 0, 0, 0.8);
+}
+
+.drawio-theme-dark .drawio-loading {
+  background: #0F172A;
+}
+
+.drawio-theme-dark .drawio-error {
+  background: #0F172A;
+  color: #94a3b8;
+}
+
+.drawio-theme-dark .drawio-error-title {
+  color: #f87171;
+}
+
+.drawio-theme-dark .drawio-error-message {
+  color: #64748b;
+}
+
+.drawio-theme-dark .drawio-loading-text {
+  color: #475569;
+}

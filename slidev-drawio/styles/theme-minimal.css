@@ -1,0 +1,58 @@
+/* slidev-addon-drawio — Minimal Theme */
+/* Ultra minimal: pure white/black, no decorations, razor-thin borders */
+
+.drawio-theme-minimal {
+  --drawio-theme-bg: #ffffff;
+  --drawio-theme-border: #000000;
+  --drawio-theme-shadow: none;
+  --drawio-theme-shadow-hover: none;
+  --drawio-theme-edit-bg: transparent;
+  --drawio-theme-edit-text: #000000;
+  --drawio-theme-edit-hover-bg: #000000;
+  --drawio-theme-edit-shadow: none;
+  --drawio-theme-edit-shadow-hover: none;
+  --drawio-theme-loading: #999999;
+  --drawio-theme-overlay: rgba(255, 255, 255, 0.9);
+}
+
+.drawio-theme-minimal .drawio-container {
+  border-radius: 0;
+  border-width: 1px;
+}
+
+.drawio-theme-minimal .drawio-edit-btn {
+  border: 1.5px solid #000000;
+  border-radius: 3px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  font-family: system-ui, -apple-system, sans-serif;
+  background: transparent;
+  color: #000000;
+  transition: background 0.15s, color 0.15s;
+}
+
+.drawio-theme-minimal .drawio-edit-btn:hover {
+  background: #000000;
+  color: #ffffff;
+  transform: none;
+}
+
+.drawio-theme-minimal .drawio-loading-spinner {
+  border-color: #e5e5e5;
+  border-top-color: #000000;
+}
+
+.drawio-theme-minimal .drawio-loading-text {
+  color: #999999;
+  font-size: 12px;
+}
+
+.drawio-theme-minimal .drawio-error-title {
+  color: #cc0000;
+}
+
+.drawio-theme-minimal .drawio-error-message {
+  color: #666666;
+}

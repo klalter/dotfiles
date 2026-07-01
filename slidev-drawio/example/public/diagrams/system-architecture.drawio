@@ -1,0 +1,102 @@
+<mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+
+    <!-- Client App -->
+    <mxCell id="2" value="&lt;b&gt;Client App&lt;/b&gt;&lt;br/&gt;&lt;font color='#6B7280'&gt;React / Mobile&lt;/font&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#3B82F6;strokeWidth=2;fontColor=#1E40AF;fontSize=13;arcSize=12;verticalAlign=middle;spacingTop=0;"
+      vertex="1" parent="1">
+      <mxGeometry x="80" y="320" width="150" height="70" as="geometry" />
+    </mxCell>
+
+    <!-- API Gateway -->
+    <mxCell id="3" value="&lt;b&gt;API Gateway&lt;/b&gt;&lt;br/&gt;&lt;font color='#6B7280'&gt;Rate Limit · Auth&lt;/font&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0FDF4;strokeColor=#22C55E;strokeWidth=2;fontColor=#14532D;fontSize=13;arcSize=12;"
+      vertex="1" parent="1">
+      <mxGeometry x="320" y="320" width="150" height="70" as="geometry" />
+    </mxCell>
+
+    <!-- Auth Service -->
+    <mxCell id="4" value="&lt;b&gt;Auth Service&lt;/b&gt;&lt;br/&gt;&lt;font color='#6B7280'&gt;JWT · OAuth2&lt;/font&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF7ED;strokeColor=#F59E0B;strokeWidth=2;fontColor=#78350F;fontSize=13;arcSize=12;"
+      vertex="1" parent="1">
+      <mxGeometry x="560" y="200" width="150" height="70" as="geometry" />
+    </mxCell>
+
+    <!-- Business Service -->
+    <mxCell id="5" value="&lt;b&gt;Business Service&lt;/b&gt;&lt;br/&gt;&lt;font color='#6B7280'&gt;Core Logic&lt;/font&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF7ED;strokeColor=#F59E0B;strokeWidth=2;fontColor=#78350F;fontSize=13;arcSize=12;"
+      vertex="1" parent="1">
+      <mxGeometry x="560" y="440" width="150" height="70" as="geometry" />
+    </mxCell>
+
+    <!-- Database -->
+    <mxCell id="6" value="&lt;b&gt;Database&lt;/b&gt;&lt;br/&gt;&lt;font color='#6B7280'&gt;PostgreSQL&lt;/font&gt;"
+      style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#8B5CF6;strokeWidth=2;fontColor=#4C1D95;fontSize=13;direction=south;"
+      vertex="1" parent="1">
+      <mxGeometry x="800" y="310" width="130" height="90" as="geometry" />
+    </mxCell>
+
+    <!-- Cache -->
+    <mxCell id="7" value="&lt;b&gt;Cache&lt;/b&gt;&lt;br/&gt;&lt;font color='#6B7280'&gt;Redis&lt;/font&gt;"
+      style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#FFF1F2;strokeColor=#F43F5E;strokeWidth=2;fontColor=#881337;fontSize=13;direction=south;"
+      vertex="1" parent="1">
+      <mxGeometry x="800" y="460" width="130" height="80" as="geometry" />
+    </mxCell>
+
+    <!-- Client → Gateway -->
+    <mxCell id="8" edge="1" source="2" target="3" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+      <mxCell value="HTTPS" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#6B7280;" vertex="1" connectable="0" parent="8">
+        <mxGeometry x="-0.1" relative="1" as="geometry"><Array as="offset"><mxPoint y="-10"/></Array></mxGeometry>
+      </mxCell>
+    </mxCell>
+
+    <!-- Gateway → Auth -->
+    <mxCell id="9" edge="1" source="3" target="4" parent="1"
+      style="curved=1;roundedCurves=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Gateway → Business -->
+    <mxCell id="10" edge="1" source="3" target="5" parent="1"
+      style="curved=1;roundedCurves=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Auth → Database -->
+    <mxCell id="11" edge="1" source="4" target="6" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Business → Database -->
+    <mxCell id="12" edge="1" source="5" target="6" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Business → Cache -->
+    <mxCell id="13" edge="1" source="5" target="7" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Title -->
+    <mxCell id="14" value="&lt;b&gt;&lt;font style='font-size: 18px;'&gt;Cloud System Architecture&lt;/font&gt;&lt;/b&gt;"
+      style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=#111827;"
+      vertex="1" parent="1">
+      <mxGeometry x="330" y="90" width="320" height="40" as="geometry" />
+    </mxCell>
+
+    <!-- Legend box -->
+    <mxCell id="15" value=""
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F9FAFB;strokeColor=#E5E7EB;strokeWidth=1;dashed=1;"
+      vertex="1" parent="1">
+      <mxGeometry x="80" y="530" width="200" height="110" as="geometry" />
+    </mxCell>
+    <mxCell id="16" value="&lt;b&gt;Legend&lt;/b&gt;&lt;br/&gt;Blue = Frontend&lt;br/&gt;Green = Gateway&lt;br/&gt;Orange = Services&lt;br/&gt;Purple = Storage"
+      style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];fontSize=11;fontColor=#6B7280;strokeColor=none;fillColor=none;"
+      vertex="1" parent="1">
+      <mxGeometry x="92" y="538" width="180" height="96" as="geometry" />
+    </mxCell>
+  </root>
+</mxGraphModel>

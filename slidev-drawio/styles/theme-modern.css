@@ -1,0 +1,18 @@
+/* slidev-addon-drawio — Modern Theme (default) */
+/* Clean white background, blue accents, soft shadows */
+
+.drawio-theme-modern {
+  --drawio-theme-bg: #ffffff;
+  --drawio-theme-border: #e2e8f0;
+  --drawio-theme-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07),
+                          0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --drawio-theme-shadow-hover: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+                               0 4px 10px -5px rgba(0, 0, 0, 0.06);
+  --drawio-theme-edit-bg: #3B82F6;
+  --drawio-theme-edit-text: #ffffff;
+  --drawio-theme-edit-hover-bg: #2563EB;
+  --drawio-theme-edit-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
+  --drawio-theme-edit-shadow-hover: 0 4px 16px rgba(59, 130, 246, 0.5);
+  --drawio-theme-loading: #94a3b8;
+  --drawio-theme-overlay: rgba(15, 23, 42, 0.7);
+}

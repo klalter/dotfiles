@@ -1,0 +1,273 @@
+/* slidev-addon-drawio base styles */
+
+.drawio-container {
+  --drawio-bg: var(--drawio-theme-bg, #ffffff);
+  --drawio-border-color: var(--drawio-theme-border, #e2e8f0);
+  --drawio-border-radius: 12px;
+  --drawio-shadow: var(--drawio-theme-shadow, 0 4px 24px 0 rgba(0, 0, 0, 0.08));
+  --drawio-edit-bg: var(--drawio-theme-edit-bg, #3B82F6);
+  --drawio-edit-text: var(--drawio-theme-edit-text, #ffffff);
+  --drawio-edit-hover-bg: var(--drawio-theme-edit-hover-bg, #2563EB);
+  --drawio-loading-color: var(--drawio-theme-loading, #94a3b8);
+  --drawio-overlay-bg: var(--drawio-theme-overlay, rgba(0, 0, 0, 0.65));
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--drawio-bg);
+  border-radius: var(--drawio-border-radius);
+  overflow: hidden;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.drawio-container.with-border {
+  border: 1.5px solid var(--drawio-border-color);
+}
+
+.drawio-container.with-shadow {
+  box-shadow: var(--drawio-shadow);
+}
+
+.drawio-container:hover.with-shadow {
+  box-shadow: var(--drawio-theme-shadow-hover, 0 8px 32px 0 rgba(0, 0, 0, 0.14));
+}
+
+.drawio-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+  background: transparent;
+}
+
+.drawio-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: var(--drawio-bg);
+  z-index: 2;
+}
+
+.drawio-loading-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--drawio-border-color);
+  border-top-color: var(--drawio-edit-bg);
+  border-radius: 50%;
+  animation: drawio-spin 0.75s linear infinite;
+}
+
+.drawio-loading-text {
+  font-size: 13px;
+  color: var(--drawio-loading-color);
+  font-family: system-ui, -apple-system, sans-serif;
+  letter-spacing: 0.01em;
+}
+
+@keyframes drawio-spin {
+  to { transform: rotate(360deg); }
+}
+
+.drawio-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--drawio-bg);
+  padding: 24px;
+  text-align: center;
+  z-index: 2;
+}
+
+.drawio-error-icon {
+  font-size: 32px;
+  opacity: 0.6;
+}
+
+.drawio-error-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #ef4444;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.drawio-error-message {
+  font-size: 13px;
+  color: var(--drawio-loading-color);
+  font-family: system-ui, -apple-system, sans-serif;
+  max-width: 280px;
+  line-height: 1.5;
+}
+
+/* Edit button */
+.drawio-edit-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--drawio-edit-bg);
+  color: var(--drawio-edit-text);
+  border: none;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: system-ui, -apple-system, sans-serif;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+  box-shadow: var(--drawio-theme-edit-shadow, 0 2px 8px rgba(59, 130, 246, 0.35));
+  text-decoration: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.drawio-edit-btn:hover {
+  background: var(--drawio-edit-hover-bg);
+  transform: translateY(-1px);
+  box-shadow: var(--drawio-theme-edit-shadow-hover, 0 4px 14px rgba(59, 130, 246, 0.5));
+}
+
+.drawio-edit-btn:active {
+  transform: translateY(0);
+}
+
+.drawio-edit-btn svg {
+  flex-shrink: 0;
+}
+
+/* Editor overlay */
+.drawio-editor-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--drawio-overlay-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: drawio-fade-in 0.2s ease;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+@keyframes drawio-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.drawio-editor-modal {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  height: calc(100vh - 48px);
+  max-height: 900px;
+  background: #1e293b;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+  animation: drawio-slide-up 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes drawio-slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.drawio-editor-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 48px;
+  background: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  z-index: 10;
+  border-bottom: 1px solid #1e293b;
+}
+
+.drawio-editor-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #94a3b8;
+  font-family: system-ui, -apple-system, sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.drawio-editor-title svg {
+  opacity: 0.7;
+}
+
+.drawio-editor-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: #1e293b;
+  color: #94a3b8;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.drawio-editor-close:hover {
+  background: #334155;
+  color: #f1f5f9;
+}
+
+.drawio-editor-iframe {
+  position: absolute;
+  top: 48px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: calc(100% - 48px);
+  border: none;
+}
+
+.drawio-editor-loading {
+  position: absolute;
+  inset: 48px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0f172a;
+  z-index: 5;
+}
+
+.drawio-editor-loading-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  color: #475569;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+}
+
+.drawio-editor-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #1e293b;
+  border-top-color: #3B82F6;
+  border-radius: 50%;
+  animation: drawio-spin 0.75s linear infinite;
+}
