@@ -11,6 +11,6 @@ Object.defineProperty(window, 'postMessage', {
 
 // Mock import.meta.env
 Object.defineProperty(import.meta, 'env', {
-  value: { BASE_URL: '/' },
+  value: { BASE_URL: '/', SSR: false },
   writable: true,
 })

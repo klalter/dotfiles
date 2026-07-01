@@ -2,7 +2,7 @@
 theme: default
 title: "Slidev × draw.io — Live Diagram Integration"
 addons:
-  - '..'
+  - 'slidev-addon-drawio'
 layout: cover
 background: "linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%)"
 ---
