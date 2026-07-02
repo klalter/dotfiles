@@ -32,4 +32,17 @@ if [ -f "$ENV_FILE" ] && ! grep -qF "dotfiles: github token" "$BASHRC" 2>/dev/nu
     echo "Configured GITHUB_TOKEN from $ENV_FILE"
 fi
 
+# Install Claude Code globally if npm is available and claude isn't already installed
+if command -v npm >/dev/null 2>&1; then
+    if ! command -v claude >/dev/null 2>&1; then
+        echo "Installing Claude Code..."
+        npm install -g @anthropic-ai/claude-code
+        echo "Claude Code installed"
+    else
+        echo "Claude Code already installed ($(claude --version 2>/dev/null || echo 'unknown version'))"
+    fi
+else
+    echo "npm not found; skipping Claude Code installation (install Node.js first)"
+fi
+
 echo "dotfiles install complete"

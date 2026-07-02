@@ -1,0 +1,14 @@
+{
+  "name": "slidev-drawio-example",
+  "private": true,
+  "scripts": {
+    "dev": "slidev slides.md --port 3030 --open false",
+    "build": "slidev build slides.md --out dist",
+    "export": "slidev export slides.md"
+  },
+  "dependencies": {
+    "@slidev/cli": "^0.50.0",
+    "@slidev/theme-default": "^0.25.0",
+    "slidev-addon-drawio": "file:.."
+  }
+}

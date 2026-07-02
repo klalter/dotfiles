@@ -1,0 +1,43 @@
+{
+  "name": "slidev-addon-drawio",
+  "version": "0.1.0",
+  "description": "Slidev addon for embedding and live-editing draw.io diagrams",
+  "keywords": [
+    "slidev-addon",
+    "drawio",
+    "diagrams",
+    "presentations"
+  ],
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "components/",
+    "layouts/",
+    "styles/"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:visual": "playwright test tests/visual",
+    "lint": "eslint components/ --ext .vue,.ts,.js"
+  },
+  "peerDependencies": {
+    "@slidev/types": ">=0.46",
+    "vue": "^3.0.0"
+  },
+  "vitest": {
+    "environment": "jsdom",
+    "setupFiles": ["./tests/setup.ts"],
+    "include": ["tests/**/*.test.ts"]
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.45.0",
+    "@slidev/cli": "^0.50.0",
+    "@slidev/types": "^0.50.0",
+    "@vitejs/plugin-vue": "^5.0.0",
+    "@vue/test-utils": "^2.4.0",
+    "jsdom": "^24.0.0",
+    "vitest": "^1.6.0",
+    "vue": "^3.4.0"
+  }
+}

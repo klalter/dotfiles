@@ -1,0 +1,64 @@
+/* slidev-addon-drawio — Neon Theme */
+/* Cyberpunk aesthetic: deep black, neon glows, vivid accents */
+
+.drawio-theme-neon {
+  --drawio-theme-bg: #050508;
+  --drawio-theme-border: #A855F7;
+  --drawio-theme-shadow: 0 0 0 1px rgba(168, 85, 247, 0.25),
+                          0 0 20px rgba(168, 85, 247, 0.15),
+                          0 0 60px rgba(168, 85, 247, 0.05);
+  --drawio-theme-shadow-hover: 0 0 0 1px rgba(168, 85, 247, 0.5),
+                               0 0 30px rgba(168, 85, 247, 0.3),
+                               0 0 80px rgba(168, 85, 247, 0.1);
+  --drawio-theme-edit-bg: #EC4899;
+  --drawio-theme-edit-text: #ffffff;
+  --drawio-theme-edit-hover-bg: #DB2777;
+  --drawio-theme-edit-shadow: 0 0 10px rgba(236, 72, 153, 0.6),
+                              0 0 30px rgba(236, 72, 153, 0.3);
+  --drawio-theme-edit-shadow-hover: 0 0 16px rgba(236, 72, 153, 0.8),
+                                    0 0 40px rgba(236, 72, 153, 0.45);
+  --drawio-theme-loading: #7c3aed;
+  --drawio-theme-overlay: rgba(5, 5, 8, 0.88);
+}
+
+.drawio-theme-neon .drawio-container {
+  border-color: #A855F7;
+}
+
+.drawio-theme-neon .drawio-loading {
+  background: #050508;
+}
+
+.drawio-theme-neon .drawio-loading-spinner {
+  border-color: rgba(168, 85, 247, 0.2);
+  border-top-color: #A855F7;
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.5);
+}
+
+.drawio-theme-neon .drawio-loading-text {
+  color: #7c3aed;
+  text-shadow: 0 0 8px rgba(168, 85, 247, 0.6);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+.drawio-theme-neon .drawio-error {
+  background: #050508;
+}
+
+.drawio-theme-neon .drawio-error-title {
+  color: #f43f5e;
+  text-shadow: 0 0 8px rgba(244, 63, 94, 0.6);
+}
+
+.drawio-theme-neon .drawio-error-message {
+  color: #6d28d9;
+}
+
+.drawio-theme-neon .drawio-edit-btn {
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 11px;
+}
