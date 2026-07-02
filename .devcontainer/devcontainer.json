@@ -15,10 +15,8 @@
   },
 
   // onCreateCommand runs once after the container is first created.
-  // install.sh: adds scripts/ to .bashrc, wires up GITHUB_TOKEN.
-  // npm install -g: puts `claude` and `cld` on the PATH system-wide.
+  // install.sh: adds scripts/ to .bashrc, wires up GITHUB_TOKEN, installs Claude Code.
   "onCreateCommand": "bash /workspaces/dotfiles/install.sh",
-  "postCreateCommand": "npm install -g @anthropic-ai/claude-code",
 
   "customizations": {
     "vscode": {
