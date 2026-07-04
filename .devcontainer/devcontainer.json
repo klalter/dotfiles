@@ -2,9 +2,14 @@
   "name": "dotfiles",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
 
+  // Open the Explorer on /workspaces (the parent) rather than the dotfiles repo
+  // itself, so repos you clone later show up as siblings in the same window.
+  "workspaceFolder": "/workspaces",
+
   "features": {
     "ghcr.io/devcontainers/features/node:1": { "version": "lts" },
-    "ghcr.io/devcontainers/features/git:1": {}
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
   },
 
   // Make dotfiles scripts available in every shell — including non-interactive

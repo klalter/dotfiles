@@ -27,18 +27,56 @@ export PATH
 # Exported here so plain bash scripts can find them too.
 export DOTFILES_SKILLS_DIR="$DOTFILES_DIR/skills"
 
-# --- Codespaces: prefer a personal PAT over the repo-scoped codespace token --
-# Drop a PAT into /workspaces/.env (e.g. `GITHUB_TOKEN=ghp_...`) and every new
-# shell will use it for gh/git instead of the limited GITHUB_TOKEN Codespaces
-# injects. If no PAT file exists, the default token is left untouched.
+# --- GitHub auth: use the broadest token available ---------------------------
+# Priority: explicit PAT in /workspaces/.env  >  `gh auth login` token  >  the
+# repo-scoped GITHUB_TOKEN Codespaces injects by default. The default token can
+# only reach the current repo; a `gh auth login` (or PAT) lets git/gh clone any
+# repo you have access to.
+_dotfiles_set_token() { export GITHUB_TOKEN="$1"; export GH_TOKEN="$1"; }
+
+_dotfiles_pat=""
 if [ -f /workspaces/.env ]; then
-  _dotfiles_pat="$(grep -oE 'ghp_[A-Za-z0-9]+' /workspaces/.env 2>/dev/null | head -n1)"
-  if [ -n "$_dotfiles_pat" ]; then
-    export GITHUB_TOKEN="$_dotfiles_pat"
-    export GH_TOKEN="$_dotfiles_pat"
-  fi
-  unset _dotfiles_pat
+  _dotfiles_pat="$(grep -oE '(ghp_[A-Za-z0-9]+|github_pat_[A-Za-z0-9_]+)' /workspaces/.env 2>/dev/null | head -n1)"
 fi
+if [ -n "$_dotfiles_pat" ]; then
+  _dotfiles_set_token "$_dotfiles_pat"
+elif [ -f "$HOME/.config/gh/hosts.yml" ] && command -v gh >/dev/null 2>&1; then
+  # Read the token stored by `gh auth login` (env unset so gh ignores the
+  # injected codespace token and returns its own).
+  _dotfiles_gh_tok="$(env -u GITHUB_TOKEN -u GH_TOKEN gh auth token 2>/dev/null || true)"
+  [ -n "$_dotfiles_gh_tok" ] && _dotfiles_set_token "$_dotfiles_gh_tok"
+  unset _dotfiles_gh_tok
+fi
+unset _dotfiles_pat
+
+# --- First-run: sign in to GitHub once, so you can clone any repo ------------
+# Interactive TTY only, once per box (sentinel). Disable with DOTFILES_NO_GH_LOGIN=1.
+_dotfiles_gh_first_login() {
+  case $- in *i*) ;; *) return 0 ;; esac          # interactive shells only
+  { [ -t 0 ] && [ -t 1 ]; } || return 0           # real terminal only
+  [ "${DOTFILES_NO_GH_LOGIN:-0}" = "1" ] && return 0
+  command -v gh >/dev/null 2>&1 || return 0
+  local sentinel="$HOME/.config/dotfiles/gh-login-prompted"
+  [ -f "$sentinel" ] && return 0
+  mkdir -p "$(dirname "$sentinel")"
+  # Already signed in with a stored (non-env) token? record and skip.
+  if env -u GITHUB_TOKEN -u GH_TOKEN gh auth status >/dev/null 2>&1; then
+    touch "$sentinel"; return 0
+  fi
+  printf '\n\033[1;34m[dotfiles]\033[0m First-time setup: sign in to GitHub so you can clone any repo you have access to.\n'
+  printf '           Follow the prompt below, or press \033[1mCtrl-C\033[0m to skip (run \033[1mgh auth login\033[0m later).\n\n'
+  if env -u GITHUB_TOKEN -u GH_TOKEN gh auth login --hostname github.com --git-protocol https --web; then
+    env -u GITHUB_TOKEN -u GH_TOKEN gh auth setup-git >/dev/null 2>&1 || true
+    local tok; tok="$(env -u GITHUB_TOKEN -u GH_TOKEN gh auth token 2>/dev/null || true)"
+    [ -n "$tok" ] && _dotfiles_set_token "$tok"
+    printf '\n\033[1;32m[dotfiles]\033[0m Signed in — git and gh now use your account token.\n'
+  else
+    printf '\n\033[1;33m[dotfiles]\033[0m Skipped. Run \033[1mgh auth login\033[0m anytime to enable cloning private repos.\n'
+  fi
+  touch "$sentinel"
+}
+_dotfiles_gh_first_login
+unset -f _dotfiles_gh_first_login _dotfiles_set_token
 
 # --- Quality-of-life aliases -------------------------------------------------
 alias ll='ls -alF'
