@@ -1,2 +1,38 @@
 #!/usr/bin/env bash
-claude --dangerously-skip-permissions "$@"
+# cld — launch Claude Code in "yolo" mode (skip permission prompts).
+#
+# Self-sufficient: if Claude Code isn't installed yet, cld installs it first
+# (npm when available, otherwise the official native installer), so this works
+# on a brand-new box with nothing but this repo on it.
+set -euo pipefail
+
+log() { printf '[cld] %s\n' "$*" >&2; }
+
+ensure_claude() {
+  # Already on PATH?
+  command -v claude >/dev/null 2>&1 && return 0
+
+  # Installed to ~/.local/bin by the native installer but PATH not updated yet?
+  if [ -x "$HOME/.local/bin/claude" ]; then
+    PATH="$HOME/.local/bin:$PATH"
+    return 0
+  fi
+
+  log "Claude Code not found — installing..."
+  if command -v npm >/dev/null 2>&1; then
+    npm install -g @anthropic-ai/claude-code >&2 || log "npm install failed, trying native installer"
+  fi
+  if ! command -v claude >/dev/null 2>&1 && command -v curl >/dev/null 2>&1; then
+    curl -fsSL https://claude.ai/install.sh | bash >&2
+    PATH="$HOME/.local/bin:$PATH"
+  fi
+
+  if ! command -v claude >/dev/null 2>&1; then
+    log "could not install Claude Code (need npm or curl on PATH)"
+    exit 1
+  fi
+  log "Claude Code installed: $(claude --version 2>/dev/null || echo unknown)"
+}
+
+ensure_claude
+exec claude --dangerously-skip-permissions "$@"
