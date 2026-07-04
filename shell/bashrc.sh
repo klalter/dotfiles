@@ -63,6 +63,13 @@ _dotfiles_gh_first_login() {
   if env -u GITHUB_TOKEN -u GH_TOKEN gh auth status >/dev/null 2>&1; then
     touch "$sentinel"; return 0
   fi
+  # Dev-container already configured gh via an exported token (devcontainer
+  # feature or an env-injected GH_TOKEN/GITHUB_TOKEN)? gh works as-is, so don't
+  # nag. Skipped inside Codespaces, whose auto-injected token is repo-scoped
+  # only — there we still offer the broader login below.
+  if [ "${CODESPACES:-}" != "true" ] && gh auth status >/dev/null 2>&1; then
+    touch "$sentinel"; return 0
+  fi
   printf '\n\033[1;34m[dotfiles]\033[0m First-time setup: sign in to GitHub so you can clone any repo you have access to.\n'
   printf '           Follow the prompt below, or press \033[1mCtrl-C\033[0m to skip (run \033[1mgh auth login\033[0m later).\n\n'
   if env -u GITHUB_TOKEN -u GH_TOKEN gh auth login --hostname github.com --git-protocol https --web; then
