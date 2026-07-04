@@ -1,0 +1,45 @@
+# Starship prompt — symlinked to ~/.config/starship.toml by install.sh.
+# Spaceship-style two-segment prompt, tuned to stay fast in big repos.
+# Docs: https://starship.rs/config/
+
+add_newline = true
+command_timeout = 800
+
+format = """
+$directory$git_branch$git_status$nodejs$python$rust$golang$docker_context$cmd_duration
+$character"""
+
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
+
+[directory]
+truncation_length = 3
+truncate_to_repo = true
+style = "bold cyan"
+
+[git_branch]
+symbol = " "
+style = "bold purple"
+
+[git_status]
+style = "yellow"
+# Cheap symbols only; full ahead/behind counting can be slow in huge repos.
+ahead = "⇡"
+behind = "⇣"
+diverged = "⇕"
+
+[cmd_duration]
+min_time = 2000
+style = "dim yellow"
+
+[nodejs]
+symbol = "node "
+# Only show when the project actually uses node.
+detect_files = ["package.json", ".nvmrc"]
+
+[python]
+symbol = "py "
+
+[docker_context]
+disabled = true

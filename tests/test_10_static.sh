@@ -13,6 +13,9 @@ SCRIPTS=(
   "$DEVBOX_DIR/entrypoint.sh"
   "$DEVBOX_DIR/selftest.sh"
   "$REPO_ROOT/install.sh"
+  "$REPO_ROOT/shell/bashrc.sh"
+  "$REPO_ROOT/scripts/cld"
+  "$REPO_ROOT/scripts/cdx"
   "$TESTS_DIR/run.sh"
 )
 
@@ -23,7 +26,7 @@ for s in "${SCRIPTS[@]}"; do
 done
 
 echo "[*] scripts are marked executable"
-for s in "$DEVBOX_DIR/bootstrap.sh" "$DEVBOX_DIR/devbox.sh" "$DEVBOX_DIR/entrypoint.sh" "$DEVBOX_DIR/selftest.sh"; do
+for s in "$DEVBOX_DIR/bootstrap.sh" "$DEVBOX_DIR/devbox.sh" "$DEVBOX_DIR/entrypoint.sh" "$DEVBOX_DIR/selftest.sh" "$REPO_ROOT/scripts/cld" "$REPO_ROOT/scripts/cdx"; do
   it "executable: ${s#$REPO_ROOT/}"
   if [ -x "$s" ]; then _pass; else _fail "" "not executable: $s"; fi
 done
