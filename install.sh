@@ -102,4 +102,82 @@ else
   fi
 fi
 
+# --- 5. VS Code settings -----------------------------------------------------
+# Merge config/vscode-settings.json into the Codespace's remote Machine
+# settings so every Codespace (any repo) inherits the same editor/terminal
+# fonts and UI tweaks. We MERGE (not overwrite) so VS Code's own generated keys
+# (Copilot instructions, etc.) survive. Idempotent: re-running just refreshes
+# our keys. Note: font *glyphs* render on the client, so install the primary
+# font locally for the full look (see config/vscode-settings.json header).
+apply_vscode_settings() {
+  local src="$DOTFILES_DIR/config/vscode-settings.json"
+  [ -f "$src" ] || return 0
+
+  # Merge into whichever VS Code Machine settings location exists (Codespaces
+  # uses .vscode-remote; plain remote-SSH uses .vscode-server). Create the
+  # Codespaces path proactively when running inside a Codespace.
+  local dests=()
+  [ -d "$HOME/.vscode-remote/data/Machine" ] && dests+=("$HOME/.vscode-remote/data/Machine/settings.json")
+  [ -d "$HOME/.vscode-server/data/Machine" ] && dests+=("$HOME/.vscode-server/data/Machine/settings.json")
+  if [ ${#dests[@]} -eq 0 ] && [ "${CODESPACES:-}" = "true" ]; then
+    dests+=("$HOME/.vscode-remote/data/Machine/settings.json")
+  fi
+  [ ${#dests[@]} -eq 0 ] && { log "no VS Code Machine settings dir found — skipping settings merge"; return 0; }
+
+  # merge_json SRC DEST — shallow-merge SRC's keys into DEST (creating DEST if
+  # needed), preserving any keys DEST already has. Prefers node (ubiquitous in
+  # Codespaces), then jq, then python3 — whichever is present.
+  merge_json() {
+    local src="$1" dest="$2"
+    mkdir -p "$(dirname "$dest")"
+    if command -v node >/dev/null 2>&1; then
+      node -e '
+        const fs = require("fs"), path = require("path");
+        const [src, dest] = process.argv.slice(1);
+        const add = JSON.parse(fs.readFileSync(src, "utf8"));
+        let cur = {};
+        try { cur = JSON.parse(fs.readFileSync(dest, "utf8")); } catch (e) {}
+        Object.assign(cur, add);
+        fs.mkdirSync(path.dirname(dest), { recursive: true });
+        fs.writeFileSync(dest, JSON.stringify(cur, null, "\t") + "\n");
+      ' "$src" "$dest"
+    elif command -v jq >/dev/null 2>&1; then
+      [ -s "$dest" ] || printf '{}\n' >"$dest"
+      local tmp="$dest.dotfiles.tmp"
+      if jq --tab -s '.[0] * .[1]' "$dest" "$src" >"$tmp" 2>/dev/null; then
+        mv "$tmp" "$dest"
+      else
+        rm -f "$tmp"; return 1
+      fi
+    elif command -v python3 >/dev/null 2>&1; then
+      python3 - "$src" "$dest" <<'PY'
+import json, os, sys
+src, dest = sys.argv[1], sys.argv[2]
+with open(src) as f: new = json.load(f)
+cur = {}
+if os.path.exists(dest):
+    try:
+        with open(dest) as f: cur = json.load(f)
+    except Exception: cur = {}
+cur.update(new)
+with open(dest, "w") as f:
+    json.dump(cur, f, indent="\t"); f.write("\n")
+PY
+    else
+      log "WARN: no node/jq/python3 — skipping VS Code settings merge"
+      return 1
+    fi
+  }
+
+  local dest
+  for dest in "${dests[@]}"; do
+    if merge_json "$src" "$dest"; then
+      log "merged VS Code settings -> $dest"
+    else
+      log "WARN: could not merge VS Code settings into $dest"
+    fi
+  done
+}
+apply_vscode_settings
+
 log "install complete — open a new shell (or 'source ~/.bashrc') to pick it up"
