@@ -100,6 +100,28 @@ else
   else
     log "WARN: neither npm nor curl found — run 'cld' after installing one"
   fi
+
+  # GitHub CLI — the dev container feature installs it for Codespaces made from
+  # this repo; most other Codespace base images ship it already. This fallback
+  # covers any box where it's still missing (best-effort; needs sudo + apt).
+  if command -v gh >/dev/null 2>&1; then
+    log "gh already installed"
+  elif command -v sudo >/dev/null 2>&1 && command -v curl >/dev/null 2>&1 && command -v apt-get >/dev/null 2>&1; then
+    log "installing GitHub CLI (gh)..."
+    if sudo mkdir -p -m 755 /etc/apt/keyrings \
+      && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg >/dev/null \
+      && sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+      && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+           | sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null \
+      && sudo apt-get update -qq \
+      && sudo apt-get install -y -qq gh; then
+      log "gh installed"
+    else
+      log "WARN: gh install failed — install it manually to use 'gh auth login'"
+    fi
+  else
+    log "WARN: gh missing and can't auto-install (need sudo+curl+apt) — install manually"
+  fi
 fi
 
 # --- 5. VS Code settings -----------------------------------------------------

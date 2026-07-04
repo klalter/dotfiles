@@ -35,9 +35,17 @@ anywhere). It sets up:
   + reload window applies it everywhere. See [font note](#fonts) below.
 - **`shell/bashrc.sh`** — all shell config in one repo-managed file;
   `~/.bashrc` gets a single source line, so `git pull` updates every machine.
-- **Codespaces token upgrade** — drop a PAT in `/workspaces/.env` and new
-  shells export it as `GITHUB_TOKEN`/`GH_TOKEN` instead of the repo-scoped
-  codespace token.
+- **GitHub CLI + one-time login** — `gh` is installed (dev container feature,
+  with an `install.sh` fallback), and the first interactive shell on a fresh
+  box prompts you to `gh auth login` (web/device flow). After that, git and
+  `gh` use your account token so you can clone **any** repo you have access to
+  — not just the current one. Disable the prompt with `DOTFILES_NO_GH_LOGIN=1`.
+- **Codespaces token upgrade** — token precedence is: an explicit PAT in
+  `/workspaces/.env` → your `gh auth login` token → the repo-scoped token
+  Codespaces injects. New shells export the winner as `GITHUB_TOKEN`/`GH_TOKEN`.
+- **Explorer opens `/workspaces`** — Codespaces made from this repo open the
+  parent folder (via `devcontainer.json` `workspaceFolder`), so repos you clone
+  later appear as siblings in the same window instead of the bare dotfiles repo.
 
 ## Layout
 
