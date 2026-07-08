@@ -8,7 +8,8 @@
 #
 # What it does:
 #   1. makes scripts/ executable and hooks shell/bashrc.sh into ~/.bashrc
-#   2. symlinks agent skills + global memory for Claude Code AND Codex
+#   2. symlinks agent skills + one shared global-memory file for Claude Code,
+#      Codex, AND Copilot (so every agent reads identical instructions)
 #   3. installs the Starship prompt (modern cross-shell prompt; works in bash)
 #   4. installs herdr (terminal multiplexer for AI coding agents), config
 #      symlinked from config/herdr.toml, local-only (no --remote/SSH setup)
@@ -61,9 +62,15 @@ link() {
 # One shared skills folder for every agent (see skills/README.md).
 link "$DOTFILES_DIR/skills" "$HOME/.claude/skills"
 link "$DOTFILES_DIR/skills" "$HOME/.codex/skills"
-# Global agent memory, versioned with the repo.
+# Global agent memory, versioned with the repo. One canonical file
+# (agent/AGENTS.md; agent/CLAUDE.md is a symlink to it) feeds every agent so
+# Claude Code, Codex, and Copilot all read identical instructions.
 link "$DOTFILES_DIR/agent/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
 link "$DOTFILES_DIR/agent/AGENTS.md" "$HOME/.codex/AGENTS.md"
+# Copilot (VS Code): global instructions live in a folder registered via the
+# chat.instructionsFilesLocations setting (merged below). The file must end in
+# .instructions.md to be picked up.
+link "$DOTFILES_DIR/agent/AGENTS.md" "$HOME/.copilot/instructions/global.instructions.md"
 # Prompt config.
 link "$DOTFILES_DIR/config/starship.toml" "$HOME/.config/starship.toml"
 # herdr (terminal multiplexer for AI coding agents) config.

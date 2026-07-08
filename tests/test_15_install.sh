@@ -34,6 +34,12 @@ assert_eq "$REPO_ROOT/agent/CLAUDE.md" "$(readlink "$SANDBOX/.claude/CLAUDE.md" 
 it "HOME/.codex/AGENTS.md -> repo agent/AGENTS.md"
 assert_eq "$REPO_ROOT/agent/AGENTS.md" "$(readlink "$SANDBOX/.codex/AGENTS.md" 2>/dev/null)"
 
+it "HOME/.copilot/instructions/global.instructions.md -> repo agent/AGENTS.md"
+assert_eq "$REPO_ROOT/agent/AGENTS.md" "$(readlink "$SANDBOX/.copilot/instructions/global.instructions.md" 2>/dev/null)"
+
+it "agent/CLAUDE.md resolves to the one canonical agent/AGENTS.md"
+assert_eq "$REPO_ROOT/agent/AGENTS.md" "$(readlink -f "$SANDBOX/.claude/CLAUDE.md" 2>/dev/null)"
+
 it "HOME/.config/starship.toml -> repo config/starship.toml"
 assert_eq "$REPO_ROOT/config/starship.toml" "$(readlink "$SANDBOX/.config/starship.toml" 2>/dev/null)"
 

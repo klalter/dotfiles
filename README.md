@@ -22,8 +22,12 @@ anywhere). It sets up:
   `~/.claude/skills` **and** `~/.codex/skills`, and exported to bash as
   `$DOTFILES_SKILLS_DIR`. Add a skill once, every agent on every machine has
   it after `git pull`. See [skills/README.md](skills/README.md).
-- **`agent/`** — global agent memory (`CLAUDE.md`, `AGENTS.md`), symlinked to
-  `~/.claude/CLAUDE.md` and `~/.codex/AGENTS.md`.
+- **`agent/`** — global agent memory. One canonical file (`AGENTS.md`;
+  `CLAUDE.md` is a symlink to it) is symlinked to `~/.claude/CLAUDE.md`,
+  `~/.codex/AGENTS.md`, and `~/.copilot/instructions/global.instructions.md`,
+  so Claude Code, Codex, and Copilot all read identical instructions. Includes
+  the herdr multi-agent orchestration playbook (active only inside a herdr
+  session).
 - **[Starship](https://starship.rs) prompt** — the modern cross-shell prompt
   (Spaceship's spiritual successor that also works in bash). Config lives in
   [`config/starship.toml`](config/starship.toml).
