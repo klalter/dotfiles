@@ -1,0 +1,16 @@
+# herdr configuration — managed in dotfiles, symlinked to ~/.config/herdr/config.toml
+# by install.sh. Edit here (not the symlink target) so `git pull` updates every
+# machine. Full reference for every available key: `herdr --default-config`.
+
+# Skip the first-run setup wizard — this file already represents a chosen config.
+onboarding = false
+
+[theme]
+name = "catppuccin"
+
+# Local-only for now: `[remote]` (herdr --remote / SSH config management) is
+# intentionally left unconfigured. Revisit if/when we want to attach to herdr
+# running on another machine.
+
+[ui]
+agent_panel_sort = "spaces"

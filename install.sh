@@ -10,12 +10,15 @@
 #   1. makes scripts/ executable and hooks shell/bashrc.sh into ~/.bashrc
 #   2. symlinks agent skills + global memory for Claude Code AND Codex
 #   3. installs the Starship prompt (modern cross-shell prompt; works in bash)
-#   4. installs Claude Code (the default agent — `cld` to run it;
+#   4. installs herdr (terminal multiplexer for AI coding agents), config
+#      symlinked from config/herdr.toml, local-only (no --remote/SSH setup)
+#   5. installs Claude Code (the default agent — `cld` to run it;
 #      Codex is opt-in: the first `cdx` installs it on demand)
 #
 # Env toggles:
-#   DOTFILES_NO_NETWORK=1   skip network installs (starship, Claude Code) —
-#                           used by the test suite and air-gapped machines.
+#   DOTFILES_NO_NETWORK=1   skip network installs (starship, herdr, Claude
+#                           Code) — used by the test suite and air-gapped
+#                           machines.
 set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -63,6 +66,8 @@ link "$DOTFILES_DIR/agent/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
 link "$DOTFILES_DIR/agent/AGENTS.md" "$HOME/.codex/AGENTS.md"
 # Prompt config.
 link "$DOTFILES_DIR/config/starship.toml" "$HOME/.config/starship.toml"
+# herdr (terminal multiplexer for AI coding agents) config.
+link "$DOTFILES_DIR/config/herdr.toml" "$HOME/.config/herdr/config.toml"
 
 # --- 3 + 4. network installs -------------------------------------------------
 if [ "${DOTFILES_NO_NETWORK:-0}" = "1" ]; then
@@ -81,6 +86,21 @@ else
     fi
   else
     log "WARN: curl not found — skipping starship install"
+  fi
+
+  # herdr — agent-aware terminal multiplexer (herdr.dev). Config is symlinked
+  # above; installed here so every new Codespace has it on PATH.
+  if command -v herdr >/dev/null 2>&1 || [ -x "$HOME/.local/bin/herdr" ]; then
+    log "herdr already installed"
+  elif command -v curl >/dev/null 2>&1; then
+    log "installing herdr..."
+    if curl -fsSL https://herdr.dev/install.sh | sh >/dev/null; then
+      log "herdr installed"
+    else
+      log "WARN: herdr install failed"
+    fi
+  else
+    log "WARN: curl not found — skipping herdr install"
   fi
 
   # Claude Code — the default agent on every new box. `cld` also self-installs,

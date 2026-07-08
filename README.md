@@ -27,6 +27,11 @@ anywhere). It sets up:
 - **[Starship](https://starship.rs) prompt** — the modern cross-shell prompt
   (Spaceship's spiritual successor that also works in bash). Config lives in
   [`config/starship.toml`](config/starship.toml).
+- **[herdr](https://herdr.dev)** — agent-aware terminal multiplexer for
+  running multiple AI coding agents (Claude Code, Codex, ...) in one terminal.
+  Config lives in [`config/herdr.toml`](config/herdr.toml), symlinked to
+  `~/.config/herdr/config.toml`. Local-only for now — `[remote]`/SSH attach is
+  intentionally left unconfigured.
 - **VS Code settings** — [`config/vscode-settings.json`](config/vscode-settings.json)
   (fonts, sizes, editor/terminal tweaks) is **merged** into the Codespace's
   remote Machine settings on every launch, so every Codespace (any repo)
@@ -54,7 +59,7 @@ anywhere). It sets up:
 - **`scripts/`** — personal CLIs on PATH (`cld`, `cdx`, ...).
 - **`skills/`** — shared agent skills (Claude Code + Codex).
 - **`agent/`** — global agent memory files.
-- **`config/`** — tool configs (starship, VS Code settings).
+- **`config/`** — tool configs (starship, herdr, VS Code settings).
 - **`devbox/`** — ephemeral dev environment. See [devbox/README.md](devbox/README.md).
 - **`tests/`** — deterministic test suite. Run `./tests/run.sh` (or `make test`).
 

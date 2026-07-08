@@ -37,6 +37,9 @@ assert_eq "$REPO_ROOT/agent/AGENTS.md" "$(readlink "$SANDBOX/.codex/AGENTS.md" 2
 it "HOME/.config/starship.toml -> repo config/starship.toml"
 assert_eq "$REPO_ROOT/config/starship.toml" "$(readlink "$SANDBOX/.config/starship.toml" 2>/dev/null)"
 
+it "HOME/.config/herdr/config.toml -> repo config/herdr.toml"
+assert_eq "$REPO_ROOT/config/herdr.toml" "$(readlink "$SANDBOX/.config/herdr/config.toml" 2>/dev/null)"
+
 it "skills folder resolves through the symlink"
 assert_file "$SANDBOX/.claude/skills/example-skill/SKILL.md"
 
