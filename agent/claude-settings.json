@@ -1,11 +1,11 @@
 {
   "model": "opus[1m]",
-  "effortLevel": "medium",
-  "skipDangerousModePermissionPrompt": true,
-  "theme": "auto",
   "statusLine": {
     "type": "command",
     "command": "bash ~/.claude/statusline-command.sh",
     "refreshInterval": 60
-  }
+  },
+  "effortLevel": "medium",
+  "skipDangerousModePermissionPrompt": true,
+  "theme": "auto"
 }

@@ -6,11 +6,12 @@
 onboarding = false
 
 [theme]
-name = "catppuccin"
+name = "tokyo-night"
 
 # Local-only for now: `[remote]` (herdr --remote / SSH config management) is
 # intentionally left unconfigured. Revisit if/when we want to attach to herdr
 # running on another machine.
 
+auto_switch = false
 [ui]
 agent_panel_sort = "spaces"
