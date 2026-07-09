@@ -67,6 +67,10 @@ link "$DOTFILES_DIR/skills" "$HOME/.codex/skills"
 # Claude Code, Codex, and Copilot all read identical instructions.
 link "$DOTFILES_DIR/agent/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
 link "$DOTFILES_DIR/agent/AGENTS.md" "$HOME/.codex/AGENTS.md"
+# Claude Code status line: the render script plus settings.json (model, effort,
+# theme, and the statusLine wiring that points back at the script).
+link "$DOTFILES_DIR/agent/statusline-command.sh" "$HOME/.claude/statusline-command.sh"
+link "$DOTFILES_DIR/agent/claude-settings.json" "$HOME/.claude/settings.json"
 # Copilot (VS Code): global instructions live in a folder registered via the
 # chat.instructionsFilesLocations setting (merged below). The file must end in
 # .instructions.md to be picked up.
