@@ -72,10 +72,11 @@ assert_eq "$REPO_ROOT/skills" "$(HOME="$SANDBOX" bash -c ". '$REPO_ROOT/shell/ba
 it "cld and cdx pass bash -n"
 assert_success "bash -n '$REPO_ROOT/scripts/cld' && bash -n '$REPO_ROOT/scripts/cdx'"
 
-it "cld launches claude in yolo mode (stub binary)"
+it "cld launches claude in yolo mode without NODE_EXTRA_CA_CERTS (stub binary)"
 STUBS="$SANDBOX/stubs"; mkdir -p "$STUBS"
-printf '#!/usr/bin/env bash\necho "ARGS:$*"\n' >"$STUBS/claude"; chmod +x "$STUBS/claude"
-out="$(PATH="$STUBS:$PATH" "$REPO_ROOT/scripts/cld" hello 2>/dev/null)"
+printf '#!/usr/bin/env bash\nprintf "NODE_EXTRA_CA_CERTS:%%s\\n" "${NODE_EXTRA_CA_CERTS-unset}"\necho "ARGS:$*"\n' >"$STUBS/claude"; chmod +x "$STUBS/claude"
+out="$(NODE_EXTRA_CA_CERTS=/tmp/broken.pem PATH="$STUBS:$PATH" "$REPO_ROOT/scripts/cld" hello 2>/dev/null)"
+assert_contains "$out" "NODE_EXTRA_CA_CERTS:unset"
 assert_contains "$out" "ARGS:--dangerously-skip-permissions hello"
 
 it "cdx launches codex in yolo mode (stub binary)"

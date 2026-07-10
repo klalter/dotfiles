@@ -35,4 +35,4 @@ ensure_claude() {
 }
 
 ensure_claude
-exec claude --dangerously-skip-permissions "$@"
+exec env -u NODE_EXTRA_CA_CERTS claude --dangerously-skip-permissions "$@"
