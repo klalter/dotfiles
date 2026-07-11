@@ -14,4 +14,8 @@ name = "tokyo-night"
 
 auto_switch = false
 [ui]
-agent_panel_sort = "spaces"
+agent_panel_sort = "priority"
+
+# Keep Herdr's pane, tab, and sidebar UI clickable. The local Herdr client
+# normalizes legacy X10 mouse packets before forwarding input to the server.
+mouse_capture = true
