@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Refresh live agent skill links without doing network installs.
+set -euo pipefail
+
+SOURCE="${BASH_SOURCE[0]}"
+while [ -L "$SOURCE" ]; do
+  SOURCE_DIR="$(cd "$(dirname "$SOURCE")" && pwd)"
+  TARGET="$(readlink "$SOURCE")"
+  case "$TARGET" in
+    /*) SOURCE="$TARGET" ;;
+    *) SOURCE="$SOURCE_DIR/$TARGET" ;;
+  esac
+done
+
+DOTFILES_DIR="$(cd "$(dirname "$SOURCE")/.." && pwd)"
+export DOTFILES_NO_NETWORK="${DOTFILES_NO_NETWORK:-1}"
+
+exec bash "$DOTFILES_DIR/install.sh"

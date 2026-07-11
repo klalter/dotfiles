@@ -18,16 +18,18 @@ anywhere). It sets up:
   Claude Code first if missing. Claude is the default agent on every box.
 - **`cdx`** — same thing for OpenAI Codex, opt-in: nothing is installed until
   the first time you run `cdx`, then it runs Codex in yolo mode.
-- **`skills/`** — one shared skills folder for all agents, symlinked to
-  `~/.claude/skills` **and** `~/.codex/skills`, and exported to bash as
-  `$DOTFILES_SKILLS_DIR`. Add a skill once, every agent on every machine has
-  it after `git pull`. See [skills/README.md](skills/README.md).
+- **Skills** — two sources feed Codex, Claude Code, and Copilot: optional
+  `/workspaces/.ai/skills` plus this repo's `skills/`. `install.sh` links each
+  skill directory into the CLIs' global skill directories without replacing
+  bundled skills. The repo source stays available after this repository moves.
+  Codespaces refreshes these links on every start, and `merge-skills` refreshes
+  them immediately in a live session. See [skills/README.md](skills/README.md).
 - **`agent/`** — global agent memory. One canonical file (`AGENTS.md`;
-  `CLAUDE.md` is a symlink to it) is symlinked to `~/.claude/CLAUDE.md`,
-  `~/.codex/AGENTS.md`, and `~/.copilot/instructions/global.instructions.md`,
-  so Claude Code, Codex, and Copilot all read identical instructions. Includes
-  the herdr multi-agent orchestration playbook (active only inside a herdr
-  session).
+  `CLAUDE.md` and `CODEX.md` are symlinks to it) is symlinked into Claude,
+  Codex, and Copilot's global instruction paths. Edit `agent/AGENTS.md`, or
+  edit the global file in your home directory; either way it is the same file.
+  Includes the herdr multi-agent orchestration playbook (active only inside a
+  herdr session).
 - **[Starship](https://starship.rs) prompt** — the modern cross-shell prompt
   (Spaceship's spiritual successor that also works in bash). Config lives in
   [`config/starship.toml`](config/starship.toml).
@@ -61,7 +63,7 @@ anywhere). It sets up:
 - **`install.sh`** — idempotent installer (Codespaces entrypoint).
 - **`shell/`** — bash config sourced from `~/.bashrc`.
 - **`scripts/`** — personal CLIs on PATH (`cld`, `cdx`, ...).
-- **`skills/`** — shared agent skills (Claude Code + Codex).
+- **`skills/`** — portable dotfiles-owned skills (Claude Code + Codex).
 - **`agent/`** — global agent memory files.
 - **`config/`** — tool configs (starship, herdr, VS Code settings).
 - **`devbox/`** — ephemeral dev environment. See [devbox/README.md](devbox/README.md).
@@ -71,6 +73,7 @@ anywhere). It sets up:
 
 ```bash
 ./install.sh          # set up this machine (Codespaces does this for you)
+merge-skills          # refresh agent skill links without restarting
 exec bash             # pick up the new shell config
 cld                   # Claude Code, yolo mode (installs it if missing)
 cdx                   # Codex, yolo mode (installs it on first use)

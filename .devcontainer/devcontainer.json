@@ -23,6 +23,11 @@
   // install.sh: adds scripts/ to .bashrc, wires up GITHUB_TOKEN, installs Claude Code.
   "onCreateCommand": "bash /workspaces/dotfiles/install.sh",
 
+  // postStartCommand runs every time the Codespace starts. Refresh skill
+  // symlinks without network installs so new/changed skills become visible
+  // after a restart, while still allowing live refresh with `merge-skills`.
+  "postStartCommand": "bash -lc 'if command -v merge-skills >/dev/null 2>&1; then exec merge-skills; fi; for s in \"$HOME/.local/bin/merge-skills\" /workspaces/dotfiles/scripts/merge-skills /workspaces/kas-dotfiles/scripts/merge-skills /workspaces/*/scripts/merge-skills; do [ -x \"$s\" ] && exec \"$s\"; done'",
+
   "customizations": {
     "vscode": {
       "settings": {

@@ -16,6 +16,7 @@ SCRIPTS=(
   "$REPO_ROOT/shell/bashrc.sh"
   "$REPO_ROOT/scripts/cld"
   "$REPO_ROOT/scripts/cdx"
+  "$REPO_ROOT/scripts/merge-skills"
   "$TESTS_DIR/run.sh"
 )
 
@@ -26,10 +27,25 @@ for s in "${SCRIPTS[@]}"; do
 done
 
 echo "[*] scripts are marked executable"
-for s in "$DEVBOX_DIR/bootstrap.sh" "$DEVBOX_DIR/devbox.sh" "$DEVBOX_DIR/entrypoint.sh" "$DEVBOX_DIR/selftest.sh" "$REPO_ROOT/scripts/cld" "$REPO_ROOT/scripts/cdx"; do
+for s in "$DEVBOX_DIR/bootstrap.sh" "$DEVBOX_DIR/devbox.sh" "$DEVBOX_DIR/entrypoint.sh" "$DEVBOX_DIR/selftest.sh" "$REPO_ROOT/scripts/cld" "$REPO_ROOT/scripts/cdx" "$REPO_ROOT/scripts/merge-skills"; do
   it "executable: ${s#$REPO_ROOT/}"
   if [ -x "$s" ]; then _pass; else _fail "" "not executable: $s"; fi
 done
+
+echo "[*] Codespaces startup hooks"
+it "devcontainer refreshes skill links every time the Codespace starts"
+assert_success "grep -q 'postStartCommand.*merge-skills' '$REPO_ROOT/.devcontainer/devcontainer.json'"
+
+echo "[*] herdr terminal behavior"
+it "herdr keeps its clickable mouse UI enabled"
+assert_success "grep -Eq '^[[:space:]]*mouse_capture[[:space:]]*=[[:space:]]*true' '$REPO_ROOT/config/herdr.toml'"
+
+echo "[*] agent instructions"
+it "global agent instructions tell agents how to refresh skills without rebooting"
+assert_success "grep -q 'merge-skills' '$REPO_ROOT/agent/AGENTS.md'"
+
+it "global agent instructions ban AI attribution in commits"
+assert_success "grep -q 'Never add AI-assistance attribution' '$REPO_ROOT/agent/AGENTS.md'"
 
 if command -v shellcheck >/dev/null 2>&1; then
   echo "[*] shellcheck (severity: warning)"

@@ -22,10 +22,13 @@ esac
 export PATH
 
 # --- Agent skills ------------------------------------------------------------
-# Skills live in the repo (skills/). install.sh symlinks ~/.claude/skills and
-# ~/.codex/skills at this folder so Claude Code and Codex both pick them up.
-# Exported here so plain bash scripts can find them too.
+# Skills come from the optional workspace-wide collection and this repo.
+# install.sh child-links both roots into the Codex, Claude, and Copilot global
+# skill directories.
+# These exports let shell scripts locate either source directly.
 export DOTFILES_SKILLS_DIR="$DOTFILES_DIR/skills"
+export DOTFILES_WORKSPACE_SKILLS_DIR="${DOTFILES_SHARED_SKILLS_DIR:-/workspaces/.ai/skills}"
+export DOTFILES_SKILLS_DIRS="$DOTFILES_WORKSPACE_SKILLS_DIR:$DOTFILES_SKILLS_DIR"
 
 # --- GitHub auth: use the broadest token available ---------------------------
 # Priority: explicit PAT in /workspaces/.env  >  `gh auth login` token  >  the

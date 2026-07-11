@@ -59,14 +59,72 @@ link() {
   log "linked $linkpath -> $target"
 }
 
-# One shared skills folder for every agent (see skills/README.md).
-link "$DOTFILES_DIR/skills" "$HOME/.claude/skills"
-link "$DOTFILES_DIR/skills" "$HOME/.codex/skills"
+# Make every source skill visible to each CLI without replacing a CLI-managed
+# skills directory (Codex may populate that directory with bundled skills).
+# The workspace root is optional so the dotfiles repo remains portable.
+link_skill_children() {
+  local source="$1" destination="$2" skill name destination_skill existing_target
+  [ -d "$source" ] || { log "skills source absent: $source"; return 0; }
+  mkdir -p "$destination"
+
+  for skill in "$source"/*; do
+    [ -f "$skill/SKILL.md" ] || continue
+    name="$(basename "$skill")"
+    destination_skill="$destination/$name"
+    if [ -L "$destination_skill" ]; then
+      existing_target="$(readlink "$destination_skill")"
+      if [ "$existing_target" = "$skill" ]; then
+        continue
+      fi
+      log "SKIP skill: $destination_skill already links to $existing_target"
+    elif [ -e "$destination_skill" ]; then
+      log "SKIP skill: $destination_skill already exists and is not a symlink"
+    else
+      ln -s "$skill" "$destination_skill"
+    fi
+  done
+}
+
+# Remove symlinks that no longer resolve to a skill (deleted or renamed at the
+# source). Only prunes symlinks — never a real file or directory — so CLI-owned
+# bundled skills are untouched. Makes merge-skills convergent, not append-only.
+prune_skill_links() {
+  local destination="$1" entry target
+  [ -d "$destination" ] || return 0
+  for entry in "$destination"/*; do
+    [ -L "$entry" ] || continue
+    target="$(readlink -f "$entry" 2>/dev/null || true)"
+    if [ -z "$target" ] || [ ! -f "$target/SKILL.md" ]; then
+      rm "$entry"
+      log "pruned stale skill link: $entry"
+    fi
+  done
+}
+
+WORKSPACE_SKILLS_DIR="${DOTFILES_SHARED_SKILLS_DIR:-/workspaces/.ai/skills}"
+# ~/.agents/skills is the shared global location documented by Codex and
+# Copilot. Keep ~/.codex/skills for the installed Codex version, which already
+# uses it for bundled skills. The product-specific roots cover Claude/Copilot.
+for cli_skills_dir in "$HOME/.agents/skills" "$HOME/.claude/skills" "$HOME/.codex/skills" "$HOME/.copilot/skills"; do
+  prune_skill_links "$cli_skills_dir"
+  link_skill_children "$WORKSPACE_SKILLS_DIR" "$cli_skills_dir"
+  link_skill_children "$DOTFILES_DIR/skills" "$cli_skills_dir"
+done
+
+# Slash-command sources: /workspaces/.ai/commands is a flat dir of command
+# files (generated shim over .ai/areas/*/commands). Claude reads it as
+# ~/.claude/commands, Codex as ~/.codex/prompts.
+WORKSPACE_COMMANDS_DIR="${DOTFILES_SHARED_COMMANDS_DIR:-/workspaces/.ai/commands}"
+if [ -d "$WORKSPACE_COMMANDS_DIR" ]; then
+  link "$WORKSPACE_COMMANDS_DIR" "$HOME/.claude/commands"
+  link "$WORKSPACE_COMMANDS_DIR" "$HOME/.codex/prompts"
+fi
 # Global agent memory, versioned with the repo. One canonical file
 # (agent/AGENTS.md; agent/CLAUDE.md is a symlink to it) feeds every agent so
 # Claude Code, Codex, and Copilot all read identical instructions.
 link "$DOTFILES_DIR/agent/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
 link "$DOTFILES_DIR/agent/AGENTS.md" "$HOME/.codex/AGENTS.md"
+link "$DOTFILES_DIR/agent/CODEX.md" "$HOME/.codex/CODEX.md"
 # Claude Code status line: the render script plus settings.json (model, effort,
 # theme, and the statusLine wiring that points back at the script).
 link "$DOTFILES_DIR/agent/statusline-command.sh" "$HOME/.claude/statusline-command.sh"
@@ -79,6 +137,8 @@ link "$DOTFILES_DIR/agent/AGENTS.md" "$HOME/.copilot/instructions/global.instruc
 link "$DOTFILES_DIR/config/starship.toml" "$HOME/.config/starship.toml"
 # herdr (terminal multiplexer for AI coding agents) config.
 link "$DOTFILES_DIR/config/herdr.toml" "$HOME/.config/herdr/config.toml"
+# Live skill refresh helper, available before a shell sources ~/.bashrc.
+link "$DOTFILES_DIR/scripts/merge-skills" "$HOME/.local/bin/merge-skills"
 
 # --- 3 + 4. network installs -------------------------------------------------
 if [ "${DOTFILES_NO_NETWORK:-0}" = "1" ]; then
