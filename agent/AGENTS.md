@@ -1,26 +1,44 @@
-# Global agent memory
+# Global Agent Instructions
 
-Single source of truth for every coding agent on this machine. `install.sh`
-symlinks this one file into each agent's global-instructions path, so they all
-read the exact same rules:
+Edit this file only: `agent/AGENTS.md`.
+
+`install.sh` symlinks every global agent-instruction path back to this file, so
+Claude, Codex, and Copilot all read the same rules. If you edit one of the
+global files below, you are editing this repo file through a symlink:
 
 | Agent       | Reads from                                         |
 | ----------- | -------------------------------------------------- |
 | Claude Code | `~/.claude/CLAUDE.md` → this file                  |
 | Codex CLI   | `~/.codex/AGENTS.md` → this file                   |
+| Codex compat | `~/.codex/CODEX.md` → this file                  |
 | Copilot     | `~/.copilot/instructions/global.instructions.md` → this file (via VS Code `chat.instructionsFilesLocations`) |
 
-Keep it short and tool-agnostic. Project-specific rules belong in each repo's
-own `CLAUDE.md` / `AGENTS.md`.
+Keep this file short and tool-agnostic. Project-specific rules belong in each
+repo's own `CLAUDE.md` or `AGENTS.md`.
 
 ## Preferences
 
 - Shell is bash; personal helper scripts live in `$DOTFILES_DIR/scripts`
   (`cld` = Claude, `cdx` = Codex, both yolo-mode launchers).
-- Shared agent skills live in `$DOTFILES_SKILLS_DIR` (symlinked to
-  `~/.claude/skills` and `~/.codex/skills`). Add new reusable skills there, not
-  in one-off repos.
+- Shared agent skills come from `/workspaces/.ai/skills` and
+  `/workspaces/.ai/areas` (canonical home, versioned), plus
+  `$DOTFILES_SKILLS_DIR` for skills that must travel with this repo;
+  `install.sh` child-links all sources into the Codex, Claude, and Copilot
+  global skills directories. Add new reusable skills to
+  `/workspaces/.ai/skills`.
+- Kyndryl Bridge work (POA/Automation Service/Orchestration, Policy, KAIF,
+  AgentVisor, IAM/corelite, bundles): consult `/workspaces/.ai/AGENTS.md`
+  and the area skills first. Deploys, token exchange, and account
+  resolution go through the `kb-bridge` MCP server — reference accounts by
+  name (poadev, devtestpolicy, acme, dev-shell) and never read secret env
+  files such as `/workspaces/.env` or `.env-poc`.
+- After adding, removing, or renaming a skill, run `merge-skills` in the live
+  Codespace so the global CLI skill directories refresh without rebooting.
+  Codespaces also runs this refresh on every start.
 - Prefer small, focused commits with clear messages.
+- Never add AI-assistance attribution to commits, commit messages, PR text, or
+  generated files. Do not include lines such as `Co-authored-by`, `Generated
+  with`, `Assisted by`, or tool names like Claude, Codex, or Copilot.
 
 ---
 
@@ -53,51 +71,66 @@ high-volume, mechanically-verifiable work down to cheap-capable models. A task
 done well by Sonnet for a fraction of the cost is a win *because you freed the
 expensive model to think*, not merely because it was cheaper.
 
-## Model roster & how to pick
+## Model roster
 
-Ratings are relative heuristics (★ = weak … ★★★★★ = best-in-class). Pick by the
-**task**, not by cost alone — cost only breaks ties between models that both fit.
+The roster — models, 0–10 task-fit scores, prices, launch commands, and
+account-verified Copilot availability — lives in **`agent/models.md`**
+(`$DOTFILES_DIR/agent/models.md`). Read it before picking arms; edit *that
+file* to change scores or add models.
 
-| Model          | Family    | Intelligence | Design/visual | Writing | Cost   | Herd role — pick it for                                            |
-| -------------- | --------- | :----------: | :-----------: | :-----: | :----: | ----------------------------------------------------------------- |
-| **Opus 4.8**   | Anthropic |    ★★★★★     |     ★★★★      |  ★★★★★  | $$$$   | Orchestrator (you). Hardest reasoning, architecture, ambiguity.   |
-| **Sonnet 5**   | Anthropic |    ★★★★      |     ★★★★      |  ★★★★   | $$     | **Default sub-agent.** Implementation, refactors, tests, analysis.|
-| **Haiku 4.5**  | Anthropic |    ★★★       |     ★★        |  ★★★    | $      | Bulk/mechanical: file sweeps, renames, log-scraping, boilerplate. |
-| **Fable 5**    | Anthropic |    ★★★★      |     ★★★★★     |  ★★★★★  | $$     | Design & prose: docs, UI copy, storyboards, naming, dataviz.      |
-| **GPT-5.5**    | OpenAI    |    ★★★★★     |     ★★★★      |  ★★★★   | $$$$   | Cross-model second opinion / adversarial review / alt orchestrator.|
-| **GPT-5**      | OpenAI    |    ★★★★      |     ★★★★      |  ★★★★   | $$$    | Strong alt workhorse; independent verification.                   |
-| **GPT-5 mini** | OpenAI    |    ★★★       |     ★★        |  ★★★    | $      | Cheap OpenAI bulk work when you want provider diversity.          |
+## Using lower models as arms
 
-Default ladder on an Anthropic-only box: **orchestrate on Opus → workhorse on
-Sonnet 5 → bulk on Haiku 4.5 → creative/prose on Fable 5.**
+Treat cheaper models as your **arms**: they type, you think. Fewer tokens is
+the *preference*, never the *objective* — every delegation trades off cost,
+quality, and **assertion** (can the result be verified?). A cheap arm is only
+cheap if its output survives verification.
 
-### Cross-model (OpenAI) sub-agents
+For each sub-task, follow this protocol:
 
-Only reach for GPT models when the tool is actually installed in this
-environment — check first:
+1. **Spec** — one crisp objective, self-contained context, explicit
+   *acceptance criteria*, and a report-file path. Writing this spec is your
+   job; arms flounder on vague asks.
+2. **Pick the arm** — the cheapest model whose roster score for the task's
+   dimension clears the bar: routine work needs ≥7 on the relevant column,
+   user-facing or hard-to-redo work ≥8. Reasoning-heavy/ambiguous/architectural
+   work (needs ≥9) stays with you. Copilot arms are marginally cheapest
+   (prepaid credits, prefer `--model auto`) → then Haiku/Luna → then
+   Sonnet/Terra. Full ladder and Copilot org restrictions: `agent/models.md`.
+3. **Dispatch assertively** — fire arms in parallel for independent strands;
+   don't wait to be told and don't do arm-grade work yourself.
+4. **Verify everything** — acceptance criteria checked mechanically where
+   possible (tests, lint, grep, build), by a cheap verifier arm otherwise.
+   Never integrate unverified arm output.
+5. **Escalate on failure** — retry once with a sharpened spec → move one tier
+   up the roster → do it yourself. Record which tier ultimately worked and
+   pick that tier first next time.
 
-- `command -v codex` (or `cdx`) → you can spawn **Codex/GPT** sub-agents
-  (default GPT-5.5). Launch with `cdx` (pass `-m <model>` to pick one).
-- `command -v copilot` / `gh copilot` → **Copilot** is available; the *user*
-  chooses which model Copilot runs, so ask if it matters.
-
-Use cross-model agents for **independent second opinions, adversarial review,
-or tasks that suit the other family's strengths** — not by default. Same-family
-Anthropic agents are the normal case; provider diversity is a deliberate choice,
-not the baseline.
+Cross-model (`cdx` for GPT-5.6, `copilot` for the credit pool) is for
+independent second opinions, adversarial review, or that family's strengths —
+check the tool exists (`command -v cdx`/`copilot`) before dispatching.
 
 ## Driving herdr (mechanics)
 
+- **Every arm starts in yolo mode.** Use the `cld` and `cdx` wrappers, which
+  already disable approval prompts and sandboxing; never launch raw `claude`
+  or `codex` in a herdr pane. Launch Copilot with `--yolo` so shell tools,
+  URLs, and paths outside its starting directory do not pause for approval.
+  Do not use plain `copilot` for an arm. Keep `--cwd` and the task spec narrow
+  because these launchers deliberately grant broad access.
 - **Start an agent** in its own pane:
   ```
   herdr agent start <name> --cwd <dir> --tab w1:t1 --split right|down --no-focus -- cld --model sonnet
   ```
-  For a GPT sub-agent swap the launcher: `... -- cdx` (add `-m gpt-5` etc.).
+  For a GPT sub-agent swap the launcher: `... -- cdx` (add `-m gpt-5.6-terra`
+  etc.); for a Copilot arm use `... -- copilot --model auto --yolo`.
 - **Dispatch a prompt:** `herdr pane run <pane_id> "<single-line prompt>"`.
   Keep prompts single-line — long/multi-line prompts land as `[Pasted text #1]`
   and may **not** auto-submit. Verify with `herdr agent read <name>`; if it's
   still sitting unsent, press Enter with `herdr pane run <pane_id> ""` (or
-  `herdr pane send-keys <pane_id> Enter`).
+  `herdr pane send-keys <pane_id> Enter`). Also verify that the agent begins
+  executing tools; if it is blocked on a permission or allowed-directory
+  prompt, close it and restart it with the yolo launcher above instead of
+  approving the prompt manually.
 - **Coordinate via report files** (most reliable pattern): tell each agent to
   write its result to an agreed path, e.g. `/workspaces/tmp/herd/<name>-report.md`,
   then watch for those files with a Monitor until-loop. Poll liveness with
