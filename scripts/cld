@@ -2,11 +2,25 @@
 # cld — launch Claude Code in "yolo" mode (skip permission prompts).
 #
 # Self-sufficient: if Claude Code isn't installed yet, cld installs it first
-# (npm when available, otherwise the official native installer), so this works
-# on a brand-new box with nothing but this repo on it.
+# via the official native installer, so this works on a brand-new box with
+# nothing but this repo on it.
 set -euo pipefail
 
 log() { printf '[cld] %s\n' "$*" >&2; }
+
+sanitize_tls_env() {
+  # Some environments export a broken NODE_EXTRA_CA_CERTS path, which makes
+  # Node-based CLIs fail TLS setup before any network request is attempted.
+  if [ -n "${NODE_EXTRA_CA_CERTS:-}" ]; then
+    if [ ! -r "${NODE_EXTRA_CA_CERTS}" ] || ! grep -q "BEGIN CERTIFICATE" "${NODE_EXTRA_CA_CERTS}" 2>/dev/null; then
+      log "ignoring invalid NODE_EXTRA_CA_CERTS=${NODE_EXTRA_CA_CERTS}"
+      unset NODE_EXTRA_CA_CERTS
+    fi
+  fi
+
+  # NPM-injected cafile vars can trigger the same behavior in Node tooling.
+  unset npm_config_cafile NPM_CONFIG_CAFILE
+}
 
 ensure_claude() {
   # Already on PATH?
@@ -18,21 +32,19 @@ ensure_claude() {
     return 0
   fi
 
-  log "Claude Code not found — installing..."
-  if command -v npm >/dev/null 2>&1; then
-    npm install -g @anthropic-ai/claude-code >&2 || log "npm install failed, trying native installer"
-  fi
+  log "Claude Code not found — installing with native installer..."
   if ! command -v claude >/dev/null 2>&1 && command -v curl >/dev/null 2>&1; then
     curl -fsSL https://claude.ai/install.sh | bash >&2
     PATH="$HOME/.local/bin:$PATH"
   fi
 
   if ! command -v claude >/dev/null 2>&1; then
-    log "could not install Claude Code (need npm or curl on PATH)"
+    log "could not install Claude Code (need curl on PATH)"
     exit 1
   fi
   log "Claude Code installed: $(claude --version 2>/dev/null || echo unknown)"
 }
 
+sanitize_tls_env
 ensure_claude
 exec env -u NODE_EXTRA_CA_CERTS claude --dangerously-skip-permissions "$@"
