@@ -102,13 +102,14 @@ prune_skill_links() {
 }
 
 WORKSPACE_SKILLS_DIR="${DOTFILES_SHARED_SKILLS_DIR:-/workspaces/.ai/skills}"
+REPO_SKILLS_DIR="${DOTFILES_REPO_SKILLS_DIR:-$DOTFILES_DIR/skills}"
 # ~/.agents/skills is the shared global location documented by Codex and
 # Copilot. Keep ~/.codex/skills for the installed Codex version, which already
 # uses it for bundled skills. The product-specific roots cover Claude/Copilot.
 for cli_skills_dir in "$HOME/.agents/skills" "$HOME/.claude/skills" "$HOME/.codex/skills" "$HOME/.copilot/skills"; do
   prune_skill_links "$cli_skills_dir"
   link_skill_children "$WORKSPACE_SKILLS_DIR" "$cli_skills_dir"
-  link_skill_children "$DOTFILES_DIR/skills" "$cli_skills_dir"
+  link_skill_children "$REPO_SKILLS_DIR" "$cli_skills_dir"
 done
 
 # Slash-command sources: /workspaces/.ai/commands is a flat dir of command

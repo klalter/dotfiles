@@ -11,15 +11,18 @@ set -uo pipefail
 SANDBOX="$(mktemp -d)"
 trap 'rm -rf "$SANDBOX"' EXIT
 SHARED_SKILLS="$SANDBOX/shared-skills"
+REPO_SKILLS="$SANDBOX/repo-skills"
 EXISTING_SKILL="$SANDBOX/existing-example-skill"
-mkdir -p "$SHARED_SKILLS/workspace-skill" "$SANDBOX/.codex/skills/bundled-skill" "$EXISTING_SKILL"
+mkdir -p "$SHARED_SKILLS/workspace-skill" "$REPO_SKILLS/example-skill" "$REPO_SKILLS/kyndryl-drawio-deck" "$SANDBOX/.codex/skills/bundled-skill" "$EXISTING_SKILL"
 printf '%s\n' '---' 'name: workspace-skill' 'description: A shared workspace test skill.' '---' >"$SHARED_SKILLS/workspace-skill/SKILL.md"
+printf '%s\n' '---' 'name: example-skill' 'description: A repo-local test skill.' '---' >"$REPO_SKILLS/example-skill/SKILL.md"
+printf '%s\n' '---' 'name: kyndryl-drawio-deck' 'description: A repo-local test skill.' '---' >"$REPO_SKILLS/kyndryl-drawio-deck/SKILL.md"
 printf '%s\n' '---' 'name: bundled-skill' 'description: A pre-existing Codex test skill.' '---' >"$SANDBOX/.codex/skills/bundled-skill/SKILL.md"
 printf '%s\n' '---' 'name: example-skill' 'description: A pre-existing linked test skill.' '---' >"$EXISTING_SKILL/SKILL.md"
 ln -s "$EXISTING_SKILL" "$SANDBOX/.codex/skills/example-skill"
 
 run_install() {
-  HOME="$SANDBOX" DOTFILES_NO_NETWORK=1 DOTFILES_SHARED_SKILLS_DIR="$SHARED_SKILLS" bash "$REPO_ROOT/install.sh"
+  HOME="$SANDBOX" DOTFILES_NO_NETWORK=1 DOTFILES_SHARED_SKILLS_DIR="$SHARED_SKILLS" DOTFILES_REPO_SKILLS_DIR="$REPO_SKILLS" bash "$REPO_ROOT/install.sh"
 }
 
 echo "[*] install.sh on a fresh HOME"
@@ -30,10 +33,10 @@ it "HOME/.bashrc gained the shell hook"
 assert_success "grep -qF 'shell/bashrc.sh' '$SANDBOX/.bashrc'"
 
 it "Claude discovers a dotfiles skill through its global skills directory"
-assert_eq "$REPO_ROOT/skills/example-skill" "$(readlink "$SANDBOX/.claude/skills/example-skill" 2>/dev/null)"
+assert_eq "$REPO_SKILLS/example-skill" "$(readlink "$SANDBOX/.claude/skills/example-skill" 2>/dev/null)"
 
 it "Codex discovers a dotfiles skill without replacing its existing skills directory"
-assert_eq "$REPO_ROOT/skills/kyndryl-drawio-deck" "$(readlink "$SANDBOX/.codex/skills/kyndryl-drawio-deck" 2>/dev/null)"
+assert_eq "$REPO_SKILLS/kyndryl-drawio-deck" "$(readlink "$SANDBOX/.codex/skills/kyndryl-drawio-deck" 2>/dev/null)"
 
 it "both CLIs discover a workspace-shared skill"
 assert_eq "$SHARED_SKILLS/workspace-skill" "$(readlink "$SANDBOX/.claude/skills/workspace-skill" 2>/dev/null)"
@@ -41,11 +44,11 @@ assert_eq "$SHARED_SKILLS/workspace-skill" "$(readlink "$SANDBOX/.codex/skills/w
 
 it "Codex and Copilot discover both sources through the shared agents root"
 assert_eq "$SHARED_SKILLS/workspace-skill" "$(readlink "$SANDBOX/.agents/skills/workspace-skill" 2>/dev/null)"
-assert_eq "$REPO_ROOT/skills/example-skill" "$(readlink "$SANDBOX/.agents/skills/example-skill" 2>/dev/null)"
+assert_eq "$REPO_SKILLS/example-skill" "$(readlink "$SANDBOX/.agents/skills/example-skill" 2>/dev/null)"
 
 it "Copilot discovers both sources through its global skills root"
 assert_eq "$SHARED_SKILLS/workspace-skill" "$(readlink "$SANDBOX/.copilot/skills/workspace-skill" 2>/dev/null)"
-assert_eq "$REPO_ROOT/skills/example-skill" "$(readlink "$SANDBOX/.copilot/skills/example-skill" 2>/dev/null)"
+assert_eq "$REPO_SKILLS/example-skill" "$(readlink "$SANDBOX/.copilot/skills/example-skill" 2>/dev/null)"
 
 it "pre-existing Codex skills are preserved"
 assert_file "$SANDBOX/.codex/skills/bundled-skill/SKILL.md"
@@ -90,7 +93,7 @@ assert_file "$SANDBOX/.claude/skills/example-skill/SKILL.md"
 
 echo "[*] install.sh is idempotent"
 it "second run exits 0"
-assert_success "HOME='$SANDBOX' DOTFILES_NO_NETWORK=1 bash '$REPO_ROOT/install.sh'"
+assert_success "HOME='$SANDBOX' DOTFILES_NO_NETWORK=1 DOTFILES_SHARED_SKILLS_DIR='$SHARED_SKILLS' DOTFILES_REPO_SKILLS_DIR='$REPO_SKILLS' bash '$REPO_ROOT/install.sh'"
 
 it "shell hook appears exactly once in .bashrc"
 assert_eq "1" "$(grep -cF 'shell/bashrc.sh' "$SANDBOX/.bashrc")"
