@@ -36,6 +36,25 @@ repo's own `CLAUDE.md` or `AGENTS.md`.
   Codespace so the global CLI skill directories refresh without rebooting.
   Codespaces also runs this refresh on every start.
 - Prefer small, focused commits with clear messages.
+- NEVER merge a pull request without Klalter's explicit approval of that
+  specific PR — even if branch protection or the API allows it, and even if
+  asked to "merge all". Open PRs, set the right base, get them review-ready,
+  then stop and hand the merge decision to Klalter.
+- NEVER push, merge, or force-push anything to `main`/`master` without
+  Klalter's explicit approval naming the exact repo and change. Work on
+  feature branches and land changes on protected branches only through PRs
+  that Klalter approves.
+- EXCEPTION — this dotfiles repo (`klalter/dotfiles`, the repo at
+  `$DOTFILES_DIR`): commit and push changes directly to `main`. It is
+  Klalter's personal repo; do NOT create intermediate feature branches or open
+  PRs for it. Committing straight to `main` here is standing, pre-approved.
+  This exception applies ONLY to the dotfiles repo — every Kyndryl/company
+  repo still follows the feature-branch-plus-PR rule above.
+- Always create commits with both author and committer set to
+  `Klalter De Abreu Santos <klalter@kyndryl.com>`. Before committing, verify
+  the effective Git identity and override stale repository, worktree, or
+  environment configuration. Never commit using another person's name or
+  email address.
 - Never add AI-assistance attribution to commits, commit messages, PR text, or
   generated files. Do not include lines such as `Co-authored-by`, `Generated
   with`, `Assisted by`, or tool names like Claude, Codex, or Copilot.
