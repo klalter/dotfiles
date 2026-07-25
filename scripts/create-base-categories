@@ -1,0 +1,194 @@
+#!/usr/bin/env bash
+#
+# Create the standard base categories on a BridgeFlow / POA controller.
+#
+# Creates: Test Interpreter, Operations, Provisioning, Policy, Demo KAS,
+# Demo GitHub. Existing categories (matched by display name) are skipped, so
+# the script is safe to re-run.
+#
+# Auth and env loading are delegated to the orchestration test-catalog repo's
+# lib/common.sh (which itself sources lib/apikey.sh). That repo stays the
+# single source of truth for token exchange; point at a different checkout
+# with ORCH_TEST_CATALOG_DIR.
+#
+# Usage:
+#   create-base-categories [OPTIONS]
+#
+# Options:
+#   -c, --controller URL    Controller URL (default: http://localhost:8081)
+#   -T, --tenant NAME       Tenant/account for the API key (e.g. dev, poadev)
+#   -S, --service-token     Use a service broker token instead of a user token
+#   -v, --verbose           Print raw response bodies on failure
+#   -h, --help              Show this help
+#
+# Examples:
+#   create-base-categories -T dev                        # local dev-shell, Dev account
+#   create-base-categories -T poadev -c https://host/poa/controller
+#
+# Note: uses `set -e` (not `-euo pipefail`) to match the semantics the sourced
+# library was written against; -u breaks common.sh.
+
+set -e
+
+ORCH_TEST_CATALOG_DIR="${ORCH_TEST_CATALOG_DIR:-/workspaces/orch/bdg-sw-auto-orch-test-catalog}"
+
+if [[ ! -f "$ORCH_TEST_CATALOG_DIR/lib/common.sh" ]]; then
+    echo "Error: cannot find lib/common.sh under $ORCH_TEST_CATALOG_DIR" >&2
+    echo "Set ORCH_TEST_CATALOG_DIR to your bdg-sw-auto-orch-test-catalog checkout." >&2
+    exit 1
+fi
+
+export E2E_SCRIPT_DIR="$ORCH_TEST_CATALOG_DIR"
+source "$ORCH_TEST_CATALOG_DIR/lib/common.sh"
+
+USER_CONTROLLER_URL=""
+USE_USER_TOKEN="true"
+VERBOSE=""
+REQUESTED_TENANT=""
+
+log_info() { echo -e "${BLUE}i${NC} $*"; }
+log_success() { echo -e "${GREEN}+${NC} $*"; }
+log_warning() { echo -e "${YELLOW}!${NC} $*"; }
+log_error() { echo -e "${RED}x${NC} $*"; }
+
+show_help() { sed -n '3,29p' "$0"; exit 0; }
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -c|--controller) USER_CONTROLLER_URL="$2"; shift 2 ;;
+        -T|--tenant) REQUESTED_TENANT="$2"; shift 2 ;;
+        -S|--service-token) USE_USER_TOKEN=""; shift ;;
+        -v|--verbose) VERBOSE=1; shift ;;
+        -h|--help) show_help ;;
+        *) log_error "Unknown option: $1"; exit 1 ;;
+    esac
+done
+
+load_env
+
+if [[ -z "${TOKEN:-}" ]]; then
+    if [[ -n "$USE_USER_TOKEN" ]]; then
+        log_info "Using USER_TOKEN mode (API Key authentication)"
+        TOKEN=$(get_user_token "$REQUESTED_TENANT")
+    else
+        log_info "Using SERVICE_TOKEN mode (Service Broker authentication)"
+        TOKEN=$(get_service_token)
+    fi
+
+    # Re-extract tenant info (the subshell above loses globals).
+    if [[ -n "$TOKEN" && "$TOKEN" != "null" ]]; then
+        extract_tenant_from_jwt "$TOKEN"
+    fi
+
+    if [[ -z "$TOKEN" || "$TOKEN" == "null" ]]; then
+        log_error "Failed to get authentication token"
+        log_error "Ensure APIKEY is set in .env or use -T <tenant>"
+        exit 1
+    fi
+fi
+
+if [[ -n "$USER_CONTROLLER_URL" ]]; then
+    CONTROLLER_URL="$USER_CONTROLLER_URL"
+else
+    CONTROLLER_URL="${CONTROLLER_LOCAL_URL:-http://localhost:8081}"
+fi
+
+# Resolve tenant ID for the DASH-IAM-Tenant header; fall back to the
+# dev-shell Dev mock account.
+TENANT_HEADER_VALUE=""
+if [[ -n "${TOKEN:-}" ]]; then
+    jwt_payload=$(echo "$TOKEN" | cut -d. -f2 | base64 -d 2>/dev/null || echo "{}")
+    TENANT_HEADER_VALUE=$(echo "$jwt_payload" | jq -r '.account_id // .tenant_id // .tenantId // .tenant // empty' 2>/dev/null)
+fi
+if [[ -z "$TENANT_HEADER_VALUE" ]]; then
+    TENANT_HEADER_VALUE="507f1f77bcf86cd799439011"
+fi
+
+log_info "Controller URL: $CONTROLLER_URL"
+log_info "Tenant: $TENANT_HEADER_VALUE"
+echo ""
+
+log_info "Testing connectivity..."
+health_response=$(curl -s -w "%{http_code}" --connect-timeout 5 "${CONTROLLER_URL}/health" 2>/dev/null || echo "000")
+health_code="${health_response: -3}"
+
+if [[ "$health_code" == "000" ]]; then
+    log_error "Cannot connect to controller at $CONTROLLER_URL"
+    exit 1
+elif [[ "$health_code" != "200" ]]; then
+    log_warning "Health check returned HTTP $health_code (continuing anyway)"
+fi
+log_success "Connected to controller"
+echo ""
+
+declare -a CATEGORIES=(
+    '{"name": "test-interpreter", "display_name": "Test Interpreter", "description": "DSL interpreter test cases for automation validation", "display_order": 0}'
+    '{"name": "operations", "display_name": "Operations", "description": "Operations category for operational automations", "display_order": 1}'
+    '{"name": "provisioning", "display_name": "Provisioning", "description": "Provisioning category for infrastructure provisioning", "display_order": 2}'
+    '{"name": "policy", "display_name": "Policy", "description": "OPA policy bundles for policy-as-code evaluation and governance", "display_order": 5}'
+    '{"name": "demo-kas", "display_name": "Demo KAS", "description": "KAS demo phases - VM provisioning with change management broken into independent phases", "display_order": 10}'
+    '{"name": "demo-github", "display_name": "Demo GitHub", "description": "GitHub Actions showcase demos - workflow-driven provisioning and orchestration patterns", "display_order": 12}'
+)
+
+log_info "Creating base categories..."
+echo ""
+
+created=0
+skipped=0
+failed=0
+
+for category_json in "${CATEGORIES[@]}"; do
+    name=$(echo "$category_json" | jq -r '.display_name')
+
+    existing=$(curl -s --connect-timeout 5 "${CONTROLLER_URL}/v1/catalog/categories" \
+        -H "Authorization: Bearer $TOKEN" \
+        -H "Content-Type: application/json" \
+        -H "DASH-IAM-Tenant: $TENANT_HEADER_VALUE" 2>/dev/null | jq -r ".data[] | select(.display_name == \"$name\") | .id" 2>/dev/null || echo "")
+
+    if [[ -n "$existing" ]]; then
+        log_warning "Category '$name' already exists (id: $existing)"
+        skipped=$((skipped + 1))
+        continue
+    fi
+
+    response=$(curl -s -w "\n%{http_code}" --connect-timeout 10 "${CONTROLLER_URL}/v1/catalog/categories" \
+        -H "Authorization: Bearer $TOKEN" \
+        -H "Content-Type: application/json" \
+        -H "DASH-IAM-Tenant: $TENANT_HEADER_VALUE" \
+        -d "$category_json" 2>/dev/null || echo -e "\n000")
+
+    http_code=$(echo "$response" | tail -1)
+    body=$(echo "$response" | head -n -1)
+
+    if [[ "$http_code" == "200" || "$http_code" == "201" ]]; then
+        id=$(echo "$body" | jq -r '.id // "unknown"')
+        log_success "Created category '$name' (id: $id)"
+        created=$((created + 1))
+    elif [[ "$http_code" == "000" ]]; then
+        log_error "Failed to create '$name': Connection failed"
+        failed=$((failed + 1))
+    else
+        error=$(echo "$body" | jq -r '.message // .error // .errors // "Unknown error"' 2>/dev/null || echo "$body")
+        log_error "Failed to create '$name': $error (HTTP $http_code)"
+        [[ -n "$VERBOSE" ]] && echo "$body"
+        failed=$((failed + 1))
+    fi
+done
+
+echo ""
+log_info "Summary: $created created, $skipped skipped, $failed failed"
+echo ""
+
+log_info "Listing all categories:"
+curl -s --connect-timeout 5 "${CONTROLLER_URL}/v1/catalog/categories" \
+    -H "Authorization: Bearer $TOKEN" \
+    -H "DASH-IAM-Tenant: $TENANT_HEADER_VALUE" 2>/dev/null | jq '.data[] | {id, name, display_name, display_order}' 2>/dev/null || log_error "Failed to list categories"
+
+echo ""
+if [[ $failed -eq 0 ]]; then
+    log_success "Done!"
+    exit 0
+else
+    log_error "Completed with $failed errors"
+    exit 1
+fi
