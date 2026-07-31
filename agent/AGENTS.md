@@ -59,6 +59,32 @@ repo's own `CLAUDE.md` or `AGENTS.md`.
   generated files. Do not include lines such as `Co-authored-by`, `Generated
   with`, `Assisted by`, or tool names like Claude, Codex, or Copilot.
 
+## Always link repo references
+
+Whenever a reply names a repository, make it a clickable markdown link so it can
+be opened directly. This applies to fully-qualified names (`kyndryl-cto/bdg-eng-tops-techops-bom-input`)
+and to bare ones (`bdg-eng-tops-techops-bom-input`) alike — a bare `bdg-*` or
+`bdg-sw-*` name means the `kyndryl-cto` org unless another org is stated.
+
+| Referring to | Link to |
+| --- | --- |
+| a repo | `https://github.com/<org>/<repo>` |
+| a pull request | `…/<repo>/pull/<n>` |
+| an issue | `…/<repo>/issues/<n>` |
+| a branch | `…/<repo>/tree/<branch>` |
+| a file | `…/<repo>/blob/<branch>/<path>` |
+| a file at a line | `…/<repo>/blob/<branch>/<path>#L<n>` |
+| a workflow run | `…/<repo>/actions/runs/<id>` |
+
+Keep the visible text as the name itself — `[bdg-eng-tops-techops-bom-input](https://github.com/kyndryl-cto/bdg-eng-tops-techops-bom-input)`,
+not a bare URL. Prefer the deepest link the context supports: cite a file rather
+than its repo, a line rather than its file. In tables and lists, link the entry;
+when one repo recurs many times in a single reply, linking its first mention per
+section is enough.
+
+Local checkout paths (`/workspaces/...`, worktrees under `/workspaces/.wt/...`)
+stay plain — they are filesystem paths, not repo references.
+
 ---
 
 # Working inside a herdr session
