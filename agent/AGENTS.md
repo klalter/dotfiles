@@ -36,20 +36,33 @@ repo's own `CLAUDE.md` or `AGENTS.md`.
   Codespace so the global CLI skill directories refresh without rebooting.
   Codespaces also runs this refresh on every start.
 - Prefer small, focused commits with clear messages.
+- **NEVER merge a pull request whose base is `main` or `master` without a
+  CLEAR, explicit approval from Klalter for that specific PR.** "Clear" means
+  he named the PR (number, title, or unmistakable context) and said to merge
+  it. It is NOT clear approval when: he approved a different PR earlier; he
+  told you to open, prepare, or fix the PR; he said "go ahead" about the work
+  rather than the merge; a standing instruction lets you merge elsewhere; CI
+  is green; branch protection or `--admin` would allow it; or you believe the
+  change is obviously safe and time-critical. When in doubt, do NOT merge:
+  leave the PR review-ready and say it is waiting on his merge decision.
+  Merging a `main`/`master` PR without that approval is never recoverable by
+  explaining it afterwards.
 - NEVER merge a pull request without Klalter's explicit approval of that
-  specific PR — even if branch protection or the API allows it, and even if
-  asked to "merge all". Open PRs, set the right base, get them review-ready,
-  then stop and hand the merge decision to Klalter.
+  specific PR — even if asked to "merge all". Open PRs, set the right base,
+  get them review-ready, then stop and hand the merge decision to Klalter.
 - NEVER push, merge, or force-push anything to `main`/`master` without
   Klalter's explicit approval naming the exact repo and change. Work on
   feature branches and land changes on protected branches only through PRs
   that Klalter approves.
 - EXCEPTION — this dotfiles repo (`klalter/dotfiles`, the repo at
-  `$DOTFILES_DIR`): commit and push changes directly to `main`. It is
+  `$DOTFILES_DIR`): commit and push changes directly to `main`, and do it
+  AUTOMATICALLY on every update to this repo — as soon as a change here is
+  made, commit and push it to `main` in the same turn, without asking. It is
   Klalter's personal repo; do NOT create intermediate feature branches or open
   PRs for it. Committing straight to `main` here is standing, pre-approved.
   This exception applies ONLY to the dotfiles repo — every Kyndryl/company
-  repo still follows the feature-branch-plus-PR rule above.
+  repo still follows the feature-branch-plus-PR rule and the `main`/`master`
+  merge prohibition above.
 - Always create commits with both author and committer set to
   `Klalter De Abreu Santos <klalter@kyndryl.com>`. Before committing, verify
   the effective Git identity and override stale repository, worktree, or
