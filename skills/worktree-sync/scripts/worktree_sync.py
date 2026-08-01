@@ -427,11 +427,21 @@ def cmd_commit(args):
     do_commit(args.message, args.dry_run)
 
 
+def project_env():
+    """gh env with the Codespace tokens stripped.
+
+    The Codespace exports GH_TOKEN and GITHUB_TOKEN, and both take priority over
+    the token in hosts.yml — so after `gh auth refresh -s project` the refreshed,
+    correctly-scoped token is ignored unless they are unset for the call.
+    """
+    return {k: v for k, v in os.environ.items() if k not in ("GH_TOKEN", "GITHUB_TOKEN")}
+
+
 def cmd_project(args):
     """GitHub Projects v2 sync — gated on an OAuth scope nothing here has yet."""
     probe = subprocess.run(
         ["gh", "api", "graphql", "-f", "query=query{viewer{projectsV2(first:1){nodes{id}}}}"],
-        capture_output=True, text=True)
+        capture_output=True, text=True, env=project_env())
     if probe.returncode or "INSUFFICIENT_SCOPES" in probe.stdout + probe.stderr:
         sys.exit(PROJECT_SCOPE_HINT)
     sys.exit(
