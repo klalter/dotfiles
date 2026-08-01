@@ -8,3 +8,7 @@ package-lock.json
 yarn.lock
 pnpm-lock.yaml
 installation_id
+
+# Python bytecode — never commit
+__pycache__/
+*.pyc

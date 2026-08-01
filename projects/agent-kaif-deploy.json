@@ -1,0 +1,743 @@
+{
+  "branches": {},
+  "branches_no_pr": [
+    "kyndryl-agentic-ai/bdg-sw-agents-actionable-insights-agent-agentvisor-test:klalter/chatops-test",
+    "kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test:release-2026.07.28",
+    "kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test:test/channel-lift-28jul",
+    "kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test:wt-agentvisor-build",
+    "kyndryl-agentic-ai/bdg-sw-agents-debugging-remediation-v2:test/agentvisor-build",
+    "kyndryl-agentic-ai/bdg-sw-agents-it-modernization-agent-v2-agentvisor-test:test/agentvisor-build",
+    "kyndryl-agentic-ai/bdg-sw-agents-it-modernization-agent-v2-agentvisor-test:wt-agentvisor-build",
+    "kyndryl-agentic-ai/bdg-sw-agents-quality-parameter-check:test/agentvisor-build",
+    "kyndryl-agentic-ai/bdg-sw-agents-quality-parameter-check:wt-a3",
+    "kyndryl-agentic-ai/bdg-sw-agents-rca-auto-generation:test/agentvisor-build",
+    "kyndryl-agentic-ai/bdg-sw-aifn-change-request-risk-assessment:test/agentvisor-build",
+    "kyndryl-agentic-ai/bridge-kaif-reusable-workflows:feat/pdp-bundle-identifier",
+    "kyndryl-cto/bdg-sw-aifn-agent-registry:feat/pdp-bundle-identifier",
+    "kyndryl-cto/bdg-sw-aifn-jobengine:klalter/temp-test",
+    "kyndryl-cto/bdg-sw-auto-orch-helm-chart:klalter/temp-test",
+    "kyndryl-cto/bdg-sw-plcy-kyn-base:demo/chatops-deny",
+    "kyndryl-cto/bdg-sw-plcy-kyn-base:klalter/temp-test",
+    "kyndryl-cto/bdg-sw-plcy-kyn-base:stage",
+    "kyndryl-cto/bdg-sw-plcy-policy-service:klalter/temp-test"
+  ],
+  "exclude_prs": [],
+  "extra_prs": [],
+  "generated_at": "2026-08-01T20:17:16Z",
+  "lane": "feat",
+  "name": "agent-kaif-deploy",
+  "notes": [
+    "Base branches per the worktree CLAUDE.md: bridge-kaif-reusable-workflows targets agentvisortest, NOT main."
+  ],
+  "prs": [
+    {
+      "checks": "SUCCESS",
+      "created": "2026-07-23",
+      "draft": false,
+      "head": "fix/porting-agent-data",
+      "key": "kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test#9",
+      "number": 9,
+      "repo": "kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test",
+      "review": "REVIEW_REQUIRED",
+      "state": "OPEN",
+      "status": "Open",
+      "title": "fix(input): share platform-input normalization with the wrapped (AgentVisor) path",
+      "url": "https://github.com/kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test/pull/9"
+    },
+    {
+      "checks": "",
+      "created": "2026-07-27",
+      "draft": false,
+      "head": "fix/hitl-async-node-sync-bridge",
+      "key": "kyndryl-agentic-ai/bridge-kaif-reusable-workflows#33",
+      "number": 33,
+      "repo": "kyndryl-agentic-ai/bridge-kaif-reusable-workflows",
+      "review": "",
+      "state": "MERGED",
+      "status": "Merged",
+      "title": "fix(hitl): let async agent nodes run under AgentVisor's sync graph runner",
+      "url": "https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/33"
+    },
+    {
+      "checks": "",
+      "created": "2026-07-28",
+      "draft": false,
+      "head": "fix/klalter-28-jul",
+      "key": "kyndryl-agentic-ai/bridge-kaif-reusable-workflows#34",
+      "number": 34,
+      "repo": "kyndryl-agentic-ai/bridge-kaif-reusable-workflows",
+      "review": "",
+      "state": "MERGED",
+      "status": "Merged",
+      "title": "fix(input): lift ChatOps channel into content (fill-only) for wrapped agents",
+      "url": "https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/34"
+    },
+    {
+      "checks": "",
+      "created": "2026-07-28",
+      "draft": false,
+      "head": "feat/agentvisor-v0.5.0-55.202",
+      "key": "kyndryl-agentic-ai/bridge-kaif-reusable-workflows#35",
+      "number": 35,
+      "repo": "kyndryl-agentic-ai/bridge-kaif-reusable-workflows",
+      "review": "",
+      "state": "MERGED",
+      "status": "Merged",
+      "title": "chore(agentvisor): bump default AgentVisor release to v0.5.0-55.202",
+      "url": "https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/35"
+    },
+    {
+      "checks": "",
+      "created": "2026-07-28",
+      "draft": false,
+      "head": "fix/query-alias-28jul",
+      "key": "kyndryl-agentic-ai/bridge-kaif-reusable-workflows#36",
+      "number": 36,
+      "repo": "kyndryl-agentic-ai/bridge-kaif-reusable-workflows",
+      "review": "",
+      "state": "MERGED",
+      "status": "Merged",
+      "title": "fix(input): add top-level query alias of content to the run-input envelope",
+      "url": "https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/36"
+    },
+    {
+      "checks": "",
+      "created": "2026-07-31",
+      "draft": false,
+      "head": "fix/wrapper-updates",
+      "key": "kyndryl-agentic-ai/bridge-kaif-reusable-workflows#37",
+      "number": 37,
+      "repo": "kyndryl-agentic-ai/bridge-kaif-reusable-workflows",
+      "review": "",
+      "state": "MERGED",
+      "status": "Merged",
+      "title": "fix(agentvisor): accept the transparent-passthrough envelope in wrapped-agent input",
+      "url": "https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/37"
+    },
+    {
+      "checks": "",
+      "created": "2026-07-31",
+      "draft": false,
+      "head": "fix/hitl-wrapper-updates",
+      "key": "kyndryl-agentic-ai/bridge-kaif-reusable-workflows#38",
+      "number": 38,
+      "repo": "kyndryl-agentic-ai/bridge-kaif-reusable-workflows",
+      "review": "",
+      "state": "MERGED",
+      "status": "Merged",
+      "title": "fix(agentvisor): HITL under transparent passthrough \u2014 graph envelope mapping + string resume normalization",
+      "url": "https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/38"
+    },
+    {
+      "checks": "",
+      "created": "2026-07-31",
+      "draft": false,
+      "head": "fix/hitl-wrapper-updates",
+      "key": "kyndryl-agentic-ai/bridge-kaif-reusable-workflows#39",
+      "number": 39,
+      "repo": "kyndryl-agentic-ai/bridge-kaif-reusable-workflows",
+      "review": "",
+      "state": "MERGED",
+      "status": "Merged",
+      "title": "fix(agentvisor): activate the SDK workflow runtime on the wrapped-graph path",
+      "url": "https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/39"
+    },
+    {
+      "checks": "",
+      "created": "2026-08-01",
+      "draft": false,
+      "head": "feat/memory-host-relay",
+      "key": "kyndryl-agentic-ai/bridge-kaif-reusable-workflows#40",
+      "number": 40,
+      "repo": "kyndryl-agentic-ai/bridge-kaif-reusable-workflows",
+      "review": "",
+      "state": "MERGED",
+      "status": "Merged",
+      "title": "feat(agentvisor): carry long-term memory over the host relay \u2014 the guest cannot dial Postgres",
+      "url": "https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/40"
+    },
+    {
+      "checks": "",
+      "created": "2026-08-01",
+      "draft": false,
+      "head": "fix/invoke-run-poll",
+      "key": "kyndryl-agentic-ai/bridge-kaif-reusable-workflows#41",
+      "number": 41,
+      "repo": "kyndryl-agentic-ai/bridge-kaif-reusable-workflows",
+      "review": "",
+      "state": "MERGED",
+      "status": "Merged",
+      "title": "fix(agentvisor): poll the run record instead of betting the step on one long-held connection",
+      "url": "https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/41"
+    },
+    {
+      "checks": "",
+      "created": "2026-07-23",
+      "draft": false,
+      "head": "feat/hitl-agentvisor-v2",
+      "key": "kyndryl-cto/bdg-sw-aifn-agent-registry#247",
+      "number": 247,
+      "repo": "kyndryl-cto/bdg-sw-aifn-agent-registry",
+      "review": "",
+      "state": "MERGED",
+      "status": "Merged",
+      "title": "Re-land HITL AgentVisor daemon flow + input passthrough, fixed per 07-23 E2E",
+      "url": "https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/247"
+    },
+    {
+      "checks": "",
+      "created": "2026-07-28",
+      "draft": false,
+      "head": "feat/hitl-agentvisor-v3",
+      "key": "kyndryl-cto/bdg-sw-aifn-agent-registry#255",
+      "number": 255,
+      "repo": "kyndryl-cto/bdg-sw-aifn-agent-registry",
+      "review": "",
+      "state": "MERGED",
+      "status": "Merged",
+      "title": "fix(checkpointer): re-land HITL AgentVisor daemon flow (revert of #248)",
+      "url": "https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/255"
+    },
+    {
+      "checks": "SUCCESS",
+      "created": "2026-07-28",
+      "draft": false,
+      "head": "feat/agentvisor-license-guardrail",
+      "key": "kyndryl-cto/bdg-sw-aifn-agent-registry#256",
+      "number": 256,
+      "repo": "kyndryl-cto/bdg-sw-aifn-agent-registry",
+      "review": "REVIEW_REQUIRED",
+      "state": "OPEN",
+      "status": "Open",
+      "title": "feat(agentvisor): warn when the license key is a literal catalog value (open item 12)",
+      "url": "https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/256"
+    },
+    {
+      "checks": "",
+      "created": "2026-07-28",
+      "draft": false,
+      "head": "fix/klalter-28-jul",
+      "key": "kyndryl-cto/bdg-sw-aifn-agent-registry#258",
+      "number": 258,
+      "repo": "kyndryl-cto/bdg-sw-aifn-agent-registry",
+      "review": "",
+      "state": "CLOSED",
+      "status": "Closed",
+      "title": "fix(input): lift ChatOps channel into content (fill-only) in the invoke jq",
+      "url": "https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/258"
+    },
+    {
+      "checks": "",
+      "created": "2026-07-31",
+      "draft": false,
+      "head": "fix/hitl-resume-input",
+      "key": "kyndryl-cto/bdg-sw-aifn-agent-registry#269",
+      "number": 269,
+      "repo": "kyndryl-cto/bdg-sw-aifn-agent-registry",
+      "review": "",
+      "state": "MERGED",
+      "status": "Merged",
+      "title": "fix: HITL resume input must be a JSON object",
+      "url": "https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/269"
+    },
+    {
+      "checks": "",
+      "created": "2026-07-31",
+      "draft": false,
+      "head": "fix/agentvisor-guest-memory-env",
+      "key": "kyndryl-cto/bdg-sw-aifn-agent-registry#271",
+      "number": 271,
+      "repo": "kyndryl-cto/bdg-sw-aifn-agent-registry",
+      "review": "",
+      "state": "MERGED",
+      "status": "Merged",
+      "title": "fix(agentvisor): hand the platform-default Postgres env (memory/system/account) to the guest as platform.env",
+      "url": "https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/271"
+    },
+    {
+      "checks": "",
+      "created": "2026-07-31",
+      "draft": false,
+      "head": "fix/hitl-resume-suspend-race",
+      "key": "kyndryl-cto/bdg-sw-aifn-agent-registry#272",
+      "number": 272,
+      "repo": "kyndryl-cto/bdg-sw-aifn-agent-registry",
+      "review": "",
+      "state": "MERGED",
+      "status": "Merged",
+      "title": "fix(hitl): pre-existing resume race condition \u2014 verify the resume actually lifted the Argo suspend node, re-issue until it does",
+      "url": "https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/272"
+    },
+    {
+      "checks": "",
+      "created": "2026-08-01",
+      "draft": false,
+      "head": "feat/sidecar-memory-env",
+      "key": "kyndryl-cto/bdg-sw-aifn-agent-registry#273",
+      "number": 273,
+      "repo": "kyndryl-cto/bdg-sw-aifn-agent-registry",
+      "review": "",
+      "state": "MERGED",
+      "status": "Merged",
+      "title": "feat(agentvisor): hand the host-services sidecar the MEMORY_POSTGRES_* coordinates",
+      "url": "https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/273"
+    },
+    {
+      "checks": "",
+      "created": "2026-08-01",
+      "draft": false,
+      "head": "fix/sidecar-memory-resources",
+      "key": "kyndryl-cto/bdg-sw-aifn-agent-registry#274",
+      "number": 274,
+      "repo": "kyndryl-cto/bdg-sw-aifn-agent-registry",
+      "review": "",
+      "state": "MERGED",
+      "status": "Merged",
+      "title": "fix(agentvisor): size the host-services sidecar for the memory relay workload",
+      "url": "https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/274"
+    },
+    {
+      "checks": "",
+      "created": "2026-08-01",
+      "draft": false,
+      "head": "fix/invoke-run-poll",
+      "key": "kyndryl-cto/bdg-sw-aifn-agent-registry#275",
+      "number": 275,
+      "repo": "kyndryl-cto/bdg-sw-aifn-agent-registry",
+      "review": "",
+      "state": "MERGED",
+      "status": "Merged",
+      "title": "fix(agentvisor): poll the run record in the plain invoke leg instead of one long-held connection",
+      "url": "https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/275"
+    },
+    {
+      "checks": "SUCCESS",
+      "created": "2026-07-21",
+      "draft": false,
+      "head": "feat/langfuse-provider",
+      "key": "kyndryl-cto/bdg-sw-aifn-common-services-gateway#79",
+      "number": 79,
+      "repo": "kyndryl-cto/bdg-sw-aifn-common-services-gateway",
+      "review": "APPROVED",
+      "state": "OPEN",
+      "status": "Approved",
+      "title": "feat(connections): register langfuse provider",
+      "url": "https://github.com/kyndryl-cto/bdg-sw-aifn-common-services-gateway/pull/79"
+    },
+    {
+      "checks": "",
+      "created": "2026-07-28",
+      "draft": false,
+      "head": "feat/grafana-generic-log-tools",
+      "key": "kyndryl-cto/bdg-sw-auto-dev-shell-mcp#6",
+      "number": 6,
+      "repo": "kyndryl-cto/bdg-sw-auto-dev-shell-mcp",
+      "review": "",
+      "state": "MERGED",
+      "status": "Merged",
+      "title": "feat(grafana): generic log retrieval for services and agent workloads",
+      "url": "https://github.com/kyndryl-cto/bdg-sw-auto-dev-shell-mcp/pull/6"
+    },
+    {
+      "checks": "",
+      "created": "2026-07-29",
+      "draft": false,
+      "head": "feat/updates-kaif-tests",
+      "key": "kyndryl-cto/bdg-sw-auto-dev-shell-mcp#9",
+      "number": 9,
+      "repo": "kyndryl-cto/bdg-sw-auto-dev-shell-mcp",
+      "review": "",
+      "state": "MERGED",
+      "status": "Merged",
+      "title": "feat(kaif): catalog/deployment lifecycle tools, wait helper and CLI",
+      "url": "https://github.com/kyndryl-cto/bdg-sw-auto-dev-shell-mcp/pull/9"
+    },
+    {
+      "checks": "",
+      "created": "2026-07-29",
+      "draft": false,
+      "head": "feat/iam-authz-tools",
+      "key": "kyndryl-cto/bdg-sw-auto-dev-shell-mcp#10",
+      "number": 10,
+      "repo": "kyndryl-cto/bdg-sw-auto-dev-shell-mcp",
+      "review": "",
+      "state": "MERGED",
+      "status": "Merged",
+      "title": "feat(iam): access-policy, serviceid, and API-key management tools",
+      "url": "https://github.com/kyndryl-cto/bdg-sw-auto-dev-shell-mcp/pull/10"
+    },
+    {
+      "checks": "",
+      "created": "2026-07-30",
+      "draft": false,
+      "head": "feat/grafana-generic-log-tools",
+      "key": "kyndryl-cto/bdg-sw-auto-dev-shell-mcp#11",
+      "number": 11,
+      "repo": "kyndryl-cto/bdg-sw-auto-dev-shell-mcp",
+      "review": "",
+      "state": "CLOSED",
+      "status": "Closed",
+      "title": "feat: Grafana/Loki log tools and policy bundle category on create",
+      "url": "https://github.com/kyndryl-cto/bdg-sw-auto-dev-shell-mcp/pull/11"
+    },
+    {
+      "checks": "",
+      "created": "2026-07-21",
+      "draft": false,
+      "head": "feat/langfuse-connection",
+      "key": "kyndryl-cto/bdg-sw-base-foundation-connections-metadata#264",
+      "number": 264,
+      "repo": "kyndryl-cto/bdg-sw-base-foundation-connections-metadata",
+      "review": "",
+      "state": "MERGED",
+      "status": "Merged",
+      "title": "feat(connections): add Langfuse connection metadata",
+      "url": "https://github.com/kyndryl-cto/bdg-sw-base-foundation-connections-metadata/pull/264"
+    },
+    {
+      "checks": "",
+      "created": "2026-07-28",
+      "draft": false,
+      "head": "feat/chatops-egress-permanent",
+      "key": "kyndryl-cto/bdg-sw-plcy-kyn-base#5",
+      "number": 5,
+      "repo": "kyndryl-cto/bdg-sw-plcy-kyn-base",
+      "review": "",
+      "state": "MERGED",
+      "status": "Merged",
+      "title": "feat(kyn-base): promote ChatOps egress allow to a scoped permanent rule",
+      "url": "https://github.com/kyndryl-cto/bdg-sw-plcy-kyn-base/pull/5"
+    },
+    {
+      "checks": "",
+      "created": "2026-07-28",
+      "draft": false,
+      "head": "feat/manetu-egress-allow",
+      "key": "kyndryl-cto/bdg-sw-plcy-kyn-base#6",
+      "number": 6,
+      "repo": "kyndryl-cto/bdg-sw-plcy-kyn-base",
+      "review": "",
+      "state": "MERGED",
+      "status": "Merged",
+      "title": "feat(egress): allow Cryptolens license + Azure OpenAI for Manetu-Policy-Test tenant",
+      "url": "https://github.com/kyndryl-cto/bdg-sw-plcy-kyn-base/pull/6"
+    },
+    {
+      "checks": "",
+      "created": "2026-08-01",
+      "draft": false,
+      "head": "feat/egress-platform-postgres",
+      "key": "kyndryl-cto/bdg-sw-plcy-kyn-base#8",
+      "number": 8,
+      "repo": "kyndryl-cto/bdg-sw-plcy-kyn-base",
+      "review": "",
+      "state": "MERGED",
+      "status": "Merged",
+      "title": "feat(egress): allow AgentVisor guest egress to the platform Postgres servers (5432)",
+      "url": "https://github.com/kyndryl-cto/bdg-sw-plcy-kyn-base/pull/8"
+    }
+  ],
+  "repos": [
+    {
+      "ahead": 6,
+      "base": "main",
+      "behind": 0,
+      "branch": "klalter/chatops-test",
+      "dir": "bdg-sw-agents-actionable-insights-agent-agentvisor-test",
+      "dirty": false,
+      "last_commit": {
+        "date": "2026-07-29T23:33:51Z",
+        "sha": "4d107f8",
+        "subject": "test(chatops): accept synthetic_data flag from the content block"
+      },
+      "prs": [],
+      "slug": "kyndryl-agentic-ai/bdg-sw-agents-actionable-insights-agent-agentvisor-test"
+    },
+    {
+      "ahead": 16,
+      "base": "main",
+      "behind": 1,
+      "branch": "wt-agentvisor-build",
+      "dir": "bdg-sw-agents-autonomous-doc-creation-agentvisor-test",
+      "dirty": false,
+      "last_commit": {
+        "date": "2026-07-31T02:22:00Z",
+        "sha": "d6966a0",
+        "subject": "ci: rebuild with reusable-workflows@agentvisortest (wrapper passthrough fix merged)"
+      },
+      "prs": [
+        "kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test#9"
+      ],
+      "slug": "kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test"
+    },
+    {
+      "ahead": 1,
+      "base": "main",
+      "behind": 0,
+      "branch": "test/agentvisor-build",
+      "dir": "bdg-sw-agents-debugging-remediation-v2",
+      "dirty": false,
+      "last_commit": {
+        "date": "2026-07-29T00:49:23Z",
+        "sha": "702eea5",
+        "subject": "ci(test): build via the AgentVisor orchestrator @agentvisortest"
+      },
+      "prs": [],
+      "slug": "kyndryl-agentic-ai/bdg-sw-agents-debugging-remediation-v2"
+    },
+    {
+      "ahead": 20,
+      "base": "main",
+      "behind": 2,
+      "branch": "wt-agentvisor-build",
+      "dir": "bdg-sw-agents-it-modernization-agent-v2-agentvisor-test",
+      "dirty": false,
+      "last_commit": {
+        "date": "2026-08-01T03:38:28Z",
+        "sha": "4237944",
+        "subject": "ci: exempt CVE-2026-23949/2025-47273/2026-57585 (second 01-Aug Xray base-layer batch)"
+      },
+      "prs": [],
+      "slug": "kyndryl-agentic-ai/bdg-sw-agents-it-modernization-agent-v2-agentvisor-test"
+    },
+    {
+      "ahead": 3,
+      "base": "main",
+      "behind": 0,
+      "branch": "wt-a3",
+      "dir": "bdg-sw-agents-quality-parameter-check",
+      "dirty": false,
+      "last_commit": {
+        "date": "2026-08-01T19:55:33Z",
+        "sha": "e93978d",
+        "subject": "ci: exempt the 01-Aug AgentVisor base-layer CVE batch"
+      },
+      "prs": [],
+      "slug": "kyndryl-agentic-ai/bdg-sw-agents-quality-parameter-check"
+    },
+    {
+      "ahead": 1,
+      "base": "main",
+      "behind": 0,
+      "branch": "test/agentvisor-build",
+      "dir": "bdg-sw-agents-rca-auto-generation",
+      "dirty": false,
+      "last_commit": {
+        "date": "2026-07-29T00:49:24Z",
+        "sha": "2f0da7a",
+        "subject": "ci(test): build via the AgentVisor orchestrator @agentvisortest"
+      },
+      "prs": [],
+      "slug": "kyndryl-agentic-ai/bdg-sw-agents-rca-auto-generation"
+    },
+    {
+      "ahead": 1,
+      "base": "main",
+      "behind": 1,
+      "branch": "fix/invoke-run-poll",
+      "dir": "bdg-sw-aifn-agent-registry",
+      "dirty": false,
+      "last_commit": {
+        "date": "2026-08-01T17:16:47Z",
+        "sha": "ff6d55b",
+        "subject": "fix(agentvisor): poll the run record in the plain invoke leg instead of one long-held connection"
+      },
+      "prs": [
+        "kyndryl-cto/bdg-sw-aifn-agent-registry#247",
+        "kyndryl-cto/bdg-sw-aifn-agent-registry#255",
+        "kyndryl-cto/bdg-sw-aifn-agent-registry#256",
+        "kyndryl-cto/bdg-sw-aifn-agent-registry#258",
+        "kyndryl-cto/bdg-sw-aifn-agent-registry#269",
+        "kyndryl-cto/bdg-sw-aifn-agent-registry#271",
+        "kyndryl-cto/bdg-sw-aifn-agent-registry#272",
+        "kyndryl-cto/bdg-sw-aifn-agent-registry#273",
+        "kyndryl-cto/bdg-sw-aifn-agent-registry#274",
+        "kyndryl-cto/bdg-sw-aifn-agent-registry#275"
+      ],
+      "slug": "kyndryl-cto/bdg-sw-aifn-agent-registry"
+    },
+    {
+      "ahead": 1,
+      "base": "main",
+      "behind": 0,
+      "branch": "test/agentvisor-build",
+      "dir": "bdg-sw-aifn-change-request-risk-assessment",
+      "dirty": false,
+      "last_commit": {
+        "date": "2026-07-29T00:49:25Z",
+        "sha": "ae9e870",
+        "subject": "ci(test): build via the AgentVisor orchestrator @agentvisortest"
+      },
+      "prs": [],
+      "slug": "kyndryl-agentic-ai/bdg-sw-aifn-change-request-risk-assessment"
+    },
+    {
+      "ahead": 1,
+      "base": "main",
+      "behind": 12,
+      "branch": "feat/langfuse-provider",
+      "dir": "bdg-sw-aifn-common-services-gateway",
+      "dirty": false,
+      "last_commit": {
+        "date": "2026-07-21T02:13:18Z",
+        "sha": "b7cc2d9",
+        "subject": "feat(connections): register langfuse provider"
+      },
+      "prs": [
+        "kyndryl-cto/bdg-sw-aifn-common-services-gateway#79"
+      ],
+      "slug": "kyndryl-cto/bdg-sw-aifn-common-services-gateway"
+    },
+    {
+      "ahead": 0,
+      "base": "main",
+      "behind": 40,
+      "branch": "klalter/temp-test",
+      "dir": "bdg-sw-aifn-jobengine",
+      "dirty": false,
+      "last_commit": {
+        "date": "2026-07-17T18:49:13+05:30",
+        "sha": "b68a664",
+        "subject": "Merge pull request #687 from kyndryl-cto/renovate/all-dependencies"
+      },
+      "prs": [],
+      "slug": "kyndryl-cto/bdg-sw-aifn-jobengine"
+    },
+    {
+      "ahead": 0,
+      "base": "main",
+      "behind": 4,
+      "branch": "feat/iam-authz-tools",
+      "dir": "bdg-sw-auto-dev-shell-mcp",
+      "dirty": false,
+      "last_commit": {
+        "date": "2026-07-30T02:42:10Z",
+        "sha": "92090f1",
+        "subject": "fix(iam): page serviceid resolution and neutralize path-hostile key names"
+      },
+      "prs": [
+        "kyndryl-cto/bdg-sw-auto-dev-shell-mcp#10",
+        "kyndryl-cto/bdg-sw-auto-dev-shell-mcp#11",
+        "kyndryl-cto/bdg-sw-auto-dev-shell-mcp#6",
+        "kyndryl-cto/bdg-sw-auto-dev-shell-mcp#9"
+      ],
+      "slug": "kyndryl-cto/bdg-sw-auto-dev-shell-mcp"
+    },
+    {
+      "ahead": 23,
+      "base": "master",
+      "behind": 0,
+      "branch": "klalter/temp-test",
+      "dir": "bdg-sw-auto-orch-helm-chart",
+      "dirty": false,
+      "last_commit": {
+        "date": "2026-07-17T16:56:54-03:00",
+        "sha": "029dd5cb",
+        "subject": "Merge pull request #542 from kyndryl-cto/fix/remove-globalcplane-stg"
+      },
+      "prs": [],
+      "slug": "kyndryl-cto/bdg-sw-auto-orch-helm-chart"
+    },
+    {
+      "ahead": 2,
+      "base": "main",
+      "behind": 5,
+      "branch": "feat/langfuse-connection",
+      "dir": "bdg-sw-base-foundation-connections-metadata",
+      "dirty": false,
+      "last_commit": {
+        "date": "2026-07-21T02:16:09Z",
+        "sha": "505490e",
+        "subject": "refactor(connections): drop expirationDate from langfuse connection"
+      },
+      "prs": [
+        "kyndryl-cto/bdg-sw-base-foundation-connections-metadata#264"
+      ],
+      "slug": "kyndryl-cto/bdg-sw-base-foundation-connections-metadata"
+    },
+    {
+      "ahead": 0,
+      "base": "main",
+      "behind": 0,
+      "branch": "main",
+      "dir": "bdg-sw-it-modernization-agent-v2",
+      "dirty": false,
+      "last_commit": {
+        "date": "2026-07-07T11:13:44Z",
+        "sha": "915c5d1",
+        "subject": "Mend License Check CSV file for commit 34e97cf52ca9ef0741d77f1efc5f83897f1a0ed4"
+      },
+      "prs": [],
+      "slug": "kyndryl-agentic-ai/bdg-sw-it-modernization-agent-v2"
+    },
+    {
+      "ahead": 1,
+      "base": "main",
+      "behind": 1,
+      "branch": "feat/egress-platform-postgres",
+      "dir": "bdg-sw-plcy-kyn-base",
+      "dirty": false,
+      "last_commit": {
+        "date": "2026-08-01T02:39:26Z",
+        "sha": "8bd12e9",
+        "subject": "feat(egress): allow AgentVisor guest egress to the platform Postgres servers (5432)"
+      },
+      "prs": [
+        "kyndryl-cto/bdg-sw-plcy-kyn-base#5",
+        "kyndryl-cto/bdg-sw-plcy-kyn-base#6",
+        "kyndryl-cto/bdg-sw-plcy-kyn-base#8"
+      ],
+      "slug": "kyndryl-cto/bdg-sw-plcy-kyn-base"
+    },
+    {
+      "ahead": 0,
+      "base": "main",
+      "behind": 59,
+      "branch": "klalter/temp-test",
+      "dir": "bdg-sw-plcy-policy-service",
+      "dirty": false,
+      "last_commit": {
+        "date": "2026-07-16T15:31:13-03:00",
+        "sha": "61515356",
+        "subject": "Merge pull request #444 from kyndryl-cto/refact/label-delete"
+      },
+      "prs": [],
+      "slug": "kyndryl-cto/bdg-sw-plcy-policy-service"
+    },
+    {
+      "ahead": 0,
+      "base": "agentvisortest",
+      "behind": 1,
+      "branch": "fix/invoke-run-poll",
+      "dir": "bridge-kaif-reusable-workflows",
+      "dirty": false,
+      "last_commit": {
+        "date": "2026-08-01T17:14:29Z",
+        "sha": "a946eb1",
+        "subject": "fix(agentvisor): poll the run record instead of betting the step on one long-held connection"
+      },
+      "prs": [
+        "kyndryl-agentic-ai/bridge-kaif-reusable-workflows#33",
+        "kyndryl-agentic-ai/bridge-kaif-reusable-workflows#34",
+        "kyndryl-agentic-ai/bridge-kaif-reusable-workflows#35",
+        "kyndryl-agentic-ai/bridge-kaif-reusable-workflows#36",
+        "kyndryl-agentic-ai/bridge-kaif-reusable-workflows#37",
+        "kyndryl-agentic-ai/bridge-kaif-reusable-workflows#38",
+        "kyndryl-agentic-ai/bridge-kaif-reusable-workflows#39",
+        "kyndryl-agentic-ai/bridge-kaif-reusable-workflows#40",
+        "kyndryl-agentic-ai/bridge-kaif-reusable-workflows#41"
+      ],
+      "slug": "kyndryl-agentic-ai/bridge-kaif-reusable-workflows"
+    }
+  ],
+  "since": null,
+  "view": {
+    "color": "purple",
+    "icon": "code-review",
+    "name": "feat/agent-kaif-deploy",
+    "query": "is:pr head:feat/agentvisor-license-guardrail head:feat/agentvisor-v0.5.0-55.202 head:feat/chatops-egress-permanent head:feat/egress-platform-postgres head:feat/grafana-generic-log-tools head:feat/hitl-agentvisor-v2 head:feat/hitl-agentvisor-v3 head:feat/iam-authz-tools head:feat/langfuse-connection head:feat/langfuse-provider head:feat/manetu-egress-allow head:feat/memory-host-relay head:feat/sidecar-memory-env head:feat/updates-kaif-tests head:fix/agentvisor-guest-memory-env head:fix/hitl-async-node-sync-bridge head:fix/hitl-resume-input head:fix/hitl-resume-suspend-race head:fix/hitl-wrapper-updates head:fix/invoke-run-poll head:fix/klalter-28-jul head:fix/porting-agent-data head:fix/query-alias-28jul head:fix/sidecar-memory-resources head:fix/wrapper-updates repo:kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test repo:kyndryl-agentic-ai/bridge-kaif-reusable-workflows repo:kyndryl-cto/bdg-sw-aifn-agent-registry repo:kyndryl-cto/bdg-sw-aifn-common-services-gateway repo:kyndryl-cto/bdg-sw-auto-dev-shell-mcp repo:kyndryl-cto/bdg-sw-base-foundation-connections-metadata repo:kyndryl-cto/bdg-sw-plcy-kyn-base",
+    "stray": [],
+    "url": "https://github.com/pulls?q=is%3Apr%20head%3Afeat%2Fagentvisor-license-guardrail%20head%3Afeat%2Fagentvisor-v0.5.0-55.202%20head%3Afeat%2Fchatops-egress-permanent%20head%3Afeat%2Fegress-platform-postgres%20head%3Afeat%2Fgrafana-generic-log-tools%20head%3Afeat%2Fhitl-agentvisor-v2%20head%3Afeat%2Fhitl-agentvisor-v3%20head%3Afeat%2Fiam-authz-tools%20head%3Afeat%2Flangfuse-connection%20head%3Afeat%2Flangfuse-provider%20head%3Afeat%2Fmanetu-egress-allow%20head%3Afeat%2Fmemory-host-relay%20head%3Afeat%2Fsidecar-memory-env%20head%3Afeat%2Fupdates-kaif-tests%20head%3Afix%2Fagentvisor-guest-memory-env%20head%3Afix%2Fhitl-async-node-sync-bridge%20head%3Afix%2Fhitl-resume-input%20head%3Afix%2Fhitl-resume-suspend-race%20head%3Afix%2Fhitl-wrapper-updates%20head%3Afix%2Finvoke-run-poll%20head%3Afix%2Fklalter-28-jul%20head%3Afix%2Fporting-agent-data%20head%3Afix%2Fquery-alias-28jul%20head%3Afix%2Fsidecar-memory-resources%20head%3Afix%2Fwrapper-updates%20repo%3Akyndryl-agentic-ai%2Fbdg-sw-agents-autonomous-doc-creation-agentvisor-test%20repo%3Akyndryl-agentic-ai%2Fbridge-kaif-reusable-workflows%20repo%3Akyndryl-cto%2Fbdg-sw-aifn-agent-registry%20repo%3Akyndryl-cto%2Fbdg-sw-aifn-common-services-gateway%20repo%3Akyndryl-cto%2Fbdg-sw-auto-dev-shell-mcp%20repo%3Akyndryl-cto%2Fbdg-sw-base-foundation-connections-metadata%20repo%3Akyndryl-cto%2Fbdg-sw-plcy-kyn-base"
+  },
+  "worktree": "/workspaces/.wt/feat/agent-kaif-deploy"
+}

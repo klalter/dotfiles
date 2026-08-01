@@ -1,0 +1,11 @@
+{
+  "projects": [
+    {
+      "github_project": null,
+      "lane": "feat",
+      "name": "agent-kaif-deploy",
+      "status": "active",
+      "worktree": "/workspaces/.wt/feat/agent-kaif-deploy"
+    }
+  ]
+}
