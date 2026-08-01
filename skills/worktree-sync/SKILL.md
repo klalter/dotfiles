@@ -6,13 +6,16 @@ description: "Track the git worktrees under /workspaces/.wt in a deterministic, 
 # Worktree sync
 
 One tracked worktree becomes one JSON manifest in `$DOTFILES_DIR/projects/`, plus a
-generated `README.md` dashboard. The manifest is the source of truth; GitHub
-Projects v2 is a downstream render that is **not wired up yet** (see the gate below).
+generated `README.md` dashboard and a **GitHub Projects v2 board**. The manifest is
+the source of truth; the board is a downstream render of it.
+
+Board: <https://github.com/users/klalter_kyndryl/projects/2> ("Worktrees")
 
 ```bash
 S=$DOTFILES_DIR/skills/worktree-sync/scripts/worktree_sync.py
 
 python3 $S sync agent-kaif-deploy --commit    # the everyday call
+python3 $S project push agent-kaif-deploy     # render the manifest onto the board
 python3 $S status -v                          # what's in flight, no network
 python3 $S scan /workspaces/.wt/feat/foo      # git-only, no network, untracked ok
 ```
@@ -53,11 +56,36 @@ regenerated:
 | `branches` | `{"owner/repo": ["feat/x"]}` — pin branches when the reflog was pruned |
 | `since` | force a date floor on the saved-view query |
 
+## The board (`project push`)
+
+Each PR becomes an item; each branch with no PR yet becomes a **draft** item, so
+work in flight is visible before it is reviewable. Fields: `Worktree`, `Lane`,
+`Repo slug`, `Branch`, `Base`, `PR status`, `Last sync`. Group by `Worktree` for the
+cross-worktree view, by `PR status` for a single worktree's board.
+
+Idempotent: it diffs the board against the manifest and writes only differences —
+a no-change push is `0 added, 0 set, 0 archived` in ~2s. Items whose PR left the
+manifest are **archived**, not deleted. Run it after `sync`; it reads the manifest,
+never git.
+
+Three things that will bite whoever touches this next:
+
+- **`Repo` is a reserved field name** — GitHub aliases it to the built-in
+  `Repository` and rejects it with "Name cannot have a reserved value". Hence
+  `Repo slug`. `Status` is built-in too, hence `PR status`.
+- **`GH_TOKEN`/`GITHUB_TOKEN` outrank `hosts.yml`.** The Codespace exports both, so
+  every Projects call goes through `project_env()`, which strips them. Without that,
+  a correctly-scoped token is silently ignored and the gate lies.
+- **The board is personal, not org-owned**, on purpose: it holds `kyndryl-cto` *and*
+  `kyndryl-agentic-ai` PRs in one place. A fine-grained PAT cannot manage user-owned
+  projects at all (Projects is an org-only permission there), so the scope comes from
+  `gh auth refresh -s project`.
+
 ## Honesty rules
 
-- **Never claim the GitHub project was updated.** `project push` exits non-zero with
-  the exact `gh auth refresh` command, because no token in this environment has the
-  `project` OAuth scope. Relay that command; do not work around it.
+- **If the `project` scope is missing**, `project push` exits non-zero with the exact
+  `gh auth refresh` command. Relay it; do not work around it, and do not claim the
+  board was updated.
 - **Never claim a saved view was created** — GitHub saved views have no API at all.
   The manifest's `view.url` is a link to paste; creating the view is a manual UI step
   owned by the `worktree-pr-view` skill.
