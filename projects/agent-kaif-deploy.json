@@ -23,7 +23,7 @@
   ],
   "exclude_prs": [],
   "extra_prs": [],
-  "generated_at": "2026-08-01T22:16:49Z",
+  "generated_at": "2026-08-01T23:24:34Z",
   "lane": "feat",
   "name": "agent-kaif-deploy",
   "notes": [
@@ -236,7 +236,7 @@
       "repo": "kyndryl-cto/bdg-sw-aifn-agent-registry",
       "review": "",
       "state": "CLOSED",
-      "status": "Closed",
+      "status": "Cancelled",
       "title": "fix(input): lift ChatOps channel into content (fill-only) in the invoke jq",
       "url": "https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/258"
     },
@@ -341,7 +341,7 @@
       "repo": "kyndryl-cto/bdg-sw-aifn-common-services-gateway",
       "review": "APPROVED",
       "state": "OPEN",
-      "status": "Approved",
+      "status": "Open",
       "title": "feat(connections): register langfuse provider",
       "url": "https://github.com/kyndryl-cto/bdg-sw-aifn-common-services-gateway/pull/79"
     },
@@ -401,7 +401,7 @@
       "repo": "kyndryl-cto/bdg-sw-auto-dev-shell-mcp",
       "review": "",
       "state": "CLOSED",
-      "status": "Closed",
+      "status": "Cancelled",
       "title": "feat: Grafana/Loki log tools and policy bundle category on create",
       "url": "https://github.com/kyndryl-cto/bdg-sw-auto-dev-shell-mcp/pull/11"
     },
@@ -760,6 +760,38 @@
     }
   ],
   "since": null,
+  "tasks": [
+    {
+      "created": "2026-08-01",
+      "id": "t1",
+      "status": "New",
+      "title": "Roll remaining .wt worktrees into the tracked index"
+    },
+    {
+      "created": "2026-08-01",
+      "id": "t2",
+      "status": "New",
+      "title": "Rotate the plaintext PAT embedded in the dotfiles origin URL"
+    },
+    {
+      "created": "2026-08-01",
+      "id": "t3",
+      "status": "New",
+      "title": "Point daily-report at projects/agent-kaif-deploy.json as its PR source"
+    },
+    {
+      "created": "2026-08-01",
+      "id": "t4",
+      "status": "New",
+      "title": "Wire 'project push' into 'sync --commit' as one call"
+    },
+    {
+      "created": "2026-08-01",
+      "id": "t5",
+      "status": "Complete",
+      "title": "Redesign GitHub project: per-worktree, Tasks + PR views"
+    }
+  ],
   "view": {
     "color": "purple",
     "icon": "code-review",

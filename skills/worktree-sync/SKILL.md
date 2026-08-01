@@ -6,19 +6,37 @@ description: "Track the git worktrees under /workspaces/.wt in a deterministic, 
 # Worktree sync
 
 One tracked worktree becomes one JSON manifest in `$DOTFILES_DIR/projects/`, plus a
-generated `README.md` dashboard and a **GitHub Projects v2 board**. The manifest is
-the source of truth; the board is a downstream render of it.
-
-Board: <https://github.com/users/klalter_kyndryl/projects/2> ("Worktrees")
+generated `README.md` dashboard and **one GitHub Projects v2 project per worktree,
+titled after it** (e.g. `feat/agent-kaif-deploy` →
+<https://github.com/users/klalter_kyndryl/projects/3>). The manifest is the source
+of truth; the project is a downstream render of it. Project URLs live in
+`projects/index.json` under `github_project`.
 
 ```bash
 S=$DOTFILES_DIR/skills/worktree-sync/scripts/worktree_sync.py
 
-python3 $S sync agent-kaif-deploy --commit    # the everyday call
-python3 $S project push agent-kaif-deploy     # render the manifest onto the board
-python3 $S status -v                          # what's in flight, no network
-python3 $S scan /workspaces/.wt/feat/foo      # git-only, no network, untracked ok
+python3 $S sync agent-kaif-deploy --commit         # the everyday call
+python3 $S project push agent-kaif-deploy          # render manifest -> GitHub project
+python3 $S task add agent-kaif-deploy "Title" [--status wip] [--push]
+python3 $S task set agent-kaif-deploy t3 done --push
+python3 $S task list agent-kaif-deploy
+python3 $S status -v                               # what's in flight, no network
+python3 $S scan /workspaces/.wt/feat/foo           # git-only, untracked ok
 ```
+
+## Tasks — track chat-spawned work, not just PRs
+
+A Task is a unit of work, usually spun up mid-conversation — one chat can spin up
+several. **When Klalter starts a piece of work in a chat (or asks to track
+something), add a task; move it as the work moves; push.** Quote the title (words
+like `--commit` inside an unquoted title break argparse).
+
+- Lanes: `New` → `In progress` → `Complete` (aliases: `new/todo`,
+  `wip/started/progress`, `done/complete`).
+- Tasks live in the manifest's `tasks` key (merged forward, never clobbered) and
+  appear on the project as draft-issue items titled `t<n> · <title>`. Retitles
+  update the same item — identity is the `t<n>` prefix, so never strip it by hand.
+- `task set <name> <id> <status> [new title...]` also retitles.
 
 ## The everyday call
 
@@ -56,30 +74,49 @@ regenerated:
 | `branches` | `{"owner/repo": ["feat/x"]}` — pin branches when the reflog was pruned |
 | `since` | force a date floor on the saved-view query |
 
-## The board (`project push`)
+## The GitHub project (`project push`)
 
-Each PR becomes an item; each branch with no PR yet becomes a **draft** item, so
-work in flight is visible before it is reviewable. Fields: `Worktree`, `Lane`,
-`Repo slug`, `Branch`, `Base`, `PR status`, `Last sync`. Group by `Worktree` for the
-cross-worktree view, by `PR status` for a single worktree's board.
+One project per worktree, three item kinds, four views — all created and repaired
+by the tool on every push:
 
-Idempotent: it diffs the board against the manifest and writes only differences —
-a no-change push is `0 added, 0 set, 0 archived` in ~2s. Items whose PR left the
-manifest are **archived**, not deleted. Run it after `sync`; it reads the manifest,
-never git.
+| view | layout | filter | lanes |
+|---|---|---|---|
+| Tasks · Board | Kanban | `kind:Task` | New / In progress / Complete |
+| Tasks · List | table | `kind:Task` | — |
+| PRs · Board | Kanban | `type:pr` (built-in) | Draft / Open / Merged / Cancelled |
+| PRs · List | table | `type:pr` | — |
 
-Three things that will bite whoever touches this next:
+Item kinds: **Task** (draft issue, lanes on the built-in `Status` field), **PR**
+(every PR the worktree produced; lanes on `PR status`, review state in `Review`),
+**Branch** (a branch with no PR yet — kept for visibility, shown in no view, and
+NOT given a PR status; that overload was confusing and is gone).
 
-- **`Repo` is a reserved field name** — GitHub aliases it to the built-in
-  `Repository` and rejects it with "Name cannot have a reserved value". Hence
-  `Repo slug`. `Status` is built-in too, hence `PR status`.
+Idempotent: it diffs the project against the manifest and writes only differences —
+a no-change push is `0 added, 0 set, 0 archived` in ~2s. Items whose PR/task left
+the manifest are **archived**, not deleted. Run it after `sync`; it reads the
+manifest, never git.
+
+Things that will bite whoever touches this next:
+
+- **The API cannot set a board's column field** (`verticalGroupByFields` has no
+  mutation). A new board groups by the built-in `Status` — which IS the Task lanes,
+  so the Tasks board is right by construction. **The PRs board needs one manual
+  click, once per project:** open PRs · Board → ⌄ on the view tab → Column field →
+  `PR status`. Say so when creating a new project; never claim it's grouped.
+- **Reserved field names**: `Repo` (aliases to built-in `Repository`) and `Type`
+  (collides with the built-in `type:` filter qualifier) — hence `Repo slug` and
+  `Kind`. `Status` is built-in but *editable*: its stock Todo/In Progress/Done
+  options are deliberately replaced with the Task lanes.
+- **Secondary rate limits are real**: ~50 item-mutations back-to-back trips one.
+  `gql()` paces mutations (~0.8s) and retries rate-limit errors with a 60s+ backoff;
+  a killed push is safe to just re-run — it resumes from the diff.
 - **`GH_TOKEN`/`GITHUB_TOKEN` outrank `hosts.yml`.** The Codespace exports both, so
   every Projects call goes through `project_env()`, which strips them. Without that,
   a correctly-scoped token is silently ignored and the gate lies.
-- **The board is personal, not org-owned**, on purpose: it holds `kyndryl-cto` *and*
-  `kyndryl-agentic-ai` PRs in one place. A fine-grained PAT cannot manage user-owned
-  projects at all (Projects is an org-only permission there), so the scope comes from
-  `gh auth refresh -s project`.
+- **Projects are personal, not org-owned**, on purpose: one project holds
+  `kyndryl-cto` *and* `kyndryl-agentic-ai` PRs. A fine-grained PAT cannot manage
+  user-owned projects at all (Projects is an org-only permission there), so the
+  scope comes from `gh auth refresh -s project`.
 
 ## Honesty rules
 

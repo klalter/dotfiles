@@ -2,9 +2,10 @@
   "projects": [
     {
       "github_project": {
-        "id": "PVT_kwHOCPZR3M4BfHg7",
-        "number": 2,
-        "url": "https://github.com/users/klalter_kyndryl/projects/2"
+        "id": "PVT_kwHOCPZR3M4BfHqN",
+        "number": 3,
+        "title": "feat/agent-kaif-deploy",
+        "url": "https://github.com/users/klalter_kyndryl/projects/3"
       },
       "lane": "feat",
       "name": "agent-kaif-deploy",

@@ -5,9 +5,19 @@ Source of truth is the per-project JSON next to this file.
 
 ## agent-kaif-deploy
 
-`/workspaces/.wt/feat/agent-kaif-deploy` · lane `feat` · 17 repos · 29 PRs · synced 2026-08-01T20:17:16Z
+`/workspaces/.wt/feat/agent-kaif-deploy` · lane `feat` · 17 repos · 29 PRs · 5 tasks · synced 2026-08-01T23:24:34Z
+
+Board: [feat/agent-kaif-deploy](https://github.com/users/klalter_kyndryl/projects/3)
 
 > Base branches per the worktree CLAUDE.md: bridge-kaif-reusable-workflows targets agentvisortest, NOT main.
+
+| Task | Status | Title |
+| --- | --- | --- |
+| `t1` | New | Roll remaining .wt worktrees into the tracked index |
+| `t2` | New | Rotate the plaintext PAT embedded in the dotfiles origin URL |
+| `t3` | New | Point daily-report at projects/agent-kaif-deploy.json as its PR source |
+| `t4` | New | Wire 'project push' into 'sync --commit' as one call |
+| `t5` | Complete | Redesign GitHub project: per-worktree, Tasks + PR views |
 
 | Repo | Branch | Base | Ahead/Behind | PRs |
 | --- | --- | --- | --- | --- |
@@ -17,11 +27,11 @@ Source of truth is the per-project JSON next to this file.
 | [kyndryl-agentic-ai/bdg-sw-agents-it-modernization-agent-v2-agentvisor-test](https://github.com/kyndryl-agentic-ai/bdg-sw-agents-it-modernization-agent-v2-agentvisor-test) | `wt-agentvisor-build` | `main` | +20 / −2 | — |
 | [kyndryl-agentic-ai/bdg-sw-agents-quality-parameter-check](https://github.com/kyndryl-agentic-ai/bdg-sw-agents-quality-parameter-check) | `wt-a3` | `main` | +3 / −0 | — |
 | [kyndryl-agentic-ai/bdg-sw-agents-rca-auto-generation](https://github.com/kyndryl-agentic-ai/bdg-sw-agents-rca-auto-generation) | `test/agentvisor-build` | `main` | +1 / −0 | — |
-| [kyndryl-cto/bdg-sw-aifn-agent-registry](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry) | `fix/invoke-run-poll` | `main` | +1 / −1 | [#247](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/247) Merged<br>[#255](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/255) Merged<br>[#256](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/256) Open<br>[#258](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/258) Closed<br>[#269](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/269) Merged<br>[#271](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/271) Merged<br>[#272](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/272) Merged<br>[#273](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/273) Merged<br>[#274](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/274) Merged<br>[#275](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/275) Merged |
+| [kyndryl-cto/bdg-sw-aifn-agent-registry](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry) | `fix/invoke-run-poll` | `main` | +1 / −1 | [#247](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/247) Merged<br>[#255](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/255) Merged<br>[#256](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/256) Open<br>[#258](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/258) Cancelled<br>[#269](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/269) Merged<br>[#271](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/271) Merged<br>[#272](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/272) Merged<br>[#273](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/273) Merged<br>[#274](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/274) Merged<br>[#275](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/275) Merged |
 | [kyndryl-agentic-ai/bdg-sw-aifn-change-request-risk-assessment](https://github.com/kyndryl-agentic-ai/bdg-sw-aifn-change-request-risk-assessment) | `test/agentvisor-build` | `main` | +1 / −0 | — |
-| [kyndryl-cto/bdg-sw-aifn-common-services-gateway](https://github.com/kyndryl-cto/bdg-sw-aifn-common-services-gateway) | `feat/langfuse-provider` | `main` | +1 / −12 | [#79](https://github.com/kyndryl-cto/bdg-sw-aifn-common-services-gateway/pull/79) Approved |
+| [kyndryl-cto/bdg-sw-aifn-common-services-gateway](https://github.com/kyndryl-cto/bdg-sw-aifn-common-services-gateway) | `feat/langfuse-provider` | `main` | +1 / −12 | [#79](https://github.com/kyndryl-cto/bdg-sw-aifn-common-services-gateway/pull/79) Open |
 | [kyndryl-cto/bdg-sw-aifn-jobengine](https://github.com/kyndryl-cto/bdg-sw-aifn-jobengine) | `klalter/temp-test` | `main` | +0 / −40 | — |
-| [kyndryl-cto/bdg-sw-auto-dev-shell-mcp](https://github.com/kyndryl-cto/bdg-sw-auto-dev-shell-mcp) | `feat/iam-authz-tools` | `main` | +0 / −4 | [#10](https://github.com/kyndryl-cto/bdg-sw-auto-dev-shell-mcp/pull/10) Merged<br>[#11](https://github.com/kyndryl-cto/bdg-sw-auto-dev-shell-mcp/pull/11) Closed<br>[#6](https://github.com/kyndryl-cto/bdg-sw-auto-dev-shell-mcp/pull/6) Merged<br>[#9](https://github.com/kyndryl-cto/bdg-sw-auto-dev-shell-mcp/pull/9) Merged |
+| [kyndryl-cto/bdg-sw-auto-dev-shell-mcp](https://github.com/kyndryl-cto/bdg-sw-auto-dev-shell-mcp) | `feat/iam-authz-tools` | `main` | +0 / −4 | [#10](https://github.com/kyndryl-cto/bdg-sw-auto-dev-shell-mcp/pull/10) Merged<br>[#11](https://github.com/kyndryl-cto/bdg-sw-auto-dev-shell-mcp/pull/11) Cancelled<br>[#6](https://github.com/kyndryl-cto/bdg-sw-auto-dev-shell-mcp/pull/6) Merged<br>[#9](https://github.com/kyndryl-cto/bdg-sw-auto-dev-shell-mcp/pull/9) Merged |
 | [kyndryl-cto/bdg-sw-auto-orch-helm-chart](https://github.com/kyndryl-cto/bdg-sw-auto-orch-helm-chart) | `klalter/temp-test` | `master` | +23 / −0 | — |
 | [kyndryl-cto/bdg-sw-base-foundation-connections-metadata](https://github.com/kyndryl-cto/bdg-sw-base-foundation-connections-metadata) | `feat/langfuse-connection` | `main` | +2 / −5 | [#264](https://github.com/kyndryl-cto/bdg-sw-base-foundation-connections-metadata/pull/264) Merged |
 | [kyndryl-agentic-ai/bdg-sw-it-modernization-agent-v2](https://github.com/kyndryl-agentic-ai/bdg-sw-it-modernization-agent-v2) | `main` | `main` | +0 / −0 | — |

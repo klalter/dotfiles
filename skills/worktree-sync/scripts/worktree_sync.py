@@ -23,6 +23,7 @@ import json
 import os
 import subprocess
 import sys
+import time
 import urllib.parse
 from datetime import datetime, timezone
 from pathlib import Path
@@ -185,17 +186,19 @@ def enrich(prs):
 
 
 def pr_status(pr):
+    """The four board lanes. Review state is a separate field, not a lane."""
     if pr["state"] == "MERGED":
         return "Merged"
     if pr["state"] == "CLOSED":
-        return "Closed"
+        return "Cancelled"
     if pr.get("draft"):
         return "Draft"
-    if pr.get("review") == "CHANGES_REQUESTED":
-        return "Changes requested"
-    if pr.get("review") == "APPROVED":
-        return "Approved"
     return "Open"
+
+
+def review_label(pr):
+    return {"APPROVED": "Approved", "CHANGES_REQUESTED": "Changes requested",
+            "REVIEW_REQUIRED": "Review required"}.get(pr.get("review", ""), "")
 
 
 # ---------------------------------------------------------------- commands
@@ -265,6 +268,7 @@ def build_manifest(entry, root, prev, fetch=False):
         "branches_no_pr": no_pr,
         "view": view,
         # hand-edited, never clobbered
+        "tasks": prev.get("tasks", []),
         "notes": prev.get("notes", []),
         "extra_prs": prev.get("extra_prs", []),
         "exclude_prs": prev.get("exclude_prs", []),
@@ -340,9 +344,18 @@ def render(dry_run=False) -> bool:
         lines += [f"## {m['name']}", "",
                   f"`{m['worktree']}` · lane `{m['lane']}` · "
                   f"{len(m['repos'])} repos · {len(m['prs'])} PRs · "
+                  f"{len(m.get('tasks', []))} tasks · "
                   f"synced {m.get('generated_at', '?')}", ""]
+        gp = entry.get("github_project") or {}
+        if gp.get("url"):
+            lines += [f"Board: [{gp.get('title', gp['url'])}]({gp['url']})", ""]
         if m.get("notes"):
             lines += [f"> {n}" for n in m["notes"]] + [""]
+        if m.get("tasks"):
+            lines += ["| Task | Status | Title |", "| --- | --- | --- |"]
+            lines += [f"| `{t['id']}` | {t['status']} | {t['title']} |"
+                      for t in m["tasks"]]
+            lines.append("")
         lines += ["| Repo | Branch | Base | Ahead/Behind | PRs |",
                   "| --- | --- | --- | --- | --- |"]
         prs = {p["key"]: p for p in m["prs"]}
@@ -387,9 +400,12 @@ def cmd_status(args):
         for p in m["prs"]:
             counts[p["status"]] = counts.get(p["status"], 0) + 1
         summary = ", ".join(f"{v} {k.lower()}" for k, v in sorted(counts.items())) or "no PRs"
+        open_tasks = [t for t in m.get("tasks", []) if t["status"] != "Complete"]
         print(f"{m['name']:<24} {len(m['repos'])} repos   {summary}   "
-              f"(synced {m.get('generated_at', '?')})")
+              f"{len(open_tasks)} open task(s)   (synced {m.get('generated_at', '?')})")
         if args.verbose:
+            for t in m.get("tasks", []):
+                print(f"    {t['status']:<18} {t['id']:<58} {t['title'][:56]}")
             for p in m["prs"]:
                 print(f"    {p['status']:<18} {p['key']:<58} {p['title'][:56]}")
 
@@ -441,28 +457,62 @@ def project_env():
     return {k: v for k, v in os.environ.items() if k not in ("GH_TOKEN", "GITHUB_TOKEN")}
 
 
-PROJECT_TITLE = "Worktrees"
-# "Status" is a built-in Projects v2 field, so the PR state gets its own name.
-PR_STATUSES = ["Draft", "Open", "Changes requested", "Approved", "Merged", "Closed"]
-STATUS_COLORS = {"Draft": "GRAY", "Open": "BLUE", "Changes requested": "ORANGE",
-                 "Approved": "GREEN", "Merged": "PURPLE", "Closed": "RED"}
+# One GitHub project per tracked worktree, titled after it (feat/agent-kaif-deploy).
+#
+# Two first-class item kinds share the project, split into views by field:
+#   Task   — a unit of work, usually spun up mid-conversation; draft-issue item,
+#            lanes on the built-in Status field (New / In progress / Complete).
+#   PR     — every pull request the worktree produced; lanes on "PR status".
+#   Branch — a branch with no PR yet; kept for visibility, shown in no view.
+TASK_STATUSES = ["New", "In progress", "Complete"]
+PR_STATUSES = ["Draft", "Open", "Merged", "Cancelled"]
+KINDS = ["Task", "PR", "Branch"]
+OPTION_COLORS = {"New": "GRAY", "In progress": "YELLOW", "Complete": "GREEN",
+                 "Draft": "GRAY", "Open": "BLUE", "Merged": "PURPLE",
+                 "Cancelled": "RED", "Task": "PINK", "PR": "BLUE", "Branch": "GRAY"}
+TASK_ALIASES = {"new": "New", "todo": "New",
+                "wip": "In progress", "started": "In progress",
+                "in-progress": "In progress", "progress": "In progress",
+                "done": "Complete", "complete": "Complete", "completed": "Complete"}
+# The four views, created/repaired on every push. "type:pr" is the BUILT-IN
+# content-type qualifier (robust); tasks need the custom Kind field — which is
+# named Kind, not Type, precisely so its filter doesn't collide with type:pr.
+VIEW_SPEC = [
+    ("Tasks · Board", "BOARD_LAYOUT", "kind:Task"),
+    ("Tasks · List", "TABLE_LAYOUT", "kind:Task"),
+    ("PRs · Board", "BOARD_LAYOUT", "type:pr"),
+    ("PRs · List", "TABLE_LAYOUT", "type:pr"),
+]
 
 
 def gql(query, allow_error=False):
-    """One GraphQL call with the Codespace tokens stripped."""
-    r = subprocess.run(["gh", "api", "graphql", "-f", f"query={query}"],
-                       capture_output=True, text=True, env=project_env())
-    try:
-        payload = json.loads(r.stdout) if r.stdout else {}
-    except json.JSONDecodeError:
-        payload = {}
-    if "errors" in payload or "data" not in payload:
+    """One GraphQL call with the Codespace tokens stripped.
+
+    Mutations are paced (GitHub asks for ~1s between content mutations) and
+    secondary-rate-limit responses are retried with a long backoff — 48
+    back-to-back item adds reliably trip the limit otherwise.
+    """
+    if query.lstrip().startswith("mutation"):
+        time.sleep(0.8)
+    for attempt in range(4):
+        r = subprocess.run(["gh", "api", "graphql", "-f", f"query={query}"],
+                           capture_output=True, text=True, env=project_env())
+        try:
+            payload = json.loads(r.stdout) if r.stdout else {}
+        except json.JSONDecodeError:
+            payload = {}
+        if "data" in payload and "errors" not in payload:
+            return payload["data"]
         msg = (payload.get("errors", [{}])[0].get("message")
                or r.stderr.strip() or "unknown GraphQL error")
+        if "rate limit" in msg.lower() and attempt < 3:
+            wait = 60 * (attempt + 1)
+            print(f"  rate limited — waiting {wait}s…", file=sys.stderr)
+            time.sleep(wait)
+            continue
         if allow_error:
             return None
         sys.exit(f"GraphQL failed: {msg}")
-    return payload["data"]
 
 
 def s(value) -> str:
@@ -470,46 +520,56 @@ def s(value) -> str:
     return json.dumps("" if value is None else str(value))
 
 
-def ensure_project(dry_run=False):
-    """Find the Worktrees project for the viewer, creating it if absent."""
+def ensure_project(title, dry_run=False):
+    """Find the viewer's project with this title, creating it if absent."""
     data = gql("query{viewer{id projectsV2(first:100){nodes{id number title url}}}}")
     viewer = data["viewer"]
     for node in viewer["projectsV2"]["nodes"]:
-        if node["title"] == PROJECT_TITLE:
+        if node["title"] == title:
             return node
     if dry_run:
         return None
     data = gql(
         f'mutation{{createProjectV2(input:{{ownerId:{s(viewer["id"])},'
-        f'title:{s(PROJECT_TITLE)}}}){{projectV2{{id number title url}}}}}}')
+        f'title:{s(title)}}}){{projectV2{{id number title url}}}}}}')
     return data["createProjectV2"]["projectV2"]
 
 
-def field_spec(index):
-    """The custom fields the board needs, with their single-select options."""
-    worktrees = sorted({e["name"] for e in index["projects"]})
-    lanes = sorted({e.get("lane", "") for e in index["projects"] if e.get("lane")})
+def field_spec():
+    """The fields one worktree-project needs, with their single-select options.
+
+    "Status" is the BUILT-IN single-select — repurposed as the Task lanes so the
+    Tasks board groups correctly with zero UI configuration (a new board view
+    always groups by Status). Its stock Todo/In Progress/Done options are
+    REPLACED, not extended. "Repo" is rejected as a reserved name (GitHub
+    aliases it to the built-in Repository field), hence "Repo slug".
+    """
     return [
-        ("Worktree", "SINGLE_SELECT", worktrees),
-        ("Lane", "SINGLE_SELECT", lanes),
-        # "Repo" is rejected as a reserved name — GitHub aliases it to the
-        # built-in Repository field, so the slug gets an explicit name.
+        ("Kind", "SINGLE_SELECT", KINDS),
+        ("Status", "SINGLE_SELECT", TASK_STATUSES),
+        ("PR status", "SINGLE_SELECT", PR_STATUSES),
         ("Repo slug", "TEXT", None),
         ("Branch", "TEXT", None),
         ("Base", "TEXT", None),
-        ("PR status", "SINGLE_SELECT", PR_STATUSES),
+        ("Review", "TEXT", None),
         ("Last sync", "DATE", None),
     ]
 
 
 def _options_literal(names):
     return "[" + ",".join(
-        f'{{name:{s(n)},color:{STATUS_COLORS.get(n, "GRAY")},description:{s("")}}}'
+        f'{{name:{s(n)},color:{OPTION_COLORS.get(n, "GRAY")},description:{s("")}}}'
         for n in names) + "]"
 
 
 def ensure_fields(project_id, spec, dry_run=False):
-    """Create missing fields, and extend single-selects that lack an option."""
+    """Create missing fields and reconcile single-select options.
+
+    The built-in Status field gets its options REPLACED (the stock
+    Todo/In Progress/Done must go so the Task lanes are the only columns);
+    every other single-select is extended, never shrunk, so a hand-added
+    option survives.
+    """
     q = (f'query{{node(id:{s(project_id)}){{... on ProjectV2{{fields(first:50){{nodes{{'
          f'... on ProjectV2FieldCommon{{id name dataType}} '
          f'... on ProjectV2SingleSelectField{{id name dataType options{{id name}}}}'
@@ -528,14 +588,15 @@ def ensure_fields(project_id, spec, dry_run=False):
                 f'... on ProjectV2FieldCommon{{id name}}}}}}}}')
             created.append(name)
         elif options:
-            have = {o["name"] for o in cur.get("options", [])}
-            missing = [o for o in options if o not in have]
-            if missing and not dry_run:
-                merged = [o["name"] for o in cur.get("options", [])] + missing
-                gql(f'mutation{{updateProjectV2Field(input:{{fieldId:{s(cur["id"])},'
-                    f'singleSelectOptions:{_options_literal(merged)}}}){{projectV2Field{{'
-                    f'... on ProjectV2FieldCommon{{id}}}}}}}}')
-                created.append(f"{name} (+{len(missing)} options)")
+            have = [o["name"] for o in cur.get("options", [])]
+            wanted = options if name == "Status" else (
+                have + [o for o in options if o not in have])
+            if have != wanted:
+                if not dry_run:
+                    gql(f'mutation{{updateProjectV2Field(input:{{fieldId:{s(cur["id"])},'
+                        f'singleSelectOptions:{_options_literal(wanted)}}})'
+                        f'{{projectV2Field{{... on ProjectV2FieldCommon{{id}}}}}}}}')
+                created.append(f"{name} (options)")
     fields = {f["name"]: f for f in gql(q)["node"]["fields"]["nodes"] if f}
     return fields, created
 
@@ -545,7 +606,7 @@ ITEM_QUERY = """
   id
   content { __typename
     ... on PullRequest { url }
-    ... on DraftIssue { title } }
+    ... on DraftIssue { id title } }
   fieldValues(first: 30) { nodes {
     ... on ProjectV2ItemFieldTextValue { text field { ... on ProjectV2FieldCommon { name } } }
     ... on ProjectV2ItemFieldDateValue { date field { ... on ProjectV2FieldCommon { name } } }
@@ -555,8 +616,24 @@ ITEM_QUERY = """
 """
 
 
+def item_key(content):
+    """Stable identity for a board item.
+
+    PRs key on URL. Task drafts are titled 't<n> · <title>' and key on the
+    t-id alone, so a retitle updates the item instead of duplicating it.
+    Branch drafts ('owner/repo:branch') key on their full title.
+    """
+    if content.get("url"):
+        return content["url"]
+    title = content.get("title") or ""
+    tid = title.split(" · ", 1)[0]
+    if tid[:1] == "t" and tid[1:].isdigit():
+        return f"task:{tid}"
+    return title
+
+
 def list_items(project_id):
-    """{key: item} for the whole board. PRs key on URL, drafts on title."""
+    """{key: item} for the whole board."""
     items, after = {}, None
     while True:
         cursor = f',after:{s(after)}' if after else ""
@@ -568,7 +645,7 @@ def list_items(project_id):
             if not n:
                 continue
             content = n.get("content") or {}
-            key = content.get("url") or content.get("title")
+            key = item_key(content)
             if not key:
                 continue
             values = {}
@@ -578,6 +655,8 @@ def list_items(project_id):
                 values[fv["field"]["name"]] = (
                     fv.get("text") or fv.get("date") or fv.get("name"))
             items[key] = {"id": n["id"], "values": values,
+                          "content_id": content.get("id"),
+                          "title": content.get("title"),
                           "draft": content.get("__typename") == "DraftIssue"}
         if not page["pageInfo"]["hasNextPage"]:
             return items
@@ -616,46 +695,92 @@ def apply_updates(project_id, updates, dry_run=False):
     return len(updates)
 
 
+def ensure_views(project_id, dry_run=False):
+    """Create/repair the four standard views; drop the stock 'View 1'.
+
+    The one thing the API cannot do: set a board's COLUMN field
+    (verticalGroupByFields has no mutation). A new board view groups by the
+    built-in Status — which is exactly the Task lanes, so the Tasks board is
+    right by construction. The PRs board needs one manual click:
+    ⌄ next to the view name → Column field → PR status.
+    """
+    data = gql(f'query{{node(id:{s(project_id)}){{... on ProjectV2{{'
+               f'views(first:20){{nodes{{id name layout filter}}}}}}}}}}')
+    existing = {v["name"]: v for v in data["node"]["views"]["nodes"] if v}
+    touched = []
+    for name, layout, flt in VIEW_SPEC:
+        view = existing.get(name)
+        if not view:
+            if dry_run:
+                touched.append(name)
+                continue
+            data = gql(f'mutation{{createProjectV2View(input:{{'
+                       f'projectId:{s(project_id)},name:{s(name)},layout:{layout}}})'
+                       f'{{projectV2View{{id}}}}}}')
+            view = {"id": data["createProjectV2View"]["projectV2View"]["id"],
+                    "filter": None, "layout": layout}
+            touched.append(name)
+        if view.get("filter") != flt and not dry_run:
+            gql(f'mutation{{updateProjectV2View(input:{{viewId:{s(view["id"])},'
+                f'filter:{s(flt)}}}){{projectV2View{{id}}}}}}')
+            if name not in touched:
+                touched.append(f"{name} (filter)")
+    stock = existing.get("View 1")
+    if stock and len(existing) > 1 or (stock and touched):
+        if not dry_run:
+            gql(f'mutation{{deleteProjectV2View(input:{{viewId:{s(stock["id"])}}})'
+                f'{{projectV2View{{id}}}}}}', allow_error=True)
+    return touched
+
+
 def push_project(entry, manifest, dry_run=False):
     index = load_index()
-    project = ensure_project(dry_run)
+    title = worktree_name(Path(entry["worktree"]))
+    project = ensure_project(title, dry_run)
     if not project:
-        print("[dry-run] would create the 'Worktrees' project")
+        print(f"[dry-run] would create the '{title}' project")
         return
-    fields, created = ensure_fields(project["id"], field_spec(index), dry_run)
+    fields, created = ensure_fields(project["id"], field_spec(), dry_run)
     if created:
-        print(f"  fields {'to create' if dry_run else 'created'}: {', '.join(created)}")
+        print(f"  fields {'to create' if dry_run else 'reconciled'}: {', '.join(created)}")
+    views = ensure_views(project["id"], dry_run)
+    if views:
+        print(f"  views {'to create' if dry_run else 'reconciled'}: {', '.join(views)}")
 
     items = list_items(project["id"])
     today = (manifest.get("generated_at") or "")[:10]
     repo_meta = {r["slug"]: r for r in manifest["repos"]}
 
-    wanted, updates, added, drafted = {}, [], 0, 0
+    # key -> (field values, draft title or None)
+    wanted, updates, retitles = {}, [], []
+    added = {"Task": 0, "PR": 0, "Branch": 0}
 
+    for t in manifest.get("tasks", []):
+        wanted[f'task:{t["id"]}'] = ({
+            "Kind": "Task", "Status": t["status"], "Last sync": today,
+        }, f'{t["id"]} · {t["title"]}')
     for pr in manifest["prs"]:
-        repo = repo_meta.get(pr["repo"], {})
-        wanted[pr["url"]] = {
-            "Worktree": manifest["name"], "Lane": manifest["lane"],
+        wanted[pr["url"]] = ({
+            "Kind": "PR", "PR status": pr["status"],
             "Repo slug": pr["repo"], "Branch": pr["head"],
-            "Base": repo.get("base", ""), "PR status": pr["status"],
-            "Last sync": today,
-        }
-    for entry_no_pr in manifest["branches_no_pr"]:
-        slug, _, branch = entry_no_pr.partition(":")
-        wanted[entry_no_pr] = {
-            "Worktree": manifest["name"], "Lane": manifest["lane"],
-            "Repo slug": slug, "Branch": branch,
-            "Base": repo_meta.get(slug, {}).get("base", ""),
-            "PR status": "Draft", "Last sync": today,
-        }
+            "Base": repo_meta.get(pr["repo"], {}).get("base", ""),
+            "Review": review_label(pr), "Last sync": today,
+        }, None)
+    for ref in manifest["branches_no_pr"]:
+        slug, _, branch = ref.partition(":")
+        wanted[ref] = ({
+            "Kind": "Branch", "Repo slug": slug, "Branch": branch,
+            "Base": repo_meta.get(slug, {}).get("base", ""), "Last sync": today,
+        }, ref)
 
-    for key, values in wanted.items():
+    for key, (values, title_wanted) in wanted.items():
         item = items.get(key)
         if not item:
+            kind = values["Kind"]
             if dry_run:
-                added += 1
+                added[kind] += 1
                 continue
-            if key.startswith("http"):
+            if kind == "PR":
                 pr = next(p for p in manifest["prs"] if p["url"] == key)
                 if not pr.get("node_id"):
                     print(f"  SKIP {pr['key']} — no node id; re-run sync")
@@ -664,23 +789,30 @@ def push_project(entry, manifest, dry_run=False):
                            f'projectId:{s(project["id"])},contentId:{s(pr["node_id"])}}})'
                            f'{{item{{id}}}}}}')
                 item = {"id": data["addProjectV2ItemById"]["item"]["id"], "values": {}}
-                added += 1
             else:
                 data = gql(f'mutation{{addProjectV2DraftIssue(input:{{'
-                           f'projectId:{s(project["id"])},title:{s(key)}}})'
+                           f'projectId:{s(project["id"])},title:{s(title_wanted)}}})'
                            f'{{projectItem{{id}}}}}}')
                 item = {"id": data["addProjectV2DraftIssue"]["projectItem"]["id"],
-                        "values": {}}
-                drafted += 1
+                        "values": {}, "title": title_wanted}
+            added[kind] += 1
+        elif (title_wanted and item.get("content_id")
+                and item.get("title") != title_wanted):
+            retitles.append((item["content_id"], title_wanted))
         for fname, value in values.items():
             if not value or fname not in fields:
                 continue
             if item["values"].get(fname) != value:
                 updates.append((item["id"], fields[fname], value))
 
-    # anything this worktree put on the board that has since left the manifest
-    stale = [i for k, i in items.items()
-             if k not in wanted and i["values"].get("Worktree") == manifest["name"]]
+    if not dry_run:
+        for content_id, new_title in retitles:
+            gql(f'mutation{{updateProjectV2DraftIssue(input:{{'
+                f'draftIssueId:{s(content_id)},title:{s(new_title)}}})'
+                f'{{draftIssue{{id}}}}}}')
+
+    # one project == one worktree, so anything not in the manifest is stale
+    stale = [i for k, i in items.items() if k not in wanted]
     if not dry_run:
         for i in stale:
             gql(f'mutation{{archiveProjectV2Item(input:{{projectId:{s(project["id"])},'
@@ -689,16 +821,68 @@ def push_project(entry, manifest, dry_run=False):
     n_updates = apply_updates(project["id"], updates, dry_run)
     prefix = "[dry-run] " if dry_run else ""
     print(f"{prefix}{project['url']}\n"
-          f"  {added} PR item(s) added, {drafted} draft(s) added, "
+          f"  +{added['Task']} task(s), +{added['PR']} PR(s), "
+          f"+{added['Branch']} branch item(s), "
+          f"{len(retitles)} retitled, "
           f"{n_updates} field value(s) {'to set' if dry_run else 'set'}, "
           f"{len(stale)} archived")
 
     if not dry_run:
         for e in index["projects"]:
             if e["name"] == entry["name"]:
-                e["github_project"] = {"number": project["number"],
-                                       "id": project["id"], "url": project["url"]}
+                e["github_project"] = {"number": project["number"], "id": project["id"],
+                                       "title": title, "url": project["url"]}
         write_if_changed(projects_dir() / "index.json", dump(index))
+
+
+def cmd_task(args):
+    """Manage the worktree's Tasks — units of work, often spun up mid-chat."""
+    entry = find_entry(load_index(), args.name)
+    if not entry:
+        sys.exit(f"not a tracked project: {args.name}")
+    path = projects_dir() / f"{entry['name']}.json"
+    manifest = read_json(path)
+    if manifest is None:
+        sys.exit(f"no manifest for {entry['name']} — run sync first")
+    tasks = manifest.setdefault("tasks", [])
+
+    if args.action == "add":
+        if not args.title:
+            sys.exit("usage: task add <project> <title...>")
+        nid = max((int(t["id"][1:]) for t in tasks), default=0) + 1
+        task = {"id": f"t{nid}", "title": " ".join(args.title),
+                "status": TASK_ALIASES.get(args.status.lower(), "New"),
+                "created": datetime.now(timezone.utc).date().isoformat()}
+        tasks.append(task)
+        print(f"added {task['id']} [{task['status']}] {task['title']}")
+    elif args.action == "set":
+        if not args.title or len(args.title) < 2:
+            sys.exit("usage: task set <project> <id> <new|wip|done> [title...]")
+        tid, status = args.title[0], TASK_ALIASES.get(args.title[1].lower())
+        task = next((t for t in tasks if t["id"] == tid), None)
+        if not task:
+            sys.exit(f"no task {tid} in {entry['name']}")
+        if status:
+            task["status"] = status
+        if len(args.title) > 2:
+            task["title"] = " ".join(args.title[2:])
+        elif not status:
+            sys.exit(f"unknown status {args.title[1]!r} "
+                     f"(use: {', '.join(sorted(set(TASK_ALIASES)))})")
+        print(f"{task['id']} -> [{task['status']}] {task['title']}")
+    else:   # list
+        if not tasks:
+            print(f"no tasks in {entry['name']}")
+        for t in tasks:
+            print(f"  {t['id']:<5} {t['status']:<12} {t['title']}")
+        return
+
+    manifest["tasks"] = sorted(tasks, key=lambda t: int(t["id"][1:]))
+    write_if_changed(path, dump(manifest))
+    if args.push:
+        push_project(entry, manifest, dry_run=False)
+    else:
+        print("(run `project push` to reflect this on the board)")
 
 
 def cmd_project(args):
@@ -756,6 +940,14 @@ def main():
     p.add_argument("name", nargs="?")
     p.add_argument("--dry-run", action="store_true")
     p.set_defaults(func=cmd_project)
+
+    p = sub.add_parser("task", help="manage a worktree's Tasks")
+    p.add_argument("action", choices=["add", "set", "list"])
+    p.add_argument("name", help="tracked project name")
+    p.add_argument("title", nargs="*", help="add: title words; set: <id> <status> [title...]")
+    p.add_argument("--status", default="new", help="initial status for add")
+    p.add_argument("--push", action="store_true", help="push the board after the change")
+    p.set_defaults(func=cmd_task)
 
     args = ap.parse_args()
     args.func(args)
