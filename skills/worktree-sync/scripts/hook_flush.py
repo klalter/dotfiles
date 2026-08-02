@@ -174,6 +174,9 @@ def worker(project: str, reason: str) -> int:
     except OSError:
         # Someone else is doing this job right now. Do not queue more work and
         # do not wait: the holder's run will cover whatever we would have done.
+        # Roll the stamp back, though — losing a race must not also buy the
+        # loser another full FLOOR_MINUTES of silence.
+        stamp_path(project).unlink(missing_ok=True)
         log(f"{project} skip=lock-held reason={reason}")
         return 0
     consumed = queue_size(project)

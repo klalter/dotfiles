@@ -1081,12 +1081,15 @@ class FlusherCase(HookHarness):
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         self.addCleanup(first.wait)
         self.assertTrue(self.wait_for(lambda: self.steps()[:1] == ["sync"]))
+        (self.queue / "demo.last-flush").touch()         # as `detach` would have
         second = subprocess.run(
             [sys.executable, str(SCRIPTS / "hook_flush.py"), "--run", "demo",
              "--reason", "test2"], env=self.env(), capture_output=True, text=True)
         self.assertEqual(second.returncode, 0)
         self.assertIn("skip=lock-held", (self.queue / "flush.log").read_text())
         self.assertEqual(self.steps(), ["sync"])         # the loser ran nothing
+        # and losing the race does not buy another 20 minutes of silence
+        self.assertFalse((self.queue / "demo.last-flush").exists())
         first.wait(timeout=30)
         self.assertEqual(self.steps(), ["sync", "project"])
 

@@ -609,9 +609,11 @@ so two turns in a row cannot both decide a flush is due and race for the lock.
 The worker:
 
 - takes a **non-blocking `flock`** on `projects/.queue/flush.lock` and, if it is
-  held, logs `skip=lock-held` and exits. It does not wait and does not queue
-  more work: the holder is about to do the same job. Sessions in different
-  worktrees commit into the same dotfiles checkout and genuinely interleave.
+  held, rolls its own `.last-flush` stamp back, logs `skip=lock-held` and exits.
+  It does not wait and does not queue more work: the holder is about to do the
+  same job. Sessions in different worktrees commit into the same dotfiles
+  checkout and genuinely interleave. Rolling the stamp back matters because
+  losing the race must not also buy the loser another 20 minutes of silence.
 - exports `WT_SYNC_INTERNAL=1` (loop guard) **and** pins `DOTFILES_DIR` to its
   own repo root, so the tool it runs cannot be sent at another checkout's
   `projects/` by a stale environment.
