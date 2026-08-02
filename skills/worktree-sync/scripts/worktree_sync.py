@@ -15,6 +15,21 @@ so `git status` staying clean *is* the "nothing moved" signal.
 
 `sync --commit` chains sync -> render -> commit, and is the everyday call.
 
+ARGUMENT ORDER: the action comes first, the project second —
+`task set <project> t7 done`, `project push <project>`. Never
+`task <project> set …`.
+
+EXIT CODES, the whole contract:
+    0   success
+    1   error (bad arguments, missing manifest/scope, git failure)
+    3   EXIT_HITL — a human edited that field on the board. Not a failure and
+        not retryable: relay the printed block and ask the owner.
+Nothing else ever returns 3, and no conflict path ever returns 1.
+
+--json is opt-in on scan, sync, status, task, context and project. It prints
+exactly one JSON object on stdout and no prose, so a calling agent can branch
+on the result instead of parsing English; human output stays the default.
+
 Tasks carry a free-text Group, dependencies on other tasks, an instruction
 body, attachments and optional Start/Target dates. The board is the source of
 truth for anything a HUMAN changed there: `project pull` merges those edits
@@ -68,6 +83,16 @@ def projects_dir() -> Path:
 def dump(obj) -> str:
     """Canonical JSON: sorted keys, 2-space indent, trailing newline."""
     return json.dumps(obj, indent=2, sort_keys=True) + "\n"
+
+
+def emit_json(obj) -> None:
+    """Machine-readable output: canonical JSON on stdout, nothing else.
+
+    Every --json command prints exactly one object here and no prose, so a
+    calling agent can branch on the result instead of parsing English. Human
+    output stays the default; --json is opt-in and never mixed with it.
+    """
+    print(dump(obj), end="")
 
 
 def read_json(path: Path, default=None):
@@ -348,9 +373,15 @@ def ordered_tasks(tasks):
 
 
 def blocked_state(task, by_id):
-    """'' (no dependencies), 'Blocked' or 'Ready'."""
+    """'' (nothing to say), 'Blocked' or 'Ready'.
+
+    Blocked/Ready only describes work that still has to happen, so a Complete
+    task is always '' even when it carries dependencies — "Ready" on a finished
+    task is noise, and the board field gets actively cleared (Blocked is in
+    CLEARABLE) when a task moves into Complete.
+    """
     deps = task.get("depends_on") or []
-    if not deps:
+    if not deps or task.get("status") == "Complete":
         return ""
     return "Ready" if all(
         (by_id.get(d) or {}).get("status") == "Complete" for d in deps) else "Blocked"
@@ -365,6 +396,50 @@ def deps_label(task, by_id, width=28):
             title = title[:width - 1].rstrip() + "…"
         parts.append(f"{d} · {title}" if title else d)
     return ", ".join(parts)
+
+
+def task_json(task, by_id) -> dict:
+    """One task as a stable JSON record — the shape every --json command uses.
+
+    Absent optional values are null (not omitted) so a consumer can index every
+    key unconditionally. `blocked` is the derived Blocked/Ready state, null once
+    the task is Complete or has no dependencies.
+    """
+    return {
+        "id": task["id"],
+        "title": task["title"],
+        "status": task["status"],
+        "created": task.get("created") or None,
+        "group": (task.get("group") or "").strip() or None,
+        "owner": (task.get("owner") or "").strip() or None,
+        "depends_on": list(task.get("depends_on") or []),
+        "blocked": blocked_state(task, by_id) or None,
+        "start": task.get("start") or None,
+        "target": task.get("target") or None,
+        "has_body": bool(task.get("body")),
+        "attachments": [{"kind": a.get("kind", "other"),
+                         "path": a.get("path", ""),
+                         "note": a.get("note", "")}
+                        for a in task.get("attachments") or []],
+        "human_edited": sorted(task.get("human_edited") or {}),
+        "draft_id": task.get("draft_id") or None,
+    }
+
+
+def pr_json(pr) -> dict:
+    """One PR as a stable JSON record."""
+    return {"key": pr["key"], "repo": pr["repo"], "number": pr["number"],
+            "title": pr["title"], "status": pr["status"], "state": pr["state"],
+            "url": pr["url"], "branch": pr.get("head", ""),
+            "draft": bool(pr.get("draft")), "review": review_label(pr) or None,
+            "checks": pr.get("checks") or None}
+
+
+def count_by(values) -> dict:
+    out = {}
+    for v in values:
+        out[v] = out.get(v, 0) + 1
+    return out
 
 
 def attachment_kind(ref) -> str:
@@ -511,7 +586,7 @@ def cmd_scan(args):
     prev = read_json(projects_dir() / f"{entry.get('name', '')}.json", {}) or {}
     repos = scan_repos(root, prev.get("repos"), fetch=args.fetch)
     if args.json:
-        print(dump(repos), end="")
+        emit_json(repos)
         return
     print(f"{root}   {len(repos)} repos")
     for r in repos:
@@ -594,9 +669,12 @@ def cmd_sync(args):
     # Human board edits are merged in BEFORE anything is written or pushed, so a
     # session can never silently overwrite one. Best-effort: no project, no
     # 'project' scope, or an API hiccup all degrade to "nothing merged".
+    pulled = []
     if not args.no_pull:
-        for line in pull_project(entry, manifest, dry_run=True):
-            print(f"  HUMAN: {line}")
+        pulled = pull_project(entry, manifest, dry_run=True)
+        if not args.json:
+            for rec in pulled:
+                print(f"  HUMAN: {pull_line(rec)}")
 
     # generated_at only moves when something else did, so no-ops stay clean
     body_changed = {k: v for k, v in prev.items() if k != "generated_at"} != manifest
@@ -608,7 +686,10 @@ def cmd_sync(args):
     changed = write_if_changed(path, dump(manifest), args.dry_run)
 
     if args.json:
-        print(dump(manifest), end="")
+        # The manifest itself IS the machine-readable result of a sync; the
+        # merged human edits are already folded into it, so nothing is lost by
+        # staying silent about them here.
+        emit_json(manifest)
     else:
         old_keys = {p["key"] for p in prev.get("prs", [])}
         new_keys = {p["key"] for p in manifest["prs"]}
@@ -749,11 +830,55 @@ def cmd_render(args):
           if changed else "README.md already current")
 
 
+def status_json(entry, manifest) -> dict:
+    """One project's status as a stable JSON record.
+
+    Shape is identical with and without -v: --json always carries the full
+    `tasks`/`prs` arrays, because a machine reader has no use for a verbosity
+    switch. `synced` is null and `tracked_only` true for a project that is in
+    index.json but has never been synced.
+    """
+    gp = entry.get("github_project") or {}
+    if not manifest:
+        return {"name": entry["name"], "lane": entry.get("lane", ""),
+                "worktree": entry.get("worktree", ""), "synced": None,
+                "tracked_only": True, "board_url": gp.get("url") or None,
+                "repos": 0, "pr_count": 0, "pr_status": {}, "prs": [],
+                "task_count": 0, "task_open": 0, "task_status": {}, "tasks": [],
+                "branches_no_pr": 0, "human_edited": []}
+    tasks = manifest.get("tasks") or []
+    by_id = {t["id"]: t for t in tasks}
+    return {
+        "name": manifest["name"],
+        "lane": manifest.get("lane", ""),
+        "worktree": manifest.get("worktree", ""),
+        "synced": manifest.get("generated_at") or None,
+        "tracked_only": False,
+        "board_url": gp.get("url") or None,
+        "repos": len(manifest.get("repos") or []),
+        "pr_count": len(manifest.get("prs") or []),
+        "pr_status": count_by(p["status"] for p in manifest.get("prs") or []),
+        "prs": [pr_json(p) for p in manifest.get("prs") or []],
+        "task_count": len(tasks),
+        "task_open": len([t for t in tasks if t["status"] != "Complete"]),
+        "task_status": count_by(t["status"] for t in tasks),
+        "tasks": [task_json(t, by_id) for t in ordered_tasks(tasks)],
+        "branches_no_pr": len(manifest.get("branches_no_pr") or []),
+        "human_edited": [f"{t['id']}.{f}" for t in sorted(tasks, key=task_num)
+                         for f in sorted(t.get("human_edited") or {})],
+    }
+
+
 def cmd_status(args):
     index = load_index()
     entries = [e for e in index["projects"] if not args.name or e["name"] == args.name]
     if not entries:
         sys.exit("no tracked projects" + (f" named {args.name}" if args.name else ""))
+    if args.json:
+        emit_json({"projects": [
+            status_json(e, read_json(projects_dir() / f"{e['name']}.json"))
+            for e in entries]})
+        return
     for e in entries:
         m = read_json(projects_dir() / f"{e['name']}.json")
         if not m:
@@ -1227,12 +1352,27 @@ def ensure_views(project_id, fields, dry_run=False):
     return touched
 
 
-def guard_human_edits(entry, manifest, ack=False, dry_run=False):
+def conflict_json(project, task, rows):
+    """The exit-3 payload: one record per field a human owns and the tool wants
+    to change, with the exact commands that would resolve it either way."""
+    return [{"task": task["id"], "title": task["title"], "field": field,
+             "human_value": human, "tool_value": tool, "human_set_at": when,
+             "accept_command": f"worktree_sync.py {fix_command(project, task, field, tool)}",
+             "revert_command": f"worktree_sync.py {fix_command(project, task, field, human)}"
+                               .replace(" --ack-human", "")}
+            for field, human, tool, when in rows]
+
+
+def guard_human_edits(entry, manifest, ack=False, dry_run=False, as_json=False):
     """Refuse to push over a field a human changed on the board.
 
     Runs before any mutation. With --ack-human the owner has consciously
     superseded his own edit, so the stamp records the value he approved and the
     guard stays quiet until a human touches that field again.
+
+    On a conflict this exits EXIT_HITL (3) — never 1. The human-readable block
+    always goes to stderr, because a calling agent must relay it verbatim; with
+    --json the same information also lands on stdout as structured data.
     """
     blocking, acked = [], False
     for t in manifest.get("tasks", []):
@@ -1251,25 +1391,48 @@ def guard_human_edits(entry, manifest, ack=False, dry_run=False):
               f"human board edit the manifest wants to change.\n"
               f"Ask the owner, then re-run with --ack-human to take his answer "
               f"forward.", file=sys.stderr)
+        if as_json:
+            emit_json({"command": "push", "project": entry["name"],
+                       "dry_run": bool(dry_run), "status": "needs_human",
+                       "exit_code": EXIT_HITL,
+                       "conflicts": [rec for t, rows in blocking
+                                     for rec in conflict_json(entry["name"], t, rows)]})
         sys.exit(EXIT_HITL)
     if acked and not dry_run:
         write_if_changed(projects_dir() / f"{entry['name']}.json", dump(manifest))
     return acked
 
 
-def push_project(entry, manifest, dry_run=False, ack=False):
+def push_project(entry, manifest, dry_run=False, ack=False, as_json=False, emit=True):
+    """Render the manifest onto the GitHub project. Returns the summary dict.
+
+    `as_json` swaps the printed summary for that dict; `emit=False` prints
+    nothing at all and leaves the caller to nest the return value (which is what
+    `task … --push --json` does, so one command still prints one object).
+    """
     index = load_index()
-    guard_human_edits(entry, manifest, ack, dry_run)
-    title = worktree_name(Path(entry["worktree"]))
-    project = ensure_project(title, dry_run)
+    guard_human_edits(entry, manifest, ack, dry_run, as_json)
+    # NOT named `title`: the task loop below binds that to each board title, and
+    # a shared name silently stamped the LAST task's title into index.json's
+    # github_project.title (and from there into the dashboard's board link).
+    project_title = worktree_name(Path(entry["worktree"]))
+    project = ensure_project(project_title, dry_run)
     if not project:
-        print(f"[dry-run] would create the '{title}' project")
-        return
+        summary = {"command": "push", "project": entry["name"], "dry_run": True,
+                   "status": "would_create_project", "board_url": None,
+                   "board_title": project_title}
+        if emit:
+            if as_json:
+                emit_json(summary)
+            else:
+                print(f"[dry-run] would create the '{project_title}' project")
+        return summary
+    quiet = as_json or not emit
     fields, created = ensure_fields(project["id"], field_spec(manifest), dry_run)
-    if created:
+    if created and not quiet:
         print(f"  fields {'to create' if dry_run else 'reconciled'}: {', '.join(created)}")
     views = ensure_views(project["id"], fields, dry_run)
-    if views:
+    if views and not quiet:
         print(f"  views {'to create' if dry_run else 'reconciled'}: {', '.join(views)}")
 
     items, board_order = list_items(project["id"])
@@ -1280,6 +1443,7 @@ def push_project(entry, manifest, dry_run=False, ack=False):
     kept, updates, clears, drafts = set(), [], [], []
     desired_order = []           # item ids in the order the rows should appear
     added = {"Task": 0, "PR": 0, "Branch": 0}
+    skipped = []                 # PRs with no node id — re-run sync
     manifest_dirty = False
 
     def queue_values(item, values):
@@ -1352,7 +1516,9 @@ def push_project(entry, manifest, dry_run=False, ack=False):
                 added["PR"] += 1
                 continue
             if not pr.get("node_id"):
-                print(f"  SKIP {pr['key']} — no node id; re-run sync")
+                skipped.append(pr["key"])
+                if not quiet:
+                    print(f"  SKIP {pr['key']} — no node id; re-run sync")
                 continue
             data = gql(f'mutation{{addProjectV2ItemById(input:{{'
                        f'projectId:{s(project["id"])},contentId:{s(pr["node_id"])}}})'
@@ -1415,21 +1581,36 @@ def push_project(entry, manifest, dry_run=False, ack=False):
 
     n_updates = apply_updates(project["id"], updates, dry_run)
     n_clears = apply_clears(project["id"], clears, dry_run)
-    prefix = "[dry-run] " if dry_run else ""
-    print(f"{prefix}{project['url']}\n"
-          f"  +{added['Task']} task(s), +{added['PR']} PR(s), "
-          f"+{added['Branch']} branch item(s), "
-          f"{len(drafts)} title/body edit(s), "
-          f"{n_updates} field value(s) {'to set' if dry_run else 'set'}, "
-          f"{n_clears} cleared, "
-          f"{moved} row(s) reordered, {len(stale)} archived")
+    summary = {
+        "command": "push", "project": entry["name"], "dry_run": bool(dry_run),
+        "status": "ok", "board_url": project["url"],
+        "board_title": project_title, "board_number": project["number"],
+        "fields_reconciled": created, "views_reconciled": views,
+        "added_tasks": added["Task"], "added_prs": added["PR"],
+        "added_branches": added["Branch"], "draft_edits": len(drafts),
+        "values_set": n_updates, "values_cleared": n_clears,
+        "rows_reordered": moved, "archived": len(stale),
+        "skipped_prs": skipped,
+    }
+    if as_json and emit:
+        emit_json(summary)
+    elif emit:
+        prefix = "[dry-run] " if dry_run else ""
+        print(f"{prefix}{project['url']}\n"
+              f"  +{added['Task']} task(s), +{added['PR']} PR(s), "
+              f"+{added['Branch']} branch item(s), "
+              f"{len(drafts)} title/body edit(s), "
+              f"{n_updates} field value(s) {'to set' if dry_run else 'set'}, "
+              f"{n_clears} cleared, "
+              f"{moved} row(s) reordered, {len(stale)} archived")
 
     if not dry_run:
         for e in index["projects"]:
             if e["name"] == entry["name"]:
                 e["github_project"] = {"number": project["number"], "id": project["id"],
-                                       "title": title, "url": project["url"]}
+                                       "title": project_title, "url": project["url"]}
         write_if_changed(projects_dir() / "index.json", dump(index))
+    return summary
 
 
 def find_project(title):
@@ -1458,6 +1639,9 @@ def pull_project(entry, manifest, dry_run=False):
 
     "Depends on" and "Blocked" are NOT pulled — they are renderings the tool
     owns. Dependencies are edited with `task dep`.
+
+    Returns a list of {task, field, board, tool} records — one per merged edit.
+    `pull_line` renders one for humans; --json emits them as-is.
     """
     project = find_project(worktree_name(Path(entry["worktree"])))
     if not project:
@@ -1469,7 +1653,8 @@ def pull_project(entry, manifest, dry_run=False):
     def stamp(task, key, value, was):
         task.setdefault("human_edited", {})[key] = {
             "at": when, "value": value, "was": was}
-        merged.append(f"{task['id']}.{key}: board {value!r} (tool had {was!r})")
+        merged.append({"task": task["id"], "field": key, "board": value,
+                       "tool": was, "at": when})
 
     for t in manifest.get("tasks", []):
         snap = t.get("last_pushed")
@@ -1522,16 +1707,29 @@ def pull_project(entry, manifest, dry_run=False):
     return merged
 
 
-def cmd_pull(entry, manifest, dry_run=False):
+def pull_line(rec) -> str:
+    """One merged board edit, for humans."""
+    return (f"{rec['task']}.{rec['field']}: board {rec['board']!r} "
+            f"(tool had {rec['tool']!r})")
+
+
+def cmd_pull(entry, manifest, dry_run=False, as_json=False):
     merged = pull_project(entry, manifest, dry_run)
+    if as_json:
+        emit_json({"command": "pull", "project": entry["name"],
+                   "dry_run": bool(dry_run), "merged_count": len(merged),
+                   "merged": merged})
+        if merged and not dry_run:
+            render()
+        return
     prefix = "[dry-run] " if dry_run else ""
     if not merged:
         print(f"{prefix}{entry['name']}: no human board edits to merge")
         return
     print(f"{prefix}{entry['name']}: {len(merged)} human edit(s) merged — "
           f"the board wins")
-    for line in merged:
-        print(f"  {line}")
+    for rec in merged:
+        print(f"  {pull_line(rec)}")
     print("  these fields are now stamped human_edited; changing them again "
           "needs --ack-human")
     if not dry_run:
@@ -1639,15 +1837,44 @@ def entry_for_cwd(cwd=None):
     return None
 
 
+PROTOCOL_LINE = (
+    "Protocol: this session must keep the project current — create a task "
+    "(`task add`) when new work starts, close it (`task set <id> done`) when it "
+    "finishes, without asking; autosync pushes everything at session end. "
+    "The board is the source of truth for anything a human changed there: "
+    "propose, never overwrite.")
+
+
 def cmd_context(args):
     """Session-start context block. Reads the manifest only — no network."""
     entry = entry_for_cwd(args.cwd)
     if not entry:
-        return                      # not a tracked worktree: stay silent
+        # Not a tracked worktree. Silent for humans (the hook runs everywhere);
+        # --json still answers, so an agent can test tracked-ness in one call.
+        if args.json:
+            emit_json({"tracked": False, "cwd": str(Path(args.cwd or os.getcwd()).resolve())})
+        return
     m = read_json(projects_dir() / f"{entry['name']}.json")
     if not m:
+        if args.json:
+            emit_json({"tracked": True, "synced": False, "project": entry["name"],
+                       "worktree": entry.get("worktree", ""),
+                       "hint": f"worktree_sync.py sync {entry['name']}"})
+            return
         print(f"[worktree-sync] {entry['name']} is tracked but never synced — "
               f"run: worktree_sync.py sync {entry['name']}")
+        return
+    if args.json:
+        st = status_json(entry, m)
+        emit_json({"tracked": True, "synced": True, "project": entry["name"],
+                   "worktree": st["worktree"], "board_url": st["board_url"],
+                   "generated_at": st["synced"], "repos": st["repos"],
+                   "pr_status": st["pr_status"], "pr_count": st["pr_count"],
+                   "open_tasks": [t for t in st["tasks"] if t["status"] != "Complete"],
+                   "task_count": st["task_count"],
+                   "human_edited": st["human_edited"],
+                   "branches_no_pr": st["branches_no_pr"],
+                   "protocol": PROTOCOL_LINE})
         return
     gp = entry.get("github_project") or {}
     counts = {}
@@ -1687,20 +1914,19 @@ def cmd_context(args):
                      + ", ".join(stamped))
     if m.get("branches_no_pr"):
         lines.append(f"Branches without a PR: {len(m['branches_no_pr'])}")
-    lines.append(
-        "Protocol: this session must keep the project current — create a task "
-        "(`task add`) when new work starts, close it (`task set <id> done`) when it "
-        "finishes, without asking; autosync pushes everything at session end. "
-        "The board is the source of truth for anything a human changed there: "
-        "propose, never overwrite.")
+    lines.append(PROTOCOL_LINE)
     print("\n".join(lines))
 
 
 def cmd_autosync(args):
     """Session-end auto-update: sync -> render -> commit -> project push.
 
-    Must never fail loudly or block a session from ending: every step is
-    best-effort and the exit code is always 0.
+    Best-effort by design: a failed step is reported and swallowed (exit 0) so a
+    session can always end. The ONE exception is EXIT_HITL — a human board edit
+    needs the owner's decision, and losing that behind a 0 would be the tool
+    silently dropping the only thing it is not allowed to decide, so 3 is
+    re-raised. Both hooks in settings.json end in `|| true`, so this still never
+    blocks the session.
     """
     entry = entry_for_cwd(args.cwd)
     if not entry:
@@ -1710,8 +1936,9 @@ def cmd_autosync(args):
         prev = read_json(path, {}) or {}
         root = Path(entry["worktree"]).resolve()
         manifest = build_manifest(entry, root, prev, fetch=False)
-        for line in pull_project(entry, manifest, dry_run=True):
-            print(f"[worktree-sync] HUMAN edit merged from the board — {line}")
+        for rec in pull_project(entry, manifest, dry_run=True):
+            print(f"[worktree-sync] HUMAN edit merged from the board — "
+                  f"{pull_line(rec)}")
         body_changed = {k: v for k, v in prev.items() if k != "generated_at"} != manifest
         manifest["generated_at"] = (
             datetime.now(timezone.utc).replace(microsecond=0).isoformat()
@@ -1728,6 +1955,7 @@ def cmd_autosync(args):
                   "edit above needs the owner's decision. Relay the block verbatim "
                   "and re-run `project push <name> --ack-human` only if he says so.",
                   file=sys.stderr)
+            sys.exit(EXIT_HITL)
         else:
             print(f"[worktree-sync] autosync partial: {e}", file=sys.stderr)
     except Exception as e:           # noqa: BLE001 — never block session end
@@ -1771,6 +1999,12 @@ def cmd_task(args):
     tasks = manifest.setdefault("tasks", [])
     by_id = {t["id"]: t for t in tasks}
     rest, act = args.rest, args.action
+    as_json = getattr(args, "json", False)
+    touched = None                      # the task this invocation changed
+
+    def say(text):
+        if not as_json:
+            print(text)
 
     def pick(tid):
         if tid not in by_id:
@@ -1783,13 +2017,17 @@ def cmd_task(args):
         if not stamp or value in (stamp.get("value"), stamp.get("acked_value")):
             return
         if not args.ack_human:
-            print_conflict(entry["name"], task,
-                           [(field, stamp.get("value"), value, stamp.get("at", "?"))])
+            rows = [(field, stamp.get("value"), value, stamp.get("at", "?"))]
+            print_conflict(entry["name"], task, rows)
+            if as_json:
+                emit_json({"command": "task", "action": act, "project": entry["name"],
+                           "status": "needs_human", "exit_code": EXIT_HITL,
+                           "conflicts": conflict_json(entry["name"], task, rows)})
             sys.exit(EXIT_HITL)
         stamp["acked_value"] = value
         stamp["acked_at"] = now_iso()
-        print(f"  ack: {task['id']}.{field} — overriding the human's "
-              f"{stamp.get('value')!r} with {value!r}")
+        say(f"  ack: {task['id']}.{field} — overriding the human's "
+            f"{stamp.get('value')!r} with {value!r}")
 
     def label(task):
         tags = "".join(f" [{task[k]}]" for k in ("group", "owner") if task.get(k))
@@ -1807,7 +2045,8 @@ def cmd_task(args):
             if val:
                 task[key] = val.strip()
         tasks.append(task)
-        print(f"added {task['id']} {label(task)}")
+        touched = task
+        say(f"added {task['id']} {label(task)}")
 
     elif act == "set":
         if len(rest) < 2:
@@ -1837,7 +2076,8 @@ def cmd_task(args):
             if val is not None and verb != key:
                 guarded(task, key, val.strip())
                 task[key] = val.strip()
-        print(f"{task['id']} -> {label(task)}")
+        touched = task
+        say(f"{task['id']} -> {label(task)}")
 
     elif act == "dep":
         if len(rest) < 2:
@@ -1853,16 +2093,18 @@ def cmd_task(args):
         else:
             sys.exit(f"unknown dep verb {rest[1]!r} (add, rm, clear)")
         task["depends_on"] = sorted(set(deps), key=lambda i: int(i[1:] or 0))
-        print(f"{task['id']} depends on "
-              f"{', '.join(task['depends_on']) or '(nothing)'}")
+        touched = task
+        say(f"{task['id']} depends on "
+            f"{', '.join(task['depends_on']) or '(nothing)'}")
 
     elif act == "dates":
         if len(rest) < 2:
             sys.exit("usage: task dates <project> <id> <start> [target]   "
                      "('-' clears one side)")
-        set_dates(pick(rest[0]), rest[1:], guarded)
-        print(f"{rest[0]} -> {by_id[rest[0]].get('start', '—')} → "
-              f"{by_id[rest[0]].get('target', '—')}")
+        touched = pick(rest[0])
+        set_dates(touched, rest[1:], guarded)
+        say(f"{rest[0]} -> {by_id[rest[0]].get('start', '—')} → "
+            f"{by_id[rest[0]].get('target', '—')}")
 
     elif act == "body":
         if not rest:
@@ -1871,7 +2113,8 @@ def cmd_task(args):
         body = read_body_arg(args)
         guarded(task, "body", body)
         task["body"] = body
-        print(f"{task['id']} body set ({len(body.splitlines())} line(s))")
+        touched = task
+        say(f"{task['id']} body set ({len(body.splitlines())} line(s))")
 
     elif act == "attach":
         if len(rest) < 2:
@@ -1886,7 +2129,8 @@ def cmd_task(args):
         atts = [a for a in (task.get("attachments") or []) if a["path"] != stored]
         atts.append({"kind": kind, "note": args.note or "", "path": stored})
         task["attachments"] = sorted(atts, key=lambda a: a["path"])
-        print(f"{task['id']} + {kind} {stored}")
+        touched = task
+        say(f"{task['id']} + {kind} {stored}")
 
     elif act == "detach":
         if len(rest) < 2:
@@ -1898,13 +2142,19 @@ def cmd_task(args):
             sys.exit(f"{task['id']} has no attachment {ref!r} — "
                      f"have: {', '.join(a['path'] for a in atts) or 'none'}")
         task["attachments"] = keep
-        print(f"{task['id']} - {ref}")
+        touched = task
+        say(f"{task['id']} - {ref}")
 
     elif act == "schedule":
-        schedule_tasks(tasks, args, guarded)
+        schedule_tasks(tasks, args, guarded, quiet=as_json)
 
     else:   # list
-        list_tasks(entry, tasks)
+        if as_json:
+            emit_json({"command": "task", "action": "list",
+                       "project": entry["name"], "task_count": len(tasks),
+                       "tasks": [task_json(t, by_id) for t in ordered_tasks(tasks)]})
+        else:
+            list_tasks(entry, tasks)
         return
 
     errors = validate_deps(tasks)
@@ -1913,10 +2163,19 @@ def cmd_task(args):
                  + "\n  ".join(errors))
     manifest["tasks"] = sorted((prune_task(t) for t in tasks), key=task_num)
     write_if_changed(path, dump(manifest))
+    pushed = None
     if args.push:
-        push_project(entry, manifest, dry_run=False, ack=args.ack_human)
-    else:
+        pushed = push_project(entry, manifest, dry_run=False, ack=args.ack_human,
+                              as_json=as_json, emit=not as_json)
+    elif not as_json:
         print("(run `project push` to reflect this on the board)")
+    if as_json:
+        by_id = {t["id"]: t for t in manifest["tasks"]}
+        emit_json({"command": "task", "action": act, "project": entry["name"],
+                   "status": "ok",
+                   "task": task_json(touched, by_id) if touched else None,
+                   "task_count": len(manifest["tasks"]),
+                   "pushed": pushed})
 
 
 def set_dates(task, values, guarded):
@@ -1934,7 +2193,7 @@ def set_dates(task, values, guarded):
         sys.exit(f"{task['id']}: start {task['start']} is after target {task['target']}")
 
 
-def schedule_tasks(tasks, args, guarded):
+def schedule_tasks(tasks, args, guarded, quiet=False):
     """Opt-in date fill so the roadmap is not empty on day one.
 
     Walks tasks in dependency order and gives each one a window of --days
@@ -1962,8 +2221,10 @@ def schedule_tasks(tasks, args, guarded):
         t["start"], t["target"] = start.isoformat(), target.isoformat()
         targets[t["id"]] = target
         filled += 1
-        print(f"  {t['id']:<5} {start} → {target}  {t['title'][:46]}")
-    print(f"scheduled {filled} task(s) from {base} in {args.days}-day windows")
+        if not quiet:
+            print(f"  {t['id']:<5} {start} → {target}  {t['title'][:46]}")
+    if not quiet:
+        print(f"scheduled {filled} task(s) from {base} in {args.days}-day windows")
 
 
 def list_tasks(entry, tasks):
@@ -2016,80 +2277,228 @@ def cmd_project(args):
     if not manifest:
         sys.exit(f"no manifest for {entry['name']} — run sync first")
     if args.action == "pull":
-        cmd_pull(entry, manifest, args.dry_run)
+        cmd_pull(entry, manifest, args.dry_run, args.json)
     else:
-        push_project(entry, manifest, args.dry_run, args.ack_human)
+        push_project(entry, manifest, args.dry_run, args.ack_human, as_json=args.json)
+
+
+EXIT_CODE_HELP = """exit codes:
+  0  success
+  1  error (bad arguments, missing manifest, missing 'project' scope, git failure)
+  3  a human edited that field on the GitHub board and the tool refuses to
+     overwrite it. NOT a failure and NOT retryable: relay the printed block to
+     the owner verbatim and wait. Re-run with --ack-human only if he says so.
+"""
+
+MAIN_EPILOG = """\
+the everyday calls:
+  worktree_sync.py sync <project> --commit          scan + PRs + dashboard + git commit
+  worktree_sync.py project push <project>           manifest -> GitHub board
+  worktree_sync.py task add <project> "Title" --push
+  worktree_sync.py task set <project> t7 done --push
+  worktree_sync.py status -v                        what's in flight (no network)
+
+argument order — the one that is easy to get backwards:
+  the ACTION comes first, then the PROJECT:
+      task set <project> t7 done      CORRECT
+      task <project> set t7 done      WRONG
+      project push <project>          CORRECT
+  <project> is the manifest name in projects/index.json (e.g. sandbox-cicd),
+  not the "<lane>/<slug>" board title. `sync` and `scan` also accept a path.
+
+--json is available on scan, sync, status, task, context and project. It prints
+exactly one JSON object and no prose, so an agent can branch on the result.
+
+""" + EXIT_CODE_HELP
+
+TASK_EPILOG = """\
+ORDER: task <action> <project> [args…]   — action first, project second.
+
+  task add      <project> "Title" [--status new|wip|done] [--group G] [--owner O] [--push]
+  task list     <project> [--json]
+  task set      <project> <id> <new|wip|done> [new title words…]
+  task set      <project> <id> group "Phase 3 — POA"     ("" clears)
+  task set      <project> <id> owner "TechOps (Patricia)" ("" clears)
+  task set      <project> <id> dates <start> <target>
+  task dates    <project> <id> <start> [target]          ('-' clears one side)
+  task dep      <project> <id> add|rm|clear [ids…]
+  task body     <project> <id> --file F | --text "…" | -     (- reads stdin)
+  task attach   <project> <id> <path-or-url> [--note "…"] [--kind K]
+  task detach   <project> <id> <stored-path-or-url>
+  task schedule <project> --from YYYY-MM-DD [--days N] [--overwrite]
+
+Quote the title: words like --commit inside an unquoted title break argparse.
+Add --push to reflect the change on the GitHub board in the same call.
+
+""" + EXIT_CODE_HELP
 
 
 def main():
-    ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    sub = ap.add_subparsers(dest="cmd", required=True)
+    ap = argparse.ArgumentParser(
+        prog="worktree_sync.py",
+        description="Deterministic tracker for the git worktrees under "
+                    "/workspaces/.wt: one JSON manifest per worktree in "
+                    "$DOTFILES_DIR/projects/, mirrored to one GitHub Projects v2 "
+                    "board. The manifest is the source of truth for what the tool "
+                    "knows; the board is the source of truth for anything a human "
+                    "changed there.",
+        epilog=MAIN_EPILOG,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    sub = ap.add_subparsers(dest="cmd", required=True, metavar="<command>")
 
-    p = sub.add_parser("scan", help="git-only facts, no network")
-    p.add_argument("worktree")
-    p.add_argument("--fetch", action="store_true")
-    p.add_argument("--json", action="store_true")
+    p = sub.add_parser(
+        "scan", help="git-only facts for one worktree, no network",
+        description="Print repos/branches/ahead-behind for a worktree directory. "
+                    "Reads git only and writes nothing, so it works on an "
+                    "untracked worktree too.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="example:\n  worktree_sync.py scan /workspaces/.wt/feat/foo\n")
+    p.add_argument("worktree", help="worktree directory (absolute path)")
+    p.add_argument("--fetch", action="store_true",
+                   help="refresh origin/<base> first, so ahead/behind is current")
+    p.add_argument("--json", action="store_true", help="print the repo list as JSON")
     p.set_defaults(func=cmd_scan)
 
-    p = sub.add_parser("sync", help="scan + PRs, write the manifest")
-    p.add_argument("worktree")
-    p.add_argument("--fetch", action="store_true")
-    p.add_argument("--dry-run", action="store_true")
-    p.add_argument("--json", action="store_true")
-    p.add_argument("--commit", action="store_true")
+    p = sub.add_parser(
+        "sync", help="scan + PRs, merge board edits, write the manifest",
+        description="Rebuild one worktree's manifest from git + GitHub. Merges any "
+                    "human board edit back first (the board wins), then writes "
+                    "projects/<project>.json. A run with no underlying change "
+                    "rewrites nothing.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="examples:\n"
+               "  worktree_sync.py sync sandbox-cicd --dry-run\n"
+               "  worktree_sync.py sync sandbox-cicd --commit   # the everyday call\n\n"
+               + EXIT_CODE_HELP)
+    p.add_argument("worktree", metavar="project",
+                   help="project name from projects/index.json, or a worktree path")
+    p.add_argument("--fetch", action="store_true",
+                   help="refresh origin/<base> per repo (slower, accurate ahead/behind)")
+    p.add_argument("--dry-run", action="store_true", help="write nothing")
+    p.add_argument("--json", action="store_true",
+                   help="print the resulting manifest as JSON instead of a summary")
+    p.add_argument("--commit", action="store_true",
+                   help="also render the dashboard and commit+push projects/")
     p.add_argument("--no-pull", action="store_true",
                    help="skip merging human board edits back first")
     p.set_defaults(func=cmd_sync)
 
-    p = sub.add_parser("status", help="read manifests, print the table")
-    p.add_argument("name", nargs="?")
-    p.add_argument("-v", "--verbose", action="store_true")
+    p = sub.add_parser(
+        "status", help="read the manifests and print what is in flight (no network)",
+        description="Summarise every tracked project, or one named project. Reads "
+                    "the manifests only — no git, no network.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="examples:\n"
+               "  worktree_sync.py status\n"
+               "  worktree_sync.py status sandbox-cicd -v\n"
+               "  worktree_sync.py status --json | jq '.projects[].task_open'\n")
+    p.add_argument("name", nargs="?", help="one project name (default: all)")
+    p.add_argument("-v", "--verbose", action="store_true",
+                   help="also list every task and PR (human output only)")
+    p.add_argument("--json", action="store_true",
+                   help="print {projects:[…]} as JSON; -v does not change the shape")
     p.set_defaults(func=cmd_status)
 
-    p = sub.add_parser("render", help="regenerate projects/README.md")
-    p.add_argument("--dry-run", action="store_true")
+    p = sub.add_parser(
+        "render", help="regenerate projects/README.md",
+        description="Rewrite the dashboard from the manifests. Idempotent.")
+    p.add_argument("--dry-run", action="store_true", help="report, write nothing")
     p.set_defaults(func=cmd_render)
 
-    p = sub.add_parser("commit", help="commit + push dotfiles (current branch)")
+    p = sub.add_parser(
+        "commit", help="commit + push projects/ on the dotfiles' CURRENT branch",
+        description="Commit projects/ and push it to whatever branch the dotfiles "
+                    "checkout is on — never a hardcoded main. Author and committer "
+                    "are forced to Klalter De Abreu Santos <klalter@kyndryl.com>.")
     p.add_argument("-m", "--message", default="chore(projects): sync worktree manifests")
     p.add_argument("--dry-run", action="store_true")
     p.set_defaults(func=cmd_commit)
 
-    p = sub.add_parser("project", help="GitHub Projects v2 (gated)")
-    p.add_argument("action", choices=["push", "pull"])
-    p.add_argument("name", nargs="?")
-    p.add_argument("--dry-run", action="store_true")
+    p = sub.add_parser(
+        "project", help="GitHub Projects v2 board: push or pull",
+        description="push: render the manifest onto the board (idempotent — it "
+                    "diffs and writes only differences). "
+                    "pull: merge human board edits back into the manifest; the "
+                    "board wins and each merged field is stamped human_edited.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="ORDER: project <push|pull> <project>\n\n"
+               "examples:\n"
+               "  worktree_sync.py project push sandbox-cicd\n"
+               "  worktree_sync.py project push sandbox-cicd --dry-run --json\n"
+               "  worktree_sync.py project pull sandbox-cicd\n\n"
+               "Needs the 'project' OAuth scope:\n"
+               "  env -u GH_TOKEN -u GITHUB_TOKEN gh auth refresh -h github.com "
+               "-s project\n\n" + EXIT_CODE_HELP)
+    p.add_argument("action", choices=["push", "pull"], help="push or pull")
+    p.add_argument("name", nargs="?", metavar="project",
+                   help="project name from projects/index.json")
+    p.add_argument("--dry-run", action="store_true",
+                   help="report what would change; mutate nothing")
+    p.add_argument("--json", action="store_true", help="print the summary as JSON")
     p.add_argument("--ack-human", action="store_true",
-                   help="push: overwrite a field a human edited on the board")
+                   help="push: take the owner's answer forward over a field he "
+                        "edited on the board. Never pass this on your own judgement.")
     p.set_defaults(func=cmd_project)
 
-    p = sub.add_parser("new", help="create + track a new /workspaces/.wt worktree")
+    p = sub.add_parser(
+        "new", help="create + track a new /workspaces/.wt worktree",
+        description="One shot: make /workspaces/.wt/<lane>/<slug>/, add a git "
+                    "worktree per repo on branch <lane>/<slug>, register the "
+                    "project in index.json, seed the manifest, render the "
+                    "dashboard. No devx work items, no /workspaces/.ai/work "
+                    "folders — the manifest is the only metadata.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="example:\n"
+               "  worktree_sync.py new feat/my-thing bdg-sw-plcy-policy-service "
+               "bdg-sw-plcy-policy-helm-charts\n"
+               "  worktree_sync.py project push my-thing   # then create the board\n")
     p.add_argument("name", help="<lane>/<slug>, e.g. feat/my-thing")
     p.add_argument("repos", nargs="*", help="repo paths or bare names under /workspaces")
     p.add_argument("--branch", default=None, help="branch name (default: <lane>/<slug>)")
     p.set_defaults(func=cmd_new)
 
-    p = sub.add_parser("context", help="session-start context block (hook)")
-    p.add_argument("--cwd", default=None)
+    p = sub.add_parser(
+        "context", help="session-start context block (SessionStart hook)",
+        description="Print the tracked project's status for the worktree "
+                    "containing --cwd. Silent and instant outside a tracked "
+                    "worktree. Reads the manifest only — no network.")
+    p.add_argument("--cwd", default=None, help="directory to resolve (default: $PWD)")
+    p.add_argument("--json", action="store_true",
+                   help='print as JSON; outside a tracked worktree emits {"tracked": false}')
     p.set_defaults(func=cmd_context)
 
-    p = sub.add_parser("autosync", help="session-end auto sync+commit+push (hook)")
-    p.add_argument("--cwd", default=None)
+    p = sub.add_parser(
+        "autosync", help="session-end sync+render+commit+push (SessionEnd hook)",
+        description="Best-effort full update for the worktree containing --cwd: "
+                    "sync -> dashboard -> dotfiles commit -> board push. Silent "
+                    "outside a tracked worktree. Failures are reported and "
+                    "swallowed (exit 0); a pending human decision still exits 3.")
+    p.add_argument("--cwd", default=None, help="directory to resolve (default: $PWD)")
     p.set_defaults(func=cmd_autosync)
 
-    p = sub.add_parser("task", help="manage a worktree's Tasks")
+    p = sub.add_parser(
+        "task", help="manage a project's Tasks (action FIRST, then project)",
+        usage="worktree_sync.py task <action> <project> [args…] [options]",
+        description="Tasks are chat-spawned units of work. They live in the "
+                    "manifest and appear on the board as draft issues.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=TASK_EPILOG)
     p.add_argument("action", choices=["add", "set", "list", "dep", "dates",
-                                      "body", "attach", "detach", "schedule"])
-    p.add_argument("name", help="tracked project name")
-    p.add_argument("rest", nargs="*",
-                   help='add: "Title"; set: <id> <status|group|dates> [value...]; '
-                        "dep: <id> add|rm|clear [ids...]; dates: <id> <start> [target]; "
-                        "body/attach/detach: <id> [ref]")
-    p.add_argument("--status", default="new", help="initial status for add")
+                                      "body", "attach", "detach", "schedule"],
+                   help="what to do (comes BEFORE the project name)")
+    p.add_argument("name", metavar="project",
+                   help="project name from projects/index.json")
+    p.add_argument("rest", nargs="*", metavar="args",
+                   help='add: "Title"; set: <id> <new|wip|done|group|owner|dates> '
+                        "[value…]; dep: <id> add|rm|clear [ids…]; "
+                        "dates: <id> <start> [target]; "
+                        "body/attach/detach: <id> [ref]; list/schedule: nothing")
+    p.add_argument("--status", default="new",
+                   help="add: initial status (new|wip|done, default new)")
     p.add_argument("--group", default=None,
-                   help='grouping, e.g. "Phase 2 — KAIF" ("" clears it)')
+                   help='add/set: grouping, e.g. "Phase 2 — KAIF" ("" clears it)')
     p.add_argument("--owner", default=None,
-                   help='who answers for it, e.g. "TechOps (Patricia)" '
+                   help='add/set: who answers for it, e.g. "TechOps (Patricia)" '
                         '("" clears it)')
     p.add_argument("--note", default=None, help="attach: a note for the attachment")
     p.add_argument("--kind", default=None,
@@ -2104,8 +2513,13 @@ def main():
     p.add_argument("--overwrite", action="store_true",
                    help="schedule: also redate tasks that already have dates")
     p.add_argument("--ack-human", action="store_true",
-                   help="overwrite a field a human edited on the board")
-    p.add_argument("--push", action="store_true", help="push the board after the change")
+                   help="take the owner's answer forward over a field he edited on "
+                        "the board. Never pass this on your own judgement.")
+    p.add_argument("--push", action="store_true",
+                   help="push the board right after the change")
+    p.add_argument("--json", action="store_true",
+                   help="print one JSON object instead of prose "
+                        "(includes the push summary under 'pushed')")
     p.set_defaults(func=cmd_task)
 
     args = ap.parse_args()
