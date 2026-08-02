@@ -966,6 +966,8 @@
       "group": "Phase 3 \u2014 dev-shell work-feature removal",
       "human_edited": {
         "status": {
+          "acked_at": "2026-08-02T17:59:28Z",
+          "acked_value": "New",
           "at": "2026-08-02T17:40:14Z",
           "value": "In progress",
           "was": "New"
@@ -979,13 +981,13 @@
         "group": "Phase 3 \u2014 dev-shell work-feature removal",
         "owner": "Klalter",
         "start": "2026-08-03",
-        "status": "In progress",
+        "status": "New",
         "target": "2026-08-04",
         "title": "Push feat/remove-work-feature and open the dev-shell PR for team review"
       },
       "owner": "Klalter",
       "start": "2026-08-03",
-      "status": "In progress",
+      "status": "New",
       "target": "2026-08-04",
       "title": "Push feat/remove-work-feature and open the dev-shell PR for team review"
     },
@@ -1111,6 +1113,24 @@
       "status": "In progress",
       "target": "2026-08-05",
       "title": "Flake remainder: guest exit-1 shutdown fix + registry #272/#275 rollout on cto-dev"
+    },
+    {
+      "created": "2026-08-02",
+      "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3uqQ",
+      "id": "t12",
+      "last_pushed": {
+        "blocked": "",
+        "body_hash": "e3b0c44298fc1c14",
+        "depends_on": "",
+        "group": "",
+        "owner": "",
+        "start": "",
+        "status": "In progress",
+        "target": "",
+        "title": "MANETU with/without AgentVisor E2E (5+5) + 2-slide deck"
+      },
+      "status": "In progress",
+      "title": "MANETU with/without AgentVisor E2E (5+5) + 2-slide deck"
     }
   ],
   "view": {
