@@ -80,7 +80,7 @@ regenerated:
 One project per worktree, three item kinds, four views — all created and repaired
 by the tool on every push:
 
-| view | layout | filter | lanes |
+| view | layout | filter | lanes (on built-in `Status`) |
 |---|---|---|---|
 | Tasks · Board | Kanban | `kind:Task` | New / In progress / Complete |
 | Tasks · List | table | `kind:Task` | — |
@@ -90,27 +90,38 @@ by the tool on every push:
 All four filter on the custom `Kind` field — the built-in `type:pr` qualifier
 rendered an **empty** view when tried, so do not go back to it.
 
-Item kinds: **Task** (draft issue, lanes on the built-in `Status` field), **PR**
-(every PR the worktree produced; lanes on `PR status`, review state in `Review`),
-**Branch** (a branch with no PR yet — kept for visibility, shown in no view, and
-NOT given a PR status; that overload was confusing and is gone).
+**One Status field holds every lane.** The API cannot set a board's column field
+(`verticalGroupByFields` has no mutation), and a board view is born grouping by the
+built-in `Status` — so task lanes AND PR lanes are all options of that one field,
+and **both boards come up grouped correctly with zero UI setup**. The price: each
+board shows the other kind's lanes as empty columns (hide them in the UI if they
+bother you; cosmetic, optional). There is no separate `PR status` field anymore.
+
+Item kinds: **Task** (draft issue), **PR** (every PR the worktree produced; also
+carries `PR #` like `#41`, `Org`, `Repo name`, `Branch`, `Base`, `Review`),
+**Branch** (a branch with no PR yet — kept for visibility, shown in no view, no
+status). PR rows are ordered tasks-first, then by (repo, number) via
+`updateProjectV2ItemPosition` — the views carry **no saved sort**, so item order is
+row order.
 
 Idempotent: it diffs the project against the manifest and writes only differences —
-a no-change push is `0 added, 0 set, 0 archived` in ~2s. Items whose PR/task left
-the manifest are **archived**, not deleted. Run it after `sync`; it reads the
-manifest, never git.
+a no-change push is `0 added, 0 set, 0 reordered, 0 archived` in ~2s. Items whose
+PR/task left the manifest are **archived**, not deleted. Run it after `sync`; it
+reads the manifest, never git.
 
 Things that will bite whoever touches this next:
 
-- **The API cannot set a board's column field** (`verticalGroupByFields` has no
-  mutation). A new board groups by the built-in `Status` — which IS the Task lanes,
-  so the Tasks board is right by construction. **The PRs board needs one manual
-  click, once per project:** open PRs · Board → ⌄ on the view tab → Column field →
-  `PR status`. Say so when creating a new project; never claim it's grouped.
+- **Sorting has no mutation either**, but it is readable: a view found carrying a
+  saved sort (someone clicked a column header) is **deleted and recreated** on the
+  next push, because a stray sort (e.g. by Base) scrambles the maintained row
+  order. Don't hand-sort the standard views; make a personal view for that.
 - **Reserved field names**: `Repo` (aliases to built-in `Repository`) and `Type`
-  (collides with the built-in `type:` filter qualifier) — hence `Repo slug` and
-  `Kind`. `Status` is built-in but *editable*: its stock Todo/In Progress/Done
-  options are deliberately replaced with the Task lanes.
+  (collides with the built-in `type:` filter qualifier) — hence `Org`+`Repo name`
+  and `Kind`. `Status` is built-in but *editable*: its stock Todo/In Progress/Done
+  options are deliberately replaced.
+- **Column order isn't controllable**: GitHub ignores the order of
+  `visibleFieldIds` and `Title` is always pinned first — the tool compares column
+  *sets*, so dragging columns around in the UI is safe and won't be fought.
 - **Secondary rate limits are real**: ~50 item-mutations back-to-back trips one.
   `gql()` paces mutations (~0.8s) and retries rate-limit errors with a 60s+ backoff;
   a killed push is safe to just re-run — it resumes from the diff.

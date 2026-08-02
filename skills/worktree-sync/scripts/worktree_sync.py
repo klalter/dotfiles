@@ -480,16 +480,25 @@ TASK_ALIASES = {"new": "New", "todo": "New",
 # not Type, so its filter can't collide with the built-in type qualifier.)
 # The last element is the visible-column list — without it the PR views show
 # the built-in Status column, which PRs never fill, reading as "No status".
+#
+# Both boards group by the BUILT-IN Status field, which is what a board
+# groups by by default — task lanes and PR lanes are all options of that one
+# field, because the API cannot set a board's column field, and this is the
+# only way both boards come up grouped correctly with zero UI setup. The
+# price is a few empty columns per board (hideable in the UI, cosmetic).
 VIEW_SPEC = [
     ("Tasks · Board", "BOARD_LAYOUT", "kind:Task",
      ["Title", "Status", "Last sync"]),
     ("Tasks · List", "TABLE_LAYOUT", "kind:Task",
      ["Title", "Status", "Last sync"]),
     ("PRs · Board", "BOARD_LAYOUT", "kind:PR",
-     ["Title", "PR status", "Review", "Repo slug"]),
+     ["Title", "PR #", "Status", "Review", "Repo name"]),
     ("PRs · List", "TABLE_LAYOUT", "kind:PR",
-     ["Title", "PR status", "Review", "Repo slug", "Branch", "Base", "Last sync"]),
+     ["Title", "PR #", "Status", "Review", "Org", "Repo name",
+      "Branch", "Base", "Last sync"]),
 ]
+# Fields from earlier schema generations, deleted on sight.
+LEGACY_FIELDS = ["PR status", "Repo slug"]
 
 
 def gql(query, allow_error=False):
@@ -545,17 +554,20 @@ def ensure_project(title, dry_run=False):
 def field_spec():
     """The fields one worktree-project needs, with their single-select options.
 
-    "Status" is the BUILT-IN single-select — repurposed as the Task lanes so the
-    Tasks board groups correctly with zero UI configuration (a new board view
-    always groups by Status). Its stock Todo/In Progress/Done options are
-    REPLACED, not extended. "Repo" is rejected as a reserved name (GitHub
-    aliases it to the built-in Repository field), hence "Repo slug".
+    "Status" is the BUILT-IN single-select, repurposed to hold ALL lanes —
+    task lanes and PR lanes as one option set — so that both boards group
+    correctly with zero UI configuration (a board view always groups by
+    Status, and the API cannot change a board's column field). Its stock
+    Todo/In Progress/Done options are REPLACED, not extended. "Repo" is
+    rejected as a reserved name (GitHub aliases it to the built-in Repository
+    field), hence Org + "Repo name".
     """
     return [
         ("Kind", "SINGLE_SELECT", KINDS),
-        ("Status", "SINGLE_SELECT", TASK_STATUSES),
-        ("PR status", "SINGLE_SELECT", PR_STATUSES),
-        ("Repo slug", "TEXT", None),
+        ("Status", "SINGLE_SELECT", TASK_STATUSES + PR_STATUSES),
+        ("PR #", "TEXT", None),
+        ("Org", "TEXT", None),
+        ("Repo name", "TEXT", None),
         ("Branch", "TEXT", None),
         ("Base", "TEXT", None),
         ("Review", "TEXT", None),
@@ -583,6 +595,12 @@ def ensure_fields(project_id, spec, dry_run=False):
          f'}}}}}}}}}}')
     existing = {f["name"]: f for f in gql(q)["node"]["fields"]["nodes"] if f}
     created = []
+    for legacy in LEGACY_FIELDS:
+        if legacy in existing and not dry_run:
+            gql(f'mutation{{deleteProjectV2Field(input:{{'
+                f'fieldId:{s(existing[legacy]["id"])}}}){{projectV2Field{{'
+                f'... on ProjectV2FieldCommon{{id}}}}}}}}', allow_error=True)
+            created.append(f"{legacy} (deleted)")
     for name, dtype, options in spec:
         cur = existing.get(name)
         if not cur:
@@ -642,8 +660,8 @@ def item_key(content):
 
 
 def list_items(project_id):
-    """{key: item} for the whole board."""
-    items, after = {}, None
+    """({key: item}, [item ids in board order]) for the whole project."""
+    items, order, after = {}, [], None
     while True:
         cursor = f',after:{s(after)}' if after else ""
         data = gql(f'query{{node(id:{s(project_id)}){{... on ProjectV2{{'
@@ -667,8 +685,9 @@ def list_items(project_id):
                           "content_id": content.get("id"),
                           "title": content.get("title"),
                           "draft": content.get("__typename") == "DraftIssue"}
+            order.append(n["id"])
         if not page["pageInfo"]["hasNextPage"]:
-            return items
+            return items, order
         after = page["pageInfo"]["endCursor"]
 
 
@@ -707,19 +726,29 @@ def apply_updates(project_id, updates, dry_run=False):
 def ensure_views(project_id, fields, dry_run=False):
     """Create/repair the four standard views; drop the stock 'View 1'.
 
-    The one thing the API cannot do: set a board's COLUMN field
-    (verticalGroupByFields has no mutation). A new board view groups by the
-    built-in Status — which is exactly the Task lanes, so the Tasks board is
-    right by construction. The PRs board needs one manual click:
-    ⌄ next to the view name → Column field → PR status.
+    Boards group by the built-in Status field — the default a board view is
+    born with, and the API cannot change a board's column field — which is why
+    Status holds every lane (task AND PR). Sorting also has no mutation, but a
+    saved sort IS readable: a view found carrying one is deleted and recreated
+    fresh, because a stray sort (e.g. by Base) scrambles the row order the
+    item-position pass maintains.
     """
     data = gql(f'query{{node(id:{s(project_id)}){{... on ProjectV2{{'
                f'views(first:20){{nodes{{id name layout filter '
+               f'sortByFields(first:5){{nodes{{direction}}}} '
                f'fields(first:30){{nodes{{... on ProjectV2FieldCommon{{id}}}}}}}}}}}}}}}}')
     existing = {v["name"]: v for v in data["node"]["views"]["nodes"] if v}
     touched = []
     for name, layout, flt, columns in VIEW_SPEC:
         view = existing.get(name)
+        if view and (view.get("sortByFields") or {}).get("nodes"):
+            if dry_run:
+                touched.append(f"{name} (recreate: stray sort)")
+                continue
+            gql(f'mutation{{deleteProjectV2View(input:{{viewId:{s(view["id"])}}})'
+                f'{{projectV2View{{id}}}}}}', allow_error=True)
+            view = None
+            touched.append(f"{name} (recreated: stray sort)")
         if not view:
             if dry_run:
                 touched.append(name)
@@ -767,12 +796,13 @@ def push_project(entry, manifest, dry_run=False):
     if views:
         print(f"  views {'to create' if dry_run else 'reconciled'}: {', '.join(views)}")
 
-    items = list_items(project["id"])
+    items, board_order = list_items(project["id"])
     drafts_by_id = {i["content_id"]: i for i in items.values() if i.get("content_id")}
     today = (manifest.get("generated_at") or "")[:10]
     repo_meta = {r["slug"]: r for r in manifest["repos"]}
 
     kept, updates, retitles = set(), [], []
+    desired_order = []           # item ids in the order the rows should appear
     added = {"Task": 0, "PR": 0, "Branch": 0}
     manifest_dirty = False
 
@@ -803,12 +833,14 @@ def push_project(entry, manifest, dry_run=False):
             t["draft_id"] = item["content_id"]
             manifest_dirty = True
         kept.add(item["id"])
+        desired_order.append(item["id"])
         queue_values(item, {"Kind": "Task", "Status": t["status"], "Last sync": today})
 
-    for pr in manifest["prs"]:
+    for pr in sorted(manifest["prs"], key=lambda p: (p["repo"], p["number"])):
+        org, _, repo_name = pr["repo"].partition("/")
         values = {
-            "Kind": "PR", "PR status": pr["status"],
-            "Repo slug": pr["repo"], "Branch": pr["head"],
+            "Kind": "PR", "Status": pr["status"], "PR #": f'#{pr["number"]}',
+            "Org": org, "Repo name": repo_name, "Branch": pr["head"],
             "Base": repo_meta.get(pr["repo"], {}).get("base", ""),
             "Review": review_label(pr), "Last sync": today,
         }
@@ -826,11 +858,14 @@ def push_project(entry, manifest, dry_run=False):
             item = {"id": data["addProjectV2ItemById"]["item"]["id"], "values": {}}
             added["PR"] += 1
         kept.add(item["id"])
+        desired_order.append(item["id"])
         queue_values(item, values)
 
     for ref in manifest["branches_no_pr"]:
         slug, _, branch = ref.partition(":")
-        values = {"Kind": "Branch", "Repo slug": slug, "Branch": branch,
+        org, _, repo_name = slug.partition("/")
+        values = {"Kind": "Branch", "Org": org, "Repo name": repo_name,
+                  "Branch": branch,
                   "Base": repo_meta.get(slug, {}).get("base", ""), "Last sync": today}
         item = items.get(ref)
         if not item:
@@ -844,6 +879,7 @@ def push_project(entry, manifest, dry_run=False):
                     "values": {}, "title": ref}
             added["Branch"] += 1
         kept.add(item["id"])
+        desired_order.append(item["id"])
         queue_values(item, values)
 
     if not dry_run:
@@ -861,6 +897,24 @@ def push_project(entry, manifest, dry_run=False):
             gql(f'mutation{{archiveProjectV2Item(input:{{projectId:{s(project["id"])},'
                 f'itemId:{s(i["id"])}}}){{item{{id}}}}}}')
 
+    # Row order: tasks, then PRs by (repo, number), then branches. Views have
+    # no saved sort (ensure_views kills strays), so the item order IS the row
+    # order. Only the suffix after the first out-of-place row is moved.
+    known = set(board_order)
+    current = ([i for i in board_order if i in kept]
+               + [i for i in desired_order if i not in known])
+    moved = 0
+    if current != desired_order:
+        first_bad = next(n for n, (a, b) in enumerate(zip(current, desired_order))
+                         if a != b)
+        if not dry_run:
+            for n in range(first_bad, len(desired_order)):
+                after = (f',afterId:{s(desired_order[n - 1])}' if n else "")
+                gql(f'mutation{{updateProjectV2ItemPosition(input:{{'
+                    f'projectId:{s(project["id"])},itemId:{s(desired_order[n])}'
+                    f'{after}}}){{clientMutationId}}}}', allow_error=True)
+        moved = len(desired_order) - first_bad
+
     n_updates = apply_updates(project["id"], updates, dry_run)
     prefix = "[dry-run] " if dry_run else ""
     print(f"{prefix}{project['url']}\n"
@@ -868,7 +922,7 @@ def push_project(entry, manifest, dry_run=False):
           f"+{added['Branch']} branch item(s), "
           f"{len(retitles)} retitled, "
           f"{n_updates} field value(s) {'to set' if dry_run else 'set'}, "
-          f"{len(stale)} archived")
+          f"{moved} row(s) reordered, {len(stale)} archived")
 
     if not dry_run:
         for e in index["projects"]:
