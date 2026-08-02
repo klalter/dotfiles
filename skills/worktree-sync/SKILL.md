@@ -1,6 +1,6 @@
 ---
 name: "worktree-sync"
-description: "Track the git worktrees under /workspaces/.wt in a deterministic, version-controlled manifest — which repos and branches each worktree holds, every PR that came out of it, and the chat-spawned Tasks — mirrored to one GitHub Project per worktree. Use when Klalter says sync the worktrees, update the worktree manifest, refresh projects, what's in flight, which PRs belong to this worktree, track this worktree, add/close a task, group tasks into phases, set task dependencies or dates, attach instructions/decks/draw.ios to a task, look at the roadmap, pull human edits back from the board, create a new worktree (worktree_sync.py new — NOT devx work), or after opening a PR in a tracked worktree. Also use when he asks about the GitHub project board for worktrees or why it is not updating. Inside a tracked worktree the protocol is automatic: hooks load status at session start and autosync at session end; tasks are created/closed without asking."
+description: "Track the git worktrees under /workspaces/.wt in a deterministic, version-controlled manifest — which repos and branches each worktree holds, every PR that came out of it, and the chat-spawned Tasks — mirrored to one GitHub Project per worktree. Use when Klalter says sync the worktrees, update the worktree manifest, refresh projects, what's in flight, which PRs belong to this worktree, track this worktree, add/close a task, group tasks into phases, set task dependencies or dates, attach instructions/decks/draw.ios to a task, look at the roadmap, pull human edits back from the board, create a new worktree (worktree_sync.py new — NOT devx work), or after opening a PR in a tracked worktree. Also use when he asks about the GitHub project board for worktrees or why it is not updating. Inside a tracked worktree the protocol is automatic: hooks load status at session start, queue PR/task activity as it happens, flush it to the board in the background, and autosync at session end; tasks are created/closed without asking."
 ---
 
 # Worktree sync
@@ -22,7 +22,7 @@ S=$DOTFILES_DIR/skills/worktree-sync/scripts/worktree_sync.py
 | …when ahead/behind must be accurate | `python3 $S sync <project> --fetch --commit` |
 | See what's in flight (no network) | `python3 $S status -v` |
 | Same, for a script/agent | `python3 $S status --json` |
-| Push the manifest to the board | `python3 $S project push <project>` |
+| Push the manifest to the board (pulls first) | `python3 $S project push <project>` |
 | Preview a board push | `python3 $S project push <project> --dry-run` |
 | Merge a human's board edits back | `python3 $S project pull <project>` |
 | Start tracking a new unit of work | `python3 $S task add <project> "Title" --push` |
@@ -49,8 +49,11 @@ S=$DOTFILES_DIR/skills/worktree-sync/scripts/worktree_sync.py
 | Git-only facts, untracked ok | `python3 $S scan /workspaces/.wt/feat/foo` |
 | Session-start status block (hook) | `python3 $S context [--cwd DIR] [--json]` |
 | Session-end full update (hook) | `python3 $S autosync [--cwd DIR]` |
+| What the background flush is up to | `python3 $H --status` |
 | Regenerate the dashboard | `python3 $S render` |
 | Run the offline tests | `python3 $DOTFILES_DIR/skills/worktree-sync/scripts/test_worktree_sync.py` |
+
+`$H` is `$DOTFILES_DIR/skills/worktree-sync/scripts/hook_flush.py`.
 
 `<project>` is the manifest name in `projects/index.json` (`sandbox-cicd`), not the
 `<lane>/<slug>` board title. **The action comes first, the project second:**
@@ -67,7 +70,12 @@ exactly one JSON object with no prose.
 
 1. **The human's board edit wins.** Exit code 3 means the owner has to choose:
    relay the printed block verbatim and stop. Never pass `--ack-human` on your own
-   judgement, and never silently revert a lane he moved.
+   judgement, and never silently revert a lane he moved. Every write path pulls
+   first — `sync`, `project push`, `task … --push`, the background flush — so a
+   fresh board edit is merged or raised, never overwritten. `--ack-human`
+   *releases* the guard on that field (the stamp is cleared); it does not
+   whitelist one value, and the field is guarded again the moment he next edits
+   it on the board.
 2. **Read a task before working it** — its `body` and *every* attachment.
    `.drawio` through `kyndryl-drawio-deck`, `.pptx` through the pptx skill,
    `.md`/images directly, URLs fetched. A task whose attachments were not read has
@@ -97,8 +105,10 @@ exactly one JSON object with no prose.
 12. **`GH_TOKEN`/`GITHUB_TOKEN` must be stripped for every Projects call**
     (`project_env()`). They outrank `hosts.yml`, so leaving them set makes a
     correctly-scoped token be ignored and the scope gate lie.
-13. **`commit` pushes the checked-out branch, never a hardcoded `main`.** Do not
-    "simplify" that to `HEAD:main`.
+13. **`commit` pushes the checked-out branch, never a hardcoded `main`**, and
+    says which branch it pushed. Do not "simplify" that to `HEAD:main`, and do
+    not reintroduce a fixed `pushed to origin/main` line — an agent relays it
+    verbatim, and a false claim of a push to `main` is unrecoverable.
 14. **A no-change push must report all zeros.** `+0 task(s) … 0 field value(s) set,
     0 cleared, 0 row(s) reordered, 0 archived`. Anything else on an unchanged
     manifest is a bug — chase it, don't paper over it.
@@ -133,17 +143,102 @@ exactly one JSON object with no prose.
 
 ## Automatic protocol (hooks)
 
-`~/.claude/settings.json` wires two hooks, both gated on the session cwd being
-inside a worktree registered in `projects/index.json`. Outside one they are silent,
-instant no-ops.
+`~/.claude/settings.json` wires four hooks, all gated on the session cwd being
+inside a worktree registered in `projects/index.json`. Outside one they are
+silent, instant no-ops.
 
-- **SessionStart → `context`** injects the project status (open tasks, PR counts,
-  board URL). No network.
-- **SessionEnd → `autosync`** runs sync → dashboard → dotfiles commit → board push.
+| hook | runs | what it does |
+|---|---|---|
+| SessionStart | `worktree_sync.py context` | injects the project status (open tasks, PR counts, board URL). No network. |
+| SessionStart | `hook_flush.py --session-start` | prints a conflict a background flush parked, and drains a queue a killed session left behind. |
+| PostToolUse[Bash] | `hook_detect.py` | matches the command against `gh pr create/merge/close/ready/edit`, `git push`, `worktree_sync.py task` and appends one line to the queue. ~29 ms, no network. |
+| Stop | `hook_flush.py` | if the queue is non-empty, or the last flush is over 20 minutes old, **detaches** a background flush and returns (~39 ms). |
+| SessionEnd | `worktree_sync.py autosync` | sync → dashboard → dotfiles commit → board push. |
 
-After a mid-session milestone (PR opened/merged, task finished) run
-`sync <project> --commit` + `project push <project>` right away instead of waiting
-for SessionEnd. The behavioural half of this lives in `agent/AGENTS.md`.
+**The turn never waits on the board.** The Stop hook only decides and detaches;
+the work (`sync --commit` then `project push`) happens in a process of its own,
+under an `flock`, and the *next* turn or session start reports it. A flush that
+hits exit 3 stops, parks the block, and never acks.
+
+- Queue, log, lock and parked conflicts: `projects/.queue/` (git-ignored).
+- `python3 $H --status` prints what is queued, when the last flush ran and
+  whether one is due. It changes nothing.
+- `WT_SYNC_INTERNAL=1` makes every hook a no-op — the flusher sets it so its own
+  `worktree_sync.py` calls are not queued again.
+
+**Detection is a hint, never the guarantee.** A PR opened through an MCP tool,
+the web UI or by a teammate matches no Bash pattern. What actually finds PRs is
+the `sync` inside the flush, which searches GitHub; the queue only makes it
+happen sooner. Never report "no queue line" as "nothing happened".
+
+**Hooks are Claude Code-specific.** Codex and Copilot have no equivalent
+surface, so in those CLIs nothing intercepts anything: the SessionEnd/periodic
+sync — or a human running `sync --commit` + `project push` — remains the only
+guarantee there. Same tool, same manifest; only the automation is missing.
+
+A mid-session milestone (PR opened/merged, task finished) still deserves an
+explicit `sync <project> --commit` + `project push <project>` when you want the
+board correct *now*; the hooks are the floor, not a reason to stop reporting.
+The behavioural half of this lives in `agent/AGENTS.md`.
+
+### The wiring, exactly
+
+Hooks are Claude Code's, not this repo's, so they live in
+`~/.claude/settings.json`. Merge this block (paths are the canonical checkout,
+`/workspaces/kas-dotfiles`) — and put the same block in the repo's
+`agent/claude-settings.json`, which `install.sh` merges into the live file, so a
+fresh Codespace comes up wired:
+
+```json
+{
+  "hooks": {
+    "SessionStart": [
+      { "hooks": [
+        { "type": "command",
+          "command": "python3 /workspaces/kas-dotfiles/skills/worktree-sync/scripts/worktree_sync.py context 2>/dev/null || true",
+          "timeout": 15, "statusMessage": "Loading worktree project status" },
+        { "type": "command",
+          "command": "python3 /workspaces/kas-dotfiles/skills/worktree-sync/scripts/hook_flush.py --session-start 2>/dev/null || true",
+          "timeout": 15, "statusMessage": "Checking the worktree flush queue" }
+      ] }
+    ],
+    "PostToolUse": [
+      { "matcher": "Bash",
+        "hooks": [
+          { "type": "command",
+            "command": "python3 /workspaces/kas-dotfiles/skills/worktree-sync/scripts/hook_detect.py 2>/dev/null || true",
+            "timeout": 5 }
+        ] }
+    ],
+    "Stop": [
+      { "hooks": [
+        { "type": "command",
+          "command": "python3 /workspaces/kas-dotfiles/skills/worktree-sync/scripts/hook_flush.py 2>/dev/null || true",
+          "timeout": 10 }
+      ] }
+    ],
+    "SessionEnd": [
+      { "hooks": [
+        { "type": "command",
+          "command": "python3 /workspaces/kas-dotfiles/skills/worktree-sync/scripts/worktree_sync.py autosync 2>/dev/null || true",
+          "timeout": 180, "statusMessage": "Syncing worktree project to GitHub" }
+      ] }
+    ]
+  }
+}
+```
+
+Two things to know before touching it:
+
+- **As of 2026-08-02 the two existing hooks live only in `~/.claude/settings.json`
+  and in neither repo**, and they point at
+  `/workspaces/kas-dotfiles/skills/worktree-sync/scripts/worktree_sync.py`. The
+  live file is a regular file, not a symlink. The retired `my-dotfiles`
+  `install.sh` *linked* `agent/claude-settings.json` over it, which would have
+  destroyed those hooks; kas-dotfiles merges instead. Keep them versioned.
+- The scripts resolve their own repo root from their own path, so the only thing
+  that decides which checkout is written is **which copy the hook command
+  points at**. Change the path prefix and everything follows.
 
 ## Task fields
 
@@ -257,8 +352,14 @@ tool did it.
 
 - **[`references/internals.md`](references/internals.md)** — why any of this is the
   way it is: the Projects v2 API archaeology, the reserved names, the verified dead
-  ends, the rate-limit and determinism reasoning, the `✓` snapshot trap, and the
-  bugs already fixed. **Read it before changing the script.**
+  ends, the rate-limit and determinism reasoning, the `✓` snapshot trap, the hook
+  layer's latency budget, and the bugs already fixed. **Read it before changing
+  the script.**
+- **[`references/automation-plan.md`](references/automation-plan.md)** — the wider
+  design this hook layer is step 3 and 4 of, and what is still only proposed
+  (task journal, PR↔task links, the PreToolUse guard, MCP tools).
+- `scripts/hook_common.py` · `scripts/hook_detect.py` · `scripts/hook_flush.py` —
+  the hook layer. Self-locating; no repo path is hardcoded in any of them.
 - `worktree-pr-view` — owns the saved-view query for a single worktree and shares
   the discovery module.
 - `daily-report` (project-local) — the dated PR `.pptx`; still keeps its own PR

@@ -1,7 +1,15 @@
 # Plan — deterministic project automation for tracked worktrees
 
-Status: **proposal**, nothing implemented. Scope: worktrees under `/workspaces/.wt/`
-registered in `projects/index.json`. Everywhere else this whole document is inert.
+Status: **steps 0, 0b, 3 and 4 are implemented** (2026-08-02); steps 1, 2, 5 and
+6 are still proposals. Scope: worktrees under `/workspaces/.wt/` registered in
+`projects/index.json`. Everywhere else this whole document is inert.
+
+What exists now: every write path pulls before it pushes, `--ack-human` releases
+instead of ratcheting, a `PostToolUse[Bash]` hook queues PR/task activity in
+~29 ms, and a `Stop` hook detaches a background flush in ~39 ms. What does not:
+the deny-guard, the task journal, PR↔task linking and the MCP tools. See §6 for
+the per-step state and `references/internals.md` §19 for how the hook layer
+actually behaves.
 
 The goal: a session cannot *forget* to record work. Tasks, PRs and status move onto the
 GitHub project because the machinery guarantees it, not because an agent remembered a
@@ -41,9 +49,10 @@ cannot invent three different behaviours.
   `gh pr create`, but an agent might open a PR through an MCP tool, the web UI, or a
   teammate might. → Hooks *hint*; the periodic `sync` (a GraphQL search across the
   worktree's repos) is what actually finds PRs. Never rely on the hint alone.
-- **The human's board edit must survive automation.** Today `project push` on its own
-  does not pull first and will silently revert a fresh edit. → Every automated flush is
-  **pull-then-push**, never push alone. This is a prerequisite, not a nice-to-have.
+- **The human's board edit must survive automation.** `project push` on its own did
+  not pull first and would silently revert a fresh edit. → Every automated flush is
+  **pull-then-push**, never push alone. This was a prerequisite, not a
+  nice-to-have; it is **fixed** (step 0) — push pulls by default.
 
 ---
 
@@ -72,7 +81,7 @@ Three layers. Each is useful alone; together they close the loop.
   └───────────────────────┘
 ```
 
-### Layer 1 — MCP tools: the deterministic surface
+### Layer 1 — MCP tools: the deterministic surface  *(not built — step 6)*
 
 Wrap the CLI as typed tools in `dev-shell-mcp`, each a thin shell over
 `worktree_sync.py … --json`:
@@ -98,20 +107,22 @@ Overriding a human's edit stays a deliberate human-authorised act on the CLI.
 
 Four hooks, all no-ops outside a tracked worktree, all wrapped so a failure never blocks.
 
-**(a) `PostToolUse[Bash]` — detect, never act.** Matches the command string against a
-small pattern set and appends one line to a queue file. Must stay under ~50 ms.
+**(a) `PostToolUse[Bash]` — detect, never act.** *(built — `hook_detect.py`,
+measured ~29 ms.)* Matches the command string against a small pattern set and
+appends one line to a queue file. Must stay under ~50 ms.
 
 | pattern | queued intent |
 |---|---|
 | `gh pr create` / `merge` / `close` / `ready` / `edit` | `prs-changed` |
 | `git push` | `prs-changed` (a push often precedes or updates a PR) |
 | `worktree_sync.py task …` | `tasks-changed` |
-| `gh api graphql … ProjectV2` | `board-touched-directly` (audit) |
+| `gh api graphql … ProjectV2` | `board-touched-directly` (audit) — *not built; it belongs with step 5* |
 
 Queue file: `$DOTFILES_DIR/projects/.queue/<project>.jsonl`, one JSON object per line
 (`{at, kind, cmd}`). Append-only, cheap, survives a crashed session.
 
-**(b) `Stop` — flush.** Fires when the assistant finishes a turn: the natural boundary,
+**(b) `Stop` — flush.** *(built — `hook_flush.py`, measured ~39 ms to detach.)*
+Fires when the assistant finishes a turn: the natural boundary,
 because the work is done and the user is reading. If the queue is non-empty *or* the last
 flush is older than N minutes (default 20), run:
 
@@ -124,15 +135,17 @@ turn must never wait minutes on a board push. On exit 3 the flush stops and writ
 conflict block where the next SessionStart `context` will surface it verbatim. **A hook
 never passes `--ack-human`.**
 
-**(c) `PreToolUse[Bash]` — guard.** Deny (exit 2 with a message) any Bash command that
+**(c) `PreToolUse[Bash]` — guard.** *(not built — step 5.)* Deny (exit 2 with a
+message) any Bash command that
 mutates a tracked project board directly: `gh project item-*`, or `gh api graphql` whose
 body contains a ProjectV2 mutation, when the cwd is a tracked worktree. The message names
 the tool command to use instead. This is what turns "agents should use the tool" from a
 rule in a document into something the harness enforces. Read-only `gh api graphql` stays
 allowed — the field test needed it, and so did I.
 
-**(d) `SessionStart` / `SessionEnd`** — unchanged, except SessionStart also drains a
-stale queue left by a killed session.
+**(d) `SessionStart` / `SessionEnd`** — *(built.)* unchanged, except SessionStart
+also drains a stale queue left by a killed session and prints any conflict block
+a background flush parked.
 
 **Loop safety.** The flusher runs `worktree_sync.py`, which the PostToolUse detector
 would otherwise queue again. Guard with an env var (`WT_SYNC_INTERNAL=1`) set by the
@@ -143,7 +156,7 @@ flusher and checked first by the detector.
 `$DOTFILES_DIR/projects/.lock` around manifest-write + commit + push, and skips (rather
 than queues) if the lock is held: the other holder is about to do the same work.
 
-### Layer 3 — The task journal
+### Layer 3 — The task journal  *(not built — step 1)*
 
 Give each task an append-only history so "where are we" is readable off the board.
 
@@ -182,16 +195,35 @@ PR-creation hook attaches the new PR to the session's focused task
 
 Each step is independently useful; stop anywhere.
 
-| # | step | why first |
-|---|---|---|
-| 0 | **Fix `project push` to pull first** (or refuse without a recent pull) | Prerequisite. Automating a push that reverts human edits multiplies the bug. |
-| 0b | Fix the false `pushed to origin/main` line; make `--ack-human` release the guard | Both are already-known defects that automation would amplify. |
-| 1 | Task journal (`task log`, `## Activity` render) | Pure value, no hooks, no risk. |
-| 2 | PR ↔ task link + `task focus` | Needed before a PR hook has anywhere to attach. |
-| 3 | PostToolUse detector + queue (no flushing yet) | Observe for a day; check the patterns catch what they should. |
-| 4 | Stop-hook flusher with lock and backoff | The behavioural change. Watch latency. |
-| 5 | PreToolUse guard | Last, because it can block work if the pattern is too broad. |
-| 6 | MCP tools in `dev-shell-mcp` | Once the CLI surface has stopped moving. |
+| # | step | state | why first |
+|---|---|---|---|
+| 0 | **Fix `project push` to pull first** (or refuse without a recent pull) | **done** | Prerequisite. Automating a push that reverts human edits multiplies the bug. |
+| 0b | Fix the false `pushed to origin/main` line; make `--ack-human` release the guard | **done** | Both are already-known defects that automation would amplify. |
+| 1 | Task journal (`task log`, `## Activity` render) | proposed | Pure value, no hooks, no risk. |
+| 2 | PR ↔ task link + `task focus` | proposed | Needed before a PR hook has anywhere to attach. |
+| 3 | PostToolUse detector + queue (no flushing yet) | **done** | Observe for a day; check the patterns catch what they should. |
+| 4 | Stop-hook flusher with lock and backoff | **done** | The behavioural change. Watch latency. |
+| 5 | PreToolUse guard | proposed | Last, because it can block work if the pattern is too broad. |
+| 6 | MCP tools in `dev-shell-mcp` | proposed | Once the CLI surface has stopped moving. |
+
+### What the build changed about the plan
+
+- **The flush floor cannot key off `generated_at`.** A sync with no underlying
+  change deliberately leaves it alone, so a quiet project would read as stale
+  every single turn. A `.last-flush` stamp file, touched *before* the work,
+  replaces it.
+- **`gh api graphql … ProjectV2` is not queued as `board-touched-directly`.**
+  Auditing it only pays off with step 5, which decides what to do about it; a
+  queue entry nothing reads is noise. The pattern belongs with the guard.
+- **The task pattern has to match `$S task …`**, not just
+  `worktree_sync.py task …` — the `S=…` shorthand is what `SKILL.md` teaches and
+  therefore what agents actually type.
+- **Every hook script self-locates its repo root.** With the machinery living in
+  two checkouts, a hardcoded path or an inherited `DOTFILES_DIR` is how one
+  repo's hook writes the other repo's manifests.
+- **Hooks are Claude Code-only**, which the plan implied but never said. Codex
+  and Copilot get no interception at all; for them the SessionEnd/periodic sync
+  remains the only guarantee.
 
 ## 7. Risks
 

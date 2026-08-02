@@ -308,11 +308,44 @@ left alone for the next push to fix.
 - A merged edit is stamped `human_edited: {field: {at, value, was}}`.
 - `task set` and `project push` then **refuse** to change a stamped field: they
   print the block and exit **3**.
-- `--ack-human` records `acked_value`/`acked_at` on the stamp, so the guard stays
-  quiet until a human touches that field again.
-- `sync` and `autosync` run the pull **before** pushing, so a session can never
-  silently overwrite a board edit. `sync --no-pull` skips it; a missing project or
-  a missing `project` scope degrades to a quiet no-op (`find_project` never exits).
+- `--ack-human` **clears the stamp**. The field is ordinary again until a human
+  next edits it on the board, and the next push re-snapshots `last_pushed` at the
+  tool's value, so nothing re-stamps by itself.
+- `sync`, `autosync`, `project push` and `task … --push` all run the pull
+  **before** pushing, so no path can silently overwrite a board edit. `sync
+  --no-pull` and `project push --no-pull` skip it; a missing project or a missing
+  `project` scope degrades to a quiet no-op (`find_project` never exits).
+
+### Every push pulls first — the bug that made Rule 1 false
+
+`sync` was safe because it pulls. **Standalone `project push` was not**, and
+`SKILL.md` presents it as a normal action. A field test: a human set a task's
+Status on the board with `gh api graphql`, then a bare `project push` ran. Output
+`1 field value(s) set`, exit 0 — the edit was gone, with no `human_edited` stamp
+and no warning. The guard only refuses on an **already-stamped** field, and a
+fresh edit has no stamp yet, so there was nothing to refuse.
+
+`push_project(..., pull=True)` is now the default, and it is what makes an
+automated flush safe to run unattended. `pull=False` exists for the one caller
+that has just pulled — `autosync`, where a second round-trip is felt as latency
+at session end. The regression test (`PushPullsFirstCase`) asserts both
+directions: the default preserves the board value, `--no-pull` reproduces the old
+revert.
+
+### Ack releases, it does not ratchet
+
+The old `--ack-human` recorded `acked_value`/`acked_at` and left the stamp in
+place, so it only silenced **that one value**. A later write of a *different*
+value — with no new human involvement anywhere — exited 3 again, quoting the
+same original board value. Fields drifted toward being permanently uneditable
+without the one flag the skill says never to pass on your own judgement, which
+is precisely backwards.
+
+Ack now deletes the stamp (`ack_human`), and `stamp_blocks()` treats any stamp
+carrying a legacy `acked_at` as released, so manifests written before this change
+stop ratcheting too. The guard is re-armed by the only thing that should re-arm
+it: the human editing that field on the board again, which `pull_project`
+stamps.
 
 ### Body round-trip
 
@@ -468,6 +501,14 @@ Author **and** committer are forced to `Klalter De Abreu Santos
 `GIT_COMMITTER_NAME=GitHub` / `GIT_COMMITTER_EMAIL=noreply@github.com` and those
 silently override `git config`.
 
+**The confirmation line names the branch.** It used to be a hardcoded
+`pushed to origin/main` while the push itself correctly went to `HEAD:<branch>`
+— so a push to a feature branch was *reported* as a push to `main`. The push was
+never wrong; the sentence was, and an agent relays that sentence verbatim.
+Claiming a push to `main` that did not happen (or hiding one that did) is the
+one thing in this repo that cannot be undone by explaining it afterwards.
+`CommitCase` pins the line to the real branch.
+
 If the push 403s, `klalter_kyndryl` lacks push on `klalter/dotfiles`: reset the
 scoped `http.extraheader` with the `klalter` token and re-run `commit`.
 
@@ -508,10 +549,110 @@ scoped `http.extraheader` with the `klalter` token and re-run `commit`.
 | `git branch` for worktree branch discovery | returns every branch in the parent clone |
 | Converting a task draft to an issue by hand | breaks `draft_id`, duplicates, then archives the new issue (§2) |
 | Hardcoding `HEAD:main` as the push target | would land a tooling branch's commits on `main` (§16) |
+| A bare `project push` without pulling first | silently reverts a fresh board edit — no stamp, no warning, exit 0 (§10) |
+| `--ack-human` recording an `acked_value` instead of clearing the stamp | ratchets: the next *different* value conflicts again (§10) |
+| Keying the flush floor off the manifest's `generated_at` | a no-op sync never moves it, so every turn looks stale (§19) |
+| Importing `worktree_sync.py` from the PostToolUse hook | tens of ms on every Bash call to learn there is nothing to do (§19) |
 
 ---
 
-## 19. Related tools
+## 19. The hook layer (Claude Code only)
+
+Steps 3 and 4 of [`automation-plan.md`](automation-plan.md). Three scripts next
+to `worktree_sync.py`: `hook_common.py` (shared gate), `hook_detect.py`
+(`PostToolUse[Bash]`), `hook_flush.py` (`Stop`, `SessionStart`, and its own
+detached worker). All of it is inert outside a worktree registered in
+`projects/index.json`.
+
+**Latency is the whole design constraint.** A push has run past two minutes; a
+no-op push is ~2 s. Nothing on a hook's critical path may wait for GitHub.
+Measured on this Codespace: **~29 ms** per Bash tool call for the detector
+(budget 50), **~39 ms** for the Stop hook to decide and detach. Both numbers are
+re-measured by the test suite on every run and printed.
+
+### The detector
+
+Reads the hook JSON on stdin, and in order: `WT_SYNC_INTERNAL` set → return;
+cwd not in `index.json` → return; command matches nothing → return. On a match
+it appends one line — `{"at","kind","cmd"}` — to
+`projects/.queue/<project>.jsonl` and stops. It never imports
+`worktree_sync.py`: that module pulls in `wt_common`, `subprocess`, `urllib`,
+`hashlib` and a `sys.path` insert, which is tens of milliseconds to learn there
+is nothing to do. The only file it reads is the ~1 KB `index.json`.
+
+Patterns are deliberately a little eager (`\bgit\b…\bpush\b` catches
+`git -C /path push`; the task pattern catches both `worktree_sync.py task …`
+and the `$S task …` shorthand `SKILL.md` itself teaches). A false positive costs
+one ~2 s background no-op; a miss costs a stale board until session end.
+
+**Detection is a hint, never the guarantee** — an MCP tool, the web UI or a
+teammate all bypass it. The `sync` inside the flush is what actually finds PRs.
+
+Appends are `O_APPEND` + one `write()`, so concurrent sessions interleave whole
+lines; a killed session leaves a readable file. A test hammers it with 24
+concurrent processes and re-parses every line.
+
+### The flusher
+
+The hook half decides — queue non-empty, or the last flush older than
+`FLOOR_MINUTES` (20) — then `subprocess.Popen(..., start_new_session=True)`
+(the stdlib's `setsid`) with stdout/stderr to `projects/.queue/flush.log`, and
+returns. It never waits on the child.
+
+**The floor is keyed off a `.last-flush` stamp file, not the manifest's
+`generated_at`.** The plan said `generated_at`, and in the code that turns out
+to be wrong: a sync that changes nothing deliberately leaves `generated_at`
+alone (§15 — that is the "nothing moved" signal), so a quiet project would be
+judged stale on *every* turn, forever. The stamp is touched *before* the work,
+so two turns in a row cannot both decide a flush is due and race for the lock.
+
+The worker:
+
+- takes a **non-blocking `flock`** on `projects/.queue/flush.lock` and, if it is
+  held, logs `skip=lock-held` and exits. It does not wait and does not queue
+  more work: the holder is about to do the same job. Sessions in different
+  worktrees commit into the same dotfiles checkout and genuinely interleave.
+- exports `WT_SYNC_INTERNAL=1` (loop guard) **and** pins `DOTFILES_DIR` to its
+  own repo root, so the tool it runs cannot be sent at another checkout's
+  `projects/` by a stale environment.
+- runs `sync <project> --commit`, then `project push <project>` — pull, then
+  push.
+- **drains only the byte prefix it consumed, and only after both steps
+  succeed.** A failure keeps the queue, so the next turn retries; a hint queued
+  while the flush was running survives it.
+- on **exit 3** stops immediately and writes the block to
+  `projects/.queue/<project>.conflict`, which the next SessionStart prints
+  verbatim and then deletes (an unresolved conflict is parked again by the next
+  flush; repeating a stale block every session teaches people to ignore it).
+  **A hook never passes `--ack-human`.**
+- writes one line per run — project, reason, bytes consumed, duration — so
+  latency and behaviour are auditable after the fact.
+
+`hook_flush.py --status` prints the queue size, the age of the last flush and
+whether one is due. It changes nothing.
+
+### Self-location, and why
+
+`DEFAULT_DOTFILES` used to be a hardcoded `/workspaces/…` string. The machinery
+now exists in two checkouts (the personal `dotfiles` and `kas-dotfiles`), and a
+baked-in path plus a stale exported `DOTFILES_DIR` is exactly how a hook in one
+repo writes the other repo's `projects/` while the live hooks write elsewhere —
+two manifests, silently diverging. Every script therefore walks up from
+`__file__` to its own repo root (`scripts/` → `worktree-sync/` → `skills/` →
+root). `DOTFILES_DIR` still overrides `worktree_sync.py` for a caller who means
+it; the hooks accept only `WT_SYNC_HOME`, which nothing but the tests sets. A
+test greps all four scripts for absolute repo paths and another copies the hook
+scripts into a fresh tree and proves the copy writes there and not into a stale
+`DOTFILES_DIR`.
+
+### Not built, on purpose
+
+The `PreToolUse` deny-guard, the task journal, PR↔task links and the MCP tools
+are still proposals in `automation-plan.md`. And **hooks are Claude Code's**:
+Codex and Copilot have no equivalent, so for those CLIs there is no
+interception at all and the SessionEnd/periodic sync is the only guarantee.
+
+## 20. Related tools
 
 - **`worktree-pr-view`** — owns the GitHub saved-view query for a single worktree
   and shares `wt_common.py` discovery. The manifest's `view` block holds its query
@@ -519,7 +660,7 @@ scoped `http.extraheader` with the `klalter` token and re-run `commit`.
 - **`daily-report`** (project-local) — builds the dated PR `.pptx`. It still keeps
   its own PR JSON; pointing it at `projects/<name>.json` is an open follow-up.
 
-## 20. Hygiene
+## 21. Hygiene
 
 Before any commit touching a worktree, clear Python bytecode (the KAIF repos
 regenerate it on every test run):
@@ -528,7 +669,8 @@ regenerate it on every test run):
 find . -name '__pycache__' -type d -exec rm -rf {} + ; find . -name '*.pyc' -delete
 ```
 
-Run the offline test suite after touching the push/pull layer:
+Run the offline test suite after touching the push/pull layer **or the hooks**
+(it covers both, and prints the measured hook latencies):
 
 ```bash
 python3 $DOTFILES_DIR/skills/worktree-sync/scripts/test_worktree_sync.py
