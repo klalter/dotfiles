@@ -5,7 +5,7 @@ Source of truth is the per-project JSON next to this file.
 
 ## agent-kaif-deploy
 
-`/workspaces/.wt/feat/agent-kaif-deploy` · lane `feat` · 17 repos · 29 PRs · 5 tasks · synced 2026-08-01T23:24:34Z
+`/workspaces/.wt/feat/agent-kaif-deploy` · lane `feat` · 17 repos · 29 PRs · 7 tasks · synced 2026-08-01T23:24:34Z
 
 Board: [feat/agent-kaif-deploy](https://github.com/users/klalter_kyndryl/projects/3)
 
@@ -18,6 +18,8 @@ Board: [feat/agent-kaif-deploy](https://github.com/users/klalter_kyndryl/project
 | `t3` | New | Point daily-report at projects/agent-kaif-deploy.json as its PR source |
 | `t4` | New | Wire 'project push' into 'sync --commit' as one call |
 | `t5` | Complete | Redesign GitHub project: per-worktree, Tasks + PR views |
+| `t6` | In progress | Remove the work feature from dev-shell (CLI, daemon, UI) — agent on feat/remove-work-feature |
+| `t7` | Complete | Full 5-agent x 3-tenant E2E: wrapped + pure-KAIF matrices, Grafana-confirmed, deck 2026-08-02-e2e-matrix.pptx |
 
 | Repo | Branch | Base | Ahead/Behind | PRs |
 | --- | --- | --- | --- | --- |

@@ -802,6 +802,12 @@
       "id": "t6",
       "status": "In progress",
       "title": "Remove the work feature from dev-shell (CLI, daemon, UI) \u2014 agent on feat/remove-work-feature"
+    },
+    {
+      "created": "2026-08-02",
+      "id": "t7",
+      "status": "Complete",
+      "title": "Full 5-agent x 3-tenant E2E: wrapped + pure-KAIF matrices, Grafana-confirmed, deck 2026-08-02-e2e-matrix.pptx"
     }
   ],
   "view": {
