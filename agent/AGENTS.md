@@ -93,11 +93,26 @@ any of it:
   run `sync <name> --commit` + `project push <name>` right away rather than
   waiting for session end.
 - **Tasks, hands-free**: when a new unit of work starts in the chat, create it
-  immediately — `task add <name> "Title" [--status wip] --push`. When work
-  finishes, close it — `task set <name> t<N> done --push`. Do NOT ask whether
-  to create or close; just do it and let the chat show a one-line summary
-  (e.g. ``task t7 → Complete: Fix HITL race``). One conversation may spin up
-  several tasks; each distinct deliverable gets its own.
+  immediately — `task add <name> "Title" [--status wip] [--group "Phase 2 —
+  KAIF"] --push`. When work finishes, close it — `task set <name> t<N> done
+  --push`. Do NOT ask whether to create or close; just do it and let the chat
+  show a one-line summary (e.g. ``task t7 → Complete: Fix HITL race``). One
+  conversation may spin up several tasks; each distinct deliverable gets its
+  own. Tasks also carry a Group, dependencies (`task dep <name> t9 add t5`)
+  and dates — see the `worktree-sync` skill for the full surface.
+- **Read the task before working it**: a task may carry an instruction `body`
+  and attachments (.pptx, .drawio, .md, images, URLs) the owner dropped in.
+  Read the body and *every* attachment before acting — `.drawio` via
+  `kyndryl-drawio-deck`, `.pptx` via the pptx skill. A task whose attachments
+  were not read has not been started.
+- **The human's board edit always wins.** If the owner moved something on the
+  GitHub project, that is the truth; `sync`/`autosync` merge it back before
+  pushing. The agent may *propose* a change (e.g. after validating a task was
+  really implemented) but when the tool exits **3** it is refusing to overwrite
+  a human edit: relay its block verbatim — what the human set and when, what
+  you believe it should be, and the keep / move-forward / move-back options —
+  and wait for his answer. Never pass `--ack-human` on your own judgement, and
+  never silently revert a lane he moved.
 - **New worktrees**: create with `worktree_sync.py new <lane>/<slug> <repo>…` —
   it makes the directory, adds git worktrees, registers the project, seeds the
   manifest, and updates the dashboard. Do NOT create `/workspaces/.ai/work/`
