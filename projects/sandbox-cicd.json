@@ -246,7 +246,7 @@
         "start": "2026-07-30",
         "status": "Complete",
         "target": "2026-07-31",
-        "title": "Step 0 \u2014 create development branches on policy-service and policy-console"
+        "title": "\u2713 Step 0 \u2014 create development branches on policy-service and policy-console"
       },
       "owner": "Bridge Policy (Klalter)",
       "start": "2026-07-30",
@@ -271,7 +271,7 @@
         "start": "2026-07-31",
         "status": "Complete",
         "target": "2026-07-31",
-        "title": "Step 1 \u2014 policy-sandbox onboard-input content (PR #1)"
+        "title": "\u2713 Step 1 \u2014 policy-sandbox onboard-input content (PR #1)"
       },
       "owner": "Bridge Policy (Klalter)",
       "start": "2026-07-31",
@@ -293,7 +293,7 @@
         "start": "2026-07-30",
         "status": "Complete",
         "target": "2026-07-31",
-        "title": "Step 2 \u2014 policy-sandbox chart in policy-helm-charts (PR #231)"
+        "title": "\u2713 Step 2 \u2014 policy-sandbox chart in policy-helm-charts (PR #231)"
       },
       "owner": "Bridge Policy (Klalter)",
       "start": "2026-07-30",
@@ -318,7 +318,7 @@
         "start": "2026-07-31",
         "status": "Complete",
         "target": "2026-07-31",
-        "title": "Step 2b \u2014 helm-charts build.yaml job for the sandbox chart (PR #233)"
+        "title": "\u2713 Step 2b \u2014 helm-charts build.yaml job for the sandbox chart (PR #233)"
       },
       "owner": "Bridge Policy (Klalter)",
       "start": "2026-07-31",
