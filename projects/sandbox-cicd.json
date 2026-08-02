@@ -237,6 +237,16 @@
       "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rUU",
       "group": "Phase 1 \u2014 Policy PoC",
       "id": "t1",
+      "last_pushed": {
+        "blocked": "",
+        "body_hash": "e3b0c44298fc1c14",
+        "depends_on": "",
+        "group": "Phase 1 \u2014 Policy PoC",
+        "start": "2026-07-30",
+        "status": "Complete",
+        "target": "2026-07-31",
+        "title": "Step 0 \u2014 create development branches on policy-service and policy-console"
+      },
       "start": "2026-07-30",
       "status": "Complete",
       "target": "2026-07-31",
@@ -250,6 +260,16 @@
       "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rUY",
       "group": "Phase 1 \u2014 Policy PoC",
       "id": "t2",
+      "last_pushed": {
+        "blocked": "Ready",
+        "body_hash": "e3b0c44298fc1c14",
+        "depends_on": "t3 \u00b7 Step 2 \u2014 policy-sandbox cha\u2026",
+        "group": "Phase 1 \u2014 Policy PoC",
+        "start": "2026-07-31",
+        "status": "Complete",
+        "target": "2026-07-31",
+        "title": "Step 1 \u2014 policy-sandbox onboard-input content (PR #1)"
+      },
       "start": "2026-07-31",
       "status": "Complete",
       "target": "2026-07-31",
@@ -260,6 +280,16 @@
       "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rUg",
       "group": "Phase 1 \u2014 Policy PoC",
       "id": "t3",
+      "last_pushed": {
+        "blocked": "",
+        "body_hash": "e3b0c44298fc1c14",
+        "depends_on": "",
+        "group": "Phase 1 \u2014 Policy PoC",
+        "start": "2026-07-30",
+        "status": "Complete",
+        "target": "2026-07-31",
+        "title": "Step 2 \u2014 policy-sandbox chart in policy-helm-charts (PR #231)"
+      },
       "start": "2026-07-30",
       "status": "Complete",
       "target": "2026-07-31",
@@ -273,6 +303,16 @@
       "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rUo",
       "group": "Phase 1 \u2014 Policy PoC",
       "id": "t4",
+      "last_pushed": {
+        "blocked": "Ready",
+        "body_hash": "e3b0c44298fc1c14",
+        "depends_on": "t2 \u00b7 Step 1 \u2014 policy-sandbox onb\u2026",
+        "group": "Phase 1 \u2014 Policy PoC",
+        "start": "2026-07-31",
+        "status": "Complete",
+        "target": "2026-07-31",
+        "title": "Step 2b \u2014 helm-charts build.yaml job for the sandbox chart (PR #233)"
+      },
       "start": "2026-07-31",
       "status": "Complete",
       "target": "2026-07-31",
@@ -286,6 +326,16 @@
       "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rUs",
       "group": "Phase 1 \u2014 Policy PoC",
       "id": "t5",
+      "last_pushed": {
+        "blocked": "Blocked",
+        "body_hash": "e3b0c44298fc1c14",
+        "depends_on": "t6 \u00b7 Step 4 \u2014 review TechOps BOM\u2026",
+        "group": "Phase 1 \u2014 Policy PoC",
+        "start": "2026-08-08",
+        "status": "In progress",
+        "target": "2026-08-12",
+        "title": "Step 3 \u2014 development build triggers + Option B image names (service #465, console #266)"
+      },
       "start": "2026-08-08",
       "status": "In progress",
       "target": "2026-08-12",
@@ -299,6 +349,16 @@
       "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rUw",
       "group": "Phase 1 \u2014 Policy PoC",
       "id": "t6",
+      "last_pushed": {
+        "blocked": "Ready",
+        "body_hash": "e3b0c44298fc1c14",
+        "depends_on": "t2 \u00b7 Step 1 \u2014 policy-sandbox onb\u2026",
+        "group": "Phase 1 \u2014 Policy PoC",
+        "start": "2026-08-03",
+        "status": "In progress",
+        "target": "2026-08-07",
+        "title": "Step 4 \u2014 review TechOps BOM PRs: bom-input#971 and bom-calculator#226"
+      },
       "start": "2026-08-03",
       "status": "In progress",
       "target": "2026-08-07",
@@ -312,6 +372,16 @@
       "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rU0",
       "group": "Phase 1 \u2014 Policy PoC",
       "id": "t7",
+      "last_pushed": {
+        "blocked": "Blocked",
+        "body_hash": "e3b0c44298fc1c14",
+        "depends_on": "t5 \u00b7 Step 3 \u2014 development build\u2026",
+        "group": "Phase 1 \u2014 Policy PoC",
+        "start": "2026-08-23",
+        "status": "New",
+        "target": "2026-08-27",
+        "title": "Step 5 \u2014 verify the sandbox deploy on cto-dev-kpr"
+      },
       "start": "2026-08-23",
       "status": "New",
       "target": "2026-08-27",
@@ -325,6 +395,16 @@
       "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rU4",
       "group": "Phase 1 \u2014 Policy PoC",
       "id": "t8",
+      "last_pushed": {
+        "blocked": "Ready",
+        "body_hash": "e3b0c44298fc1c14",
+        "depends_on": "t2 \u00b7 Step 1 \u2014 policy-sandbox onb\u2026",
+        "group": "Phase 1 \u2014 Policy PoC",
+        "start": "2026-08-13",
+        "status": "New",
+        "target": "2026-08-17",
+        "title": "Ask TechOps to add the three bdg-eng-tops-* teams to the two phm-*-policy-sandbox repos"
+      },
       "start": "2026-08-13",
       "status": "New",
       "target": "2026-08-17",
@@ -338,6 +418,16 @@
       "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rU8",
       "group": "Phase 1 \u2014 Policy PoC",
       "id": "t9",
+      "last_pushed": {
+        "blocked": "Ready",
+        "body_hash": "e3b0c44298fc1c14",
+        "depends_on": "t1 \u00b7 Step 0 \u2014 create development\u2026",
+        "group": "Phase 1 \u2014 Policy PoC",
+        "start": "2026-08-08",
+        "status": "New",
+        "target": "2026-08-12",
+        "title": "Decide branch protection for the new development branches (main ruleset is ~DEFAULT_BRANCH only)"
+      },
       "start": "2026-08-08",
       "status": "New",
       "target": "2026-08-12",
@@ -351,8 +441,19 @@
         "t6",
         "t7"
       ],
+      "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rsI",
       "group": "Phase 1 \u2014 Policy PoC",
       "id": "t10",
+      "last_pushed": {
+        "blocked": "Blocked",
+        "body_hash": "b6ef06a64e455d4f",
+        "depends_on": "t5 \u00b7 Step 3 \u2014 development build\u2026, t6 \u00b7 Step 4 \u2014 review TechOps BOM\u2026, t7 \u00b7 Step 5 \u2014 verify the sandbox\u2026",
+        "group": "Phase 1 \u2014 Policy PoC",
+        "start": "2026-08-28",
+        "status": "New",
+        "target": "2026-09-01",
+        "title": "Validation gate \u2014 prove Phase 1 E2E, then rewrite the KAIF and POA DRAFT tasks from what actually worked"
+      },
       "start": "2026-08-28",
       "status": "New",
       "target": "2026-09-01",
@@ -364,8 +465,19 @@
       "depends_on": [
         "t10"
       ],
+      "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rsQ",
       "group": "Phase 1 \u2014 Policy PoC",
       "id": "t11",
+      "last_pushed": {
+        "blocked": "Blocked",
+        "body_hash": "3de80dbbc4d51e11",
+        "depends_on": "t10 \u00b7 Validation gate \u2014 prove Pha\u2026",
+        "group": "Phase 1 \u2014 Policy PoC",
+        "start": "2026-09-02",
+        "status": "New",
+        "target": "2026-09-06",
+        "title": "Document the E2E sandbox flow for TechOps \u2014 draw.io diagram + PPT deck + docs/e2e-flow.md"
+      },
       "start": "2026-09-02",
       "status": "New",
       "target": "2026-09-06",
@@ -377,8 +489,19 @@
       "depends_on": [
         "t10"
       ],
+      "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rsU",
       "group": "Phase 2 \u2014 KAIF",
       "id": "t12",
+      "last_pushed": {
+        "blocked": "Blocked",
+        "body_hash": "209b63e2585bc903",
+        "depends_on": "t10 \u00b7 Validation gate \u2014 prove Pha\u2026",
+        "group": "Phase 2 \u2014 KAIF",
+        "start": "2026-09-02",
+        "status": "New",
+        "target": "2026-09-06",
+        "title": "DRAFT \u00b7 KAIF Step 0 \u2014 create the pre-trunk branch on every two-stream KAIF repo"
+      },
       "start": "2026-09-02",
       "status": "New",
       "target": "2026-09-06",
@@ -391,8 +514,19 @@
         "t12",
         "t14"
       ],
+      "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rsg",
       "group": "Phase 2 \u2014 KAIF",
       "id": "t13",
+      "last_pushed": {
+        "blocked": "Blocked",
+        "body_hash": "fc2141f624abce8b",
+        "depends_on": "t12 \u00b7 DRAFT \u00b7 KAIF Step 0 \u2014 creat\u2026, t14 \u00b7 DRAFT \u00b7 KAIF Step 2 \u2014 add t\u2026",
+        "group": "Phase 2 \u2014 KAIF",
+        "start": "2026-09-12",
+        "status": "New",
+        "target": "2026-09-16",
+        "title": "DRAFT \u00b7 KAIF Step 1 \u2014 populate the kaif-sandbox onboard-input repo"
+      },
       "start": "2026-09-12",
       "status": "New",
       "target": "2026-09-16",
@@ -404,8 +538,19 @@
       "depends_on": [
         "t12"
       ],
+      "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rsc",
       "group": "Phase 2 \u2014 KAIF",
       "id": "t14",
+      "last_pushed": {
+        "blocked": "Blocked",
+        "body_hash": "eb2bddb8bec00c45",
+        "depends_on": "t12 \u00b7 DRAFT \u00b7 KAIF Step 0 \u2014 creat\u2026",
+        "group": "Phase 2 \u2014 KAIF",
+        "start": "2026-09-07",
+        "status": "New",
+        "target": "2026-09-11",
+        "title": "DRAFT \u00b7 KAIF Step 2 \u2014 add the kaif-sandbox chart to the KAIF chart repo"
+      },
       "start": "2026-09-07",
       "status": "New",
       "target": "2026-09-11",
@@ -417,8 +562,19 @@
       "depends_on": [
         "t13"
       ],
+      "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rss",
       "group": "Phase 2 \u2014 KAIF",
       "id": "t15",
+      "last_pushed": {
+        "blocked": "Blocked",
+        "body_hash": "4dee116af4af6a14",
+        "depends_on": "t13 \u00b7 DRAFT \u00b7 KAIF Step 1 \u2014 popul\u2026",
+        "group": "Phase 2 \u2014 KAIF",
+        "start": "2026-09-17",
+        "status": "New",
+        "target": "2026-09-21",
+        "title": "DRAFT \u00b7 KAIF Step 2b \u2014 add the sandbox job to the chart repo's build.yaml"
+      },
       "start": "2026-09-17",
       "status": "New",
       "target": "2026-09-21",
@@ -430,8 +586,19 @@
       "depends_on": [
         "t17"
       ],
+      "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rs4",
       "group": "Phase 2 \u2014 KAIF",
       "id": "t16",
+      "last_pushed": {
+        "blocked": "Blocked",
+        "body_hash": "3cefe20560336873",
+        "depends_on": "t17 \u00b7 DRAFT \u00b7 KAIF Step 4 \u2014 BOM:\u2026",
+        "group": "Phase 2 \u2014 KAIF",
+        "start": "2026-09-22",
+        "status": "New",
+        "target": "2026-09-26",
+        "title": "DRAFT \u00b7 KAIF Step 3 \u2014 build triggers on the pre-trunk branch + branch-dependent image names"
+      },
       "start": "2026-09-22",
       "status": "New",
       "target": "2026-09-26",
@@ -443,8 +610,19 @@
       "depends_on": [
         "t13"
       ],
+      "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rsw",
       "group": "Phase 2 \u2014 KAIF",
       "id": "t17",
+      "last_pushed": {
+        "blocked": "Blocked",
+        "body_hash": "701f52191d721758",
+        "depends_on": "t13 \u00b7 DRAFT \u00b7 KAIF Step 1 \u2014 popul\u2026",
+        "group": "Phase 2 \u2014 KAIF",
+        "start": "2026-09-17",
+        "status": "New",
+        "target": "2026-09-21",
+        "title": "DRAFT \u00b7 KAIF Step 4 \u2014 BOM: register kaif-sandbox and switch the environment over"
+      },
       "start": "2026-09-17",
       "status": "New",
       "target": "2026-09-21",
@@ -456,8 +634,19 @@
       "depends_on": [
         "t16"
       ],
+      "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rs8",
       "group": "Phase 2 \u2014 KAIF",
       "id": "t18",
+      "last_pushed": {
+        "blocked": "Blocked",
+        "body_hash": "cc5807481ca9480d",
+        "depends_on": "t16 \u00b7 DRAFT \u00b7 KAIF Step 3 \u2014 build\u2026",
+        "group": "Phase 2 \u2014 KAIF",
+        "start": "2026-09-27",
+        "status": "New",
+        "target": "2026-10-01",
+        "title": "DRAFT \u00b7 KAIF Step 5 \u2014 verify the kaif-sandbox deploy"
+      },
       "start": "2026-09-27",
       "status": "New",
       "target": "2026-10-01",
@@ -470,8 +659,19 @@
         "t10",
         "t18"
       ],
+      "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rtE",
       "group": "Phase 3 \u2014 POA",
       "id": "t19",
+      "last_pushed": {
+        "blocked": "Blocked",
+        "body_hash": "30da1db2a01d98d0",
+        "depends_on": "t10 \u00b7 Validation gate \u2014 prove Pha\u2026, t18 \u00b7 DRAFT \u00b7 KAIF Step 5 \u2014 verif\u2026",
+        "group": "Phase 3 \u2014 POA",
+        "start": "2026-10-02",
+        "status": "New",
+        "target": "2026-10-06",
+        "title": "DRAFT \u00b7 POA Step 0 \u2014 create the pre-trunk branch on every two-stream POA repo"
+      },
       "start": "2026-10-02",
       "status": "New",
       "target": "2026-10-06",
@@ -484,8 +684,19 @@
         "t19",
         "t21"
       ],
+      "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rtQ",
       "group": "Phase 3 \u2014 POA",
       "id": "t20",
+      "last_pushed": {
+        "blocked": "Blocked",
+        "body_hash": "0672177825b1a449",
+        "depends_on": "t19 \u00b7 DRAFT \u00b7 POA Step 0 \u2014 create\u2026, t21 \u00b7 DRAFT \u00b7 POA Step 2 \u2014 add th\u2026",
+        "group": "Phase 3 \u2014 POA",
+        "start": "2026-10-12",
+        "status": "New",
+        "target": "2026-10-16",
+        "title": "DRAFT \u00b7 POA Step 1 \u2014 populate the poa-sandbox onboard-input repo"
+      },
       "start": "2026-10-12",
       "status": "New",
       "target": "2026-10-16",
@@ -497,8 +708,19 @@
       "depends_on": [
         "t19"
       ],
+      "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rtI",
       "group": "Phase 3 \u2014 POA",
       "id": "t21",
+      "last_pushed": {
+        "blocked": "Blocked",
+        "body_hash": "c22574e2038c5ed0",
+        "depends_on": "t19 \u00b7 DRAFT \u00b7 POA Step 0 \u2014 create\u2026",
+        "group": "Phase 3 \u2014 POA",
+        "start": "2026-10-07",
+        "status": "New",
+        "target": "2026-10-11",
+        "title": "DRAFT \u00b7 POA Step 2 \u2014 add the poa-sandbox chart to the POA chart repo"
+      },
       "start": "2026-10-07",
       "status": "New",
       "target": "2026-10-11",
@@ -510,8 +732,19 @@
       "depends_on": [
         "t20"
       ],
+      "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rtU",
       "group": "Phase 3 \u2014 POA",
       "id": "t22",
+      "last_pushed": {
+        "blocked": "Blocked",
+        "body_hash": "1ed9596013d72a6c",
+        "depends_on": "t20 \u00b7 DRAFT \u00b7 POA Step 1 \u2014 popula\u2026",
+        "group": "Phase 3 \u2014 POA",
+        "start": "2026-10-17",
+        "status": "New",
+        "target": "2026-10-21",
+        "title": "DRAFT \u00b7 POA Step 2b \u2014 add the sandbox job to the chart repo's build.yaml"
+      },
       "start": "2026-10-17",
       "status": "New",
       "target": "2026-10-21",
@@ -523,8 +756,19 @@
       "depends_on": [
         "t24"
       ],
+      "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rtg",
       "group": "Phase 3 \u2014 POA",
       "id": "t23",
+      "last_pushed": {
+        "blocked": "Blocked",
+        "body_hash": "41f17392692a4f77",
+        "depends_on": "t24 \u00b7 DRAFT \u00b7 POA Step 4 \u2014 BOM: r\u2026",
+        "group": "Phase 3 \u2014 POA",
+        "start": "2026-10-22",
+        "status": "New",
+        "target": "2026-10-26",
+        "title": "DRAFT \u00b7 POA Step 3 \u2014 build triggers on the pre-trunk branch + branch-dependent image names"
+      },
       "start": "2026-10-22",
       "status": "New",
       "target": "2026-10-26",
@@ -536,8 +780,19 @@
       "depends_on": [
         "t20"
       ],
+      "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rtc",
       "group": "Phase 3 \u2014 POA",
       "id": "t24",
+      "last_pushed": {
+        "blocked": "Blocked",
+        "body_hash": "b572a24f71e010c8",
+        "depends_on": "t20 \u00b7 DRAFT \u00b7 POA Step 1 \u2014 popula\u2026",
+        "group": "Phase 3 \u2014 POA",
+        "start": "2026-10-17",
+        "status": "New",
+        "target": "2026-10-21",
+        "title": "DRAFT \u00b7 POA Step 4 \u2014 BOM: register poa-sandbox and switch the environment over"
+      },
       "start": "2026-10-17",
       "status": "New",
       "target": "2026-10-21",
@@ -549,8 +804,19 @@
       "depends_on": [
         "t23"
       ],
+      "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rto",
       "group": "Phase 3 \u2014 POA",
       "id": "t25",
+      "last_pushed": {
+        "blocked": "Blocked",
+        "body_hash": "8bfca5378d36a40f",
+        "depends_on": "t23 \u00b7 DRAFT \u00b7 POA Step 3 \u2014 build\u2026",
+        "group": "Phase 3 \u2014 POA",
+        "start": "2026-10-27",
+        "status": "New",
+        "target": "2026-10-31",
+        "title": "DRAFT \u00b7 POA Step 5 \u2014 verify the poa-sandbox deploy"
+      },
       "start": "2026-10-27",
       "status": "New",
       "target": "2026-10-31",
