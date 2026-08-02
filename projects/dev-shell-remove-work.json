@@ -1,15 +1,29 @@
 {
   "branches": {},
-  "branches_no_pr": [
-    "kyndryl-cto/bdg-sw-auto-console-dev-shell:feat/remove-work-feature"
-  ],
+  "branches_no_pr": [],
   "exclude_prs": [],
   "extra_prs": [],
-  "generated_at": "2026-08-02T03:40:29Z",
+  "generated_at": "2026-08-02T18:07:59Z",
   "lane": "feat",
   "name": "dev-shell-remove-work",
   "notes": [],
-  "prs": [],
+  "prs": [
+    {
+      "checks": "PENDING",
+      "created": "2026-08-02",
+      "draft": false,
+      "head": "feat/remove-work-feature",
+      "key": "kyndryl-cto/bdg-sw-auto-console-dev-shell#69",
+      "node_id": "PR_kwDOQ6Bfps75tGq1",
+      "number": 69,
+      "repo": "kyndryl-cto/bdg-sw-auto-console-dev-shell",
+      "review": "REVIEW_REQUIRED",
+      "state": "OPEN",
+      "status": "Open",
+      "title": "refactor: remove the work feature from dev-shell (CLI, daemon, UI)",
+      "url": "https://github.com/kyndryl-cto/bdg-sw-auto-console-dev-shell/pull/69"
+    }
+  ],
   "repos": [
     {
       "ahead": 5,
@@ -19,16 +33,25 @@
       "dir": "bdg-sw-auto-console-dev-shell",
       "dirty": false,
       "last_commit": {
-        "date": "2026-08-02T03:37:33Z",
-        "sha": "ddca85a",
+        "date": "2026-08-02T18:05:11Z",
+        "sha": "9dc8d8f",
         "subject": "chore: remove remaining work-feature config, docs and scripts"
       },
-      "prs": [],
+      "prs": [
+        "kyndryl-cto/bdg-sw-auto-console-dev-shell#69"
+      ],
       "slug": "kyndryl-cto/bdg-sw-auto-console-dev-shell"
     }
   ],
   "since": null,
   "tasks": [],
-  "view": {},
+  "view": {
+    "color": "purple",
+    "icon": "code-review",
+    "name": "feat/dev-shell-remove-work",
+    "query": "is:pr head:feat/remove-work-feature repo:kyndryl-cto/bdg-sw-auto-console-dev-shell",
+    "stray": [],
+    "url": "https://github.com/pulls?q=is%3Apr%20head%3Afeat%2Fremove-work-feature%20repo%3Akyndryl-cto%2Fbdg-sw-auto-console-dev-shell"
+  },
   "worktree": "/workspaces/.wt/feat/dev-shell-remove-work"
 }

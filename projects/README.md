@@ -5,7 +5,7 @@ Source of truth is the per-project JSON next to this file.
 
 ## agent-kaif-deploy
 
-`/workspaces/.wt/feat/agent-kaif-deploy` · lane `feat` · 17 repos · 31 PRs · 11 tasks · synced 2026-08-02T17:41:40Z
+`/workspaces/.wt/feat/agent-kaif-deploy` · lane `feat` · 17 repos · 31 PRs · 12 tasks · synced 2026-08-02T17:41:40Z
 
 Board: [feat/agent-kaif-deploy](https://github.com/users/klalter_kyndryl/projects/3)
 
@@ -26,7 +26,7 @@ Board: [feat/agent-kaif-deploy](https://github.com/users/klalter_kyndryl/project
 | Task | Status | Owner | Depends on | Dates | Title | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
 | `t6` | Complete | Klalter | — | 2026-07-31 → 2026-08-02 | Remove the work feature from dev-shell (CLI, daemon, UI) — agent on feat/remove-work-feature | — |
-| `t8` | In progress | Klalter | `t6` | 2026-08-03 → 2026-08-04 | Push feat/remove-work-feature and open the dev-shell PR for team review | body · human: status |
+| `t8` | New | Klalter | `t6` | 2026-08-03 → 2026-08-04 | Push feat/remove-work-feature and open the dev-shell PR for team review | body · human: status |
 
 **Phase 1 — AgentVisor E2E validation**
 
@@ -41,6 +41,12 @@ Board: [feat/agent-kaif-deploy](https://github.com/users/klalter_kyndryl/project
 | Task | Status | Owner | Depends on | Dates | Title | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
 | `t9` | New | Klalter — with KAIF Admin / registry review | — | 2026-08-04 → 2026-08-06 | Kill-run API: terminate stuck Argo runs via registry (KAIF Admin) | body · 1 file(s) · human: owner |
+
+**(no group)**
+
+| Task | Status | Owner | Depends on | Dates | Title | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| `t12` | In progress | — | — | — | MANETU with/without AgentVisor E2E (5+5) + 2-slide deck | — |
 
 | Repo | Branch | Base | Ahead/Behind | PRs |
 | --- | --- | --- | --- | --- |
@@ -68,15 +74,15 @@ Board: [feat/agent-kaif-deploy](https://github.com/users/klalter_kyndryl/project
 
 ## dev-shell-remove-work
 
-`/workspaces/.wt/feat/dev-shell-remove-work` · lane `feat` · 1 repos · 0 PRs · 0 tasks · synced 2026-08-02T03:40:29Z
+`/workspaces/.wt/feat/dev-shell-remove-work` · lane `feat` · 1 repos · 1 PRs · 0 tasks · synced 2026-08-02T18:07:59Z
 
 Board: [feat/dev-shell-remove-work](https://github.com/users/klalter_kyndryl/projects/4)
 
 | Repo | Branch | Base | Ahead/Behind | PRs |
 | --- | --- | --- | --- | --- |
-| [kyndryl-cto/bdg-sw-auto-console-dev-shell](https://github.com/kyndryl-cto/bdg-sw-auto-console-dev-shell) | `feat/remove-work-feature` | `main` | +5 / −0 | — |
+| [kyndryl-cto/bdg-sw-auto-console-dev-shell](https://github.com/kyndryl-cto/bdg-sw-auto-console-dev-shell) | `feat/remove-work-feature` | `main` | +5 / −0 | [#69](https://github.com/kyndryl-cto/bdg-sw-auto-console-dev-shell/pull/69) Open |
 
-**Branches with no PR yet:** `kyndryl-cto/bdg-sw-auto-console-dev-shell:feat/remove-work-feature`
+[All PRs for this worktree](https://github.com/pulls?q=is%3Apr%20head%3Afeat%2Fremove-work-feature%20repo%3Akyndryl-cto%2Fbdg-sw-auto-console-dev-shell)
 
 ## sandbox-cicd
 
