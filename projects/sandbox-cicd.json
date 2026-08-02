@@ -8,12 +8,49 @@
     "kyndryl-cto/bdg-sw-plcy-policy-service:feat/sandbox-cicd"
   ],
   "exclude_prs": [],
-  "extra_prs": [],
-  "generated_at": "2026-08-02T13:34:50Z",
+  "extra_prs": [
+    "kyndryl-cto/bdg-eng-tops-techops-bom-calculator#226",
+    "kyndryl-cto/bdg-eng-tops-techops-bom-input#971"
+  ],
+  "generated_at": "2026-08-02T13:35:27Z",
   "lane": "feat",
   "name": "sandbox-cicd",
-  "notes": [],
+  "notes": [
+    "Enable `development` \u2192 cto-dev-kpr for Bridge Policy via a second TechOps application, `policy-sandbox`. PLAN.md \u00a79 is the reusable recipe (kaif-sandbox next).",
+    "\u00a74 settled: Option B, branch-dependent image names. \u00a75 Step 4 settled: replace \u2014 the sandbox app ships the whole environment.",
+    "bom-input#971 and bom-calculator#226 are TechOps-authored (Patricia Batista Duarte); we have read-only access there, so our role is review, not authorship."
+  ],
   "prs": [
+    {
+      "checks": "SUCCESS",
+      "created": "2026-07-31",
+      "draft": false,
+      "head": "pduarte_kyndryl-patch-1",
+      "key": "kyndryl-cto/bdg-eng-tops-techops-bom-calculator#226",
+      "node_id": "PR_kwDOQTelg875Ma9c",
+      "number": 226,
+      "repo": "kyndryl-cto/bdg-eng-tops-techops-bom-calculator",
+      "review": "REVIEW_REQUIRED",
+      "state": "OPEN",
+      "status": "Open",
+      "title": "Update services-manifest.json",
+      "url": "https://github.com/kyndryl-cto/bdg-eng-tops-techops-bom-calculator/pull/226"
+    },
+    {
+      "checks": "SUCCESS",
+      "created": "2026-07-31",
+      "draft": false,
+      "head": "pduarte_kyndryl-patch-5",
+      "key": "kyndryl-cto/bdg-eng-tops-techops-bom-input#971",
+      "node_id": "PR_kwDOQTeDd875MOw0",
+      "number": 971,
+      "repo": "kyndryl-cto/bdg-eng-tops-techops-bom-input",
+      "review": "APPROVED",
+      "state": "OPEN",
+      "status": "Open",
+      "title": "Update input.json",
+      "url": "https://github.com/kyndryl-cto/bdg-eng-tops-techops-bom-input/pull/971"
+    },
     {
       "checks": "FAILURE",
       "created": "2026-07-31",
@@ -118,7 +155,9 @@
         "sha": "38f3ed0",
         "subject": "feat: run policy-sandbox instead of policy on cto-dev-kpr"
       },
-      "prs": [],
+      "prs": [
+        "kyndryl-cto/bdg-eng-tops-techops-bom-input#971"
+      ],
       "slug": "kyndryl-cto/bdg-eng-tops-techops-bom-input"
     },
     {
@@ -192,14 +231,69 @@
     }
   ],
   "since": null,
-  "tasks": [],
+  "tasks": [
+    {
+      "created": "2026-08-02",
+      "id": "t1",
+      "status": "Complete",
+      "title": "Step 0 \u2014 create development branches on policy-service and policy-console"
+    },
+    {
+      "created": "2026-08-02",
+      "id": "t2",
+      "status": "Complete",
+      "title": "Step 1 \u2014 policy-sandbox onboard-input content (PR #1)"
+    },
+    {
+      "created": "2026-08-02",
+      "id": "t3",
+      "status": "Complete",
+      "title": "Step 2 \u2014 policy-sandbox chart in policy-helm-charts (PR #231)"
+    },
+    {
+      "created": "2026-08-02",
+      "id": "t4",
+      "status": "Complete",
+      "title": "Step 2b \u2014 helm-charts build.yaml job for the sandbox chart (PR #233)"
+    },
+    {
+      "created": "2026-08-02",
+      "id": "t5",
+      "status": "In progress",
+      "title": "Step 3 \u2014 development build triggers + Option B image names (service #465, console #266)"
+    },
+    {
+      "created": "2026-08-02",
+      "id": "t6",
+      "status": "In progress",
+      "title": "Step 4 \u2014 review TechOps BOM PRs: bom-input#971 and bom-calculator#226"
+    },
+    {
+      "created": "2026-08-02",
+      "id": "t7",
+      "status": "New",
+      "title": "Step 5 \u2014 verify the sandbox deploy on cto-dev-kpr"
+    },
+    {
+      "created": "2026-08-02",
+      "id": "t8",
+      "status": "New",
+      "title": "Ask TechOps to add the three bdg-eng-tops-* teams to the two phm-*-policy-sandbox repos"
+    },
+    {
+      "created": "2026-08-02",
+      "id": "t9",
+      "status": "New",
+      "title": "Decide branch protection for the new development branches (main ruleset is ~DEFAULT_BRANCH only)"
+    }
+  ],
   "view": {
     "color": "purple",
     "icon": "code-review",
     "name": "feat/sandbox-cicd",
-    "query": "is:pr head:feat/sandbox-build-job head:feat/sandbox-build-trigger head:feat/sandbox-cicd repo:kyndryl-cto/bdg-sw-plcy-policy-console repo:kyndryl-cto/bdg-sw-plcy-policy-helm-charts repo:kyndryl-cto/bdg-sw-plcy-policy-sandbox-onboard-input repo:kyndryl-cto/bdg-sw-plcy-policy-service",
+    "query": "is:pr created:>=2026-07-31 head:feat/sandbox-build-job head:feat/sandbox-build-trigger head:feat/sandbox-cicd head:pduarte_kyndryl-patch-1 head:pduarte_kyndryl-patch-5 repo:kyndryl-cto/bdg-eng-tops-techops-bom-calculator repo:kyndryl-cto/bdg-eng-tops-techops-bom-input repo:kyndryl-cto/bdg-sw-plcy-policy-console repo:kyndryl-cto/bdg-sw-plcy-policy-helm-charts repo:kyndryl-cto/bdg-sw-plcy-policy-sandbox-onboard-input repo:kyndryl-cto/bdg-sw-plcy-policy-service",
     "stray": [],
-    "url": "https://github.com/pulls?q=is%3Apr%20head%3Afeat%2Fsandbox-build-job%20head%3Afeat%2Fsandbox-build-trigger%20head%3Afeat%2Fsandbox-cicd%20repo%3Akyndryl-cto%2Fbdg-sw-plcy-policy-console%20repo%3Akyndryl-cto%2Fbdg-sw-plcy-policy-helm-charts%20repo%3Akyndryl-cto%2Fbdg-sw-plcy-policy-sandbox-onboard-input%20repo%3Akyndryl-cto%2Fbdg-sw-plcy-policy-service"
+    "url": "https://github.com/pulls?q=is%3Apr%20created%3A%3E%3D2026-07-31%20head%3Afeat%2Fsandbox-build-job%20head%3Afeat%2Fsandbox-build-trigger%20head%3Afeat%2Fsandbox-cicd%20head%3Apduarte_kyndryl-patch-1%20head%3Apduarte_kyndryl-patch-5%20repo%3Akyndryl-cto%2Fbdg-eng-tops-techops-bom-calculator%20repo%3Akyndryl-cto%2Fbdg-eng-tops-techops-bom-input%20repo%3Akyndryl-cto%2Fbdg-sw-plcy-policy-console%20repo%3Akyndryl-cto%2Fbdg-sw-plcy-policy-helm-charts%20repo%3Akyndryl-cto%2Fbdg-sw-plcy-policy-sandbox-onboard-input%20repo%3Akyndryl-cto%2Fbdg-sw-plcy-policy-service"
   },
   "worktree": "/workspaces/.wt/feat/sandbox-cicd"
 }
