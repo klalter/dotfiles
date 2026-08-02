@@ -18,7 +18,7 @@ S=$DOTFILES_DIR/skills/worktree-sync/scripts/worktree_sync.py
 python3 $S sync agent-kaif-deploy --commit         # the everyday call
 python3 $S project push agent-kaif-deploy          # render manifest -> GitHub project
 python3 $S project pull agent-kaif-deploy          # board -> manifest (the human wins)
-python3 $S task add agent-kaif-deploy "Title" [--status wip] [--group "Phase 2 — KAIF"] [--push]
+python3 $S task add agent-kaif-deploy "Title" [--status wip] [--group "Phase 2 — KAIF"] [--owner "TechOps (Patricia)"] [--push]
 python3 $S task set agent-kaif-deploy t3 done --push
 python3 $S task list agent-kaif-deploy
 python3 $S new feat/my-thing repo1 repo2           # create + track a new worktree
@@ -32,6 +32,7 @@ The full task surface — group, dependencies, dates, instructions, attachments:
 
 ```bash
 python3 $S task set  <name> t3 group "Phase 3 — POA"    # or --group on add/set
+python3 $S task set  <name> t3 owner "TechOps (Patricia)"   # or --owner; "" clears
 python3 $S task set  <name> t3 dates 2026-08-10 2026-08-20
 python3 $S task dates <name> t3 2026-08-10 2026-08-20   # '-' clears one side
 python3 $S task dep  <name> t9 add t5 t6                # rm | clear too
@@ -93,6 +94,7 @@ empty**, so a manifest written before any of it existed round-trips byte-for-byt
 | key | what it is |
 |---|---|
 | `group` | free text, e.g. `Phase 1 — Policy PoC`; becomes a `Group` option |
+| `owner` | free text — who answers for it, e.g. `TechOps (Patricia)` |
 | `depends_on` | `["t3","t4"]`; validated on every write |
 | `body` | the instruction text the owner writes for whoever works the task |
 | `attachments` | `[{path, kind, note}]` — files/URLs to read before acting |
@@ -108,7 +110,15 @@ only ever extended — a hand-added option survives. `Group` was probed against 
 API and is **not** reserved (unlike `Repo` and `Type`); no fallback to `Phase` was
 needed. The field only appears once some task has a group: GitHub refuses to create
 a single-select with no options ("At least one singleSelectOption is required"),
-and inventing a placeholder would be a lie on the board.
+and inventing a placeholder would be a lie on the board. **Confirmed on the live
+boards:** a project whose tasks all have no group gets no `Group` field at all, so
+it is missing from GitHub's "Group by" menu entirely. That reads exactly like a
+broken push and is not one — set a group on one task and push again.
+
+**Owner** is deliberately plain `TEXT`, not a select: `TechOps (Patricia)` is a
+team *and* a person, and a select would force a taxonomy nobody has. `""` clears
+it. `Owner` was probed and is free; **`Assignee` is reserved** ("Name cannot have a
+reserved value") — do not try to reuse it for this.
 
 **Dependencies** are `depends_on` on the task. Every write validates the whole
 graph and refuses on an unknown id, a self-reference or a cycle. **Projects v2 has
@@ -186,8 +196,8 @@ source of truth for anything a *human* changed there. The bridge is a per-task
   touched it, the manifest wins as before. Board value **!=** `last_pushed` → a
   human moved it, so **the board wins**: the value is merged into the manifest and
   stamped `human_edited: {field: {at, value, was}}`.
-- Pulled fields are `Status`, `Group`, `Start`, `Target`, the title, and the prose
-  half of the body. A task with no `last_pushed` yet is skipped — without a
+- Pulled fields are `Status`, `Group`, `Owner`, `Start`, `Target`, the title, and
+  the prose half of the body. A task with no `last_pushed` yet is skipped — without a
   snapshot there is nothing to compare, and guessing would manufacture fake human
   edits. A Task dragged into a PR lane (`Merged`, …) is ignored with a warning.
 - `sync` and `autosync` run this reconciliation **before** pushing, so a session
@@ -291,8 +301,9 @@ Things that will bite whoever touches this next:
 - **Reserved field names**: `Repo` (aliases to built-in `Repository`) and `Type`
   (collides with the built-in `type:` filter qualifier) — hence `Org`+`Repo name`
   and `Kind`. `Status` is built-in but *editable*: its stock Todo/In Progress/Done
-  options are deliberately replaced. `Group`, `Blocked`, `Depends on`, `Start` and
-  `Target` were all probed and are free.
+  options are deliberately replaced. `Group`, `Owner`, `Blocked`, `Depends on`,
+  `Start` and `Target` were all probed and are free; `Assignee` is **not** (it
+  raises "Name cannot have a reserved value"), so Owner is `Owner`.
 - **Single-select options must be re-sent with their ids.**
   `ProjectV2SingleSelectFieldOptionInput` takes an optional `id`; without it an
   option update *recreates* the options and drops every value already assigned to

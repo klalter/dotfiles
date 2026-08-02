@@ -98,8 +98,9 @@ any of it:
   --push`. Do NOT ask whether to create or close; just do it and let the chat
   show a one-line summary (e.g. ``task t7 → Complete: Fix HITL race``). One
   conversation may spin up several tasks; each distinct deliverable gets its
-  own. Tasks also carry a Group, dependencies (`task dep <name> t9 add t5`)
-  and dates — see the `worktree-sync` skill for the full surface.
+  own. Tasks also carry a Group, an Owner (free text, e.g. `TechOps
+  (Patricia)`), dependencies (`task dep <name> t9 add t5`) and dates — see the
+  `worktree-sync` skill for the full surface.
 - **Read the task before working it**: a task may carry an instruction `body`
   and attachments (.pptx, .drawio, .md, images, URLs) the owner dropped in.
   Read the body and *every* attachment before acting — `.drawio` via

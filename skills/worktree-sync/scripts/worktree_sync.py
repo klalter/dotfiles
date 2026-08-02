@@ -221,6 +221,7 @@ def review_label(pr):
 # manifests written before this schema existed round-trip byte-for-byte:
 #
 #   group        "Phase 1 — Policy PoC"   free text, becomes a Group option
+#   owner        "TechOps (Patricia)"     free text — a team, a person, or both
 #   depends_on   ["t3", "t4"]             other task ids; validated acyclic
 #   body         "…"                      instruction text for whoever works it
 #   attachments  [{path|url, kind, note}] files the worker must read first
@@ -228,17 +229,17 @@ def review_label(pr):
 #   last_pushed  {...}                    exactly what the last push wrote
 #   human_edited {field: {...}}           a board edit the tool must not undo
 
-TASK_OPTIONAL_KEYS = ("group", "depends_on", "body", "attachments", "start",
-                      "target", "last_pushed", "human_edited")
+TASK_OPTIONAL_KEYS = ("group", "owner", "depends_on", "body", "attachments",
+                      "start", "target", "last_pushed", "human_edited")
 # Fields a human can meaningfully edit on the board and have merged back.
 # "Depends on" and "Blocked" are deliberately NOT here: both are renderings the
 # tool owns, and parsing them back would fight the renderer. Dependencies are
 # edited with `task dep`.
-PULL_FIELDS = {"Status": "status", "Group": "group",
+PULL_FIELDS = {"Status": "status", "Group": "group", "Owner": "owner",
                "Start": "start", "Target": "target"}
 # Task-item fields whose empty value must be actively cleared on the board —
 # queue_values skips falsy values, so without this a removed group would linger.
-CLEARABLE = ("Group", "Depends on", "Blocked", "Start", "Target")
+CLEARABLE = ("Group", "Owner", "Depends on", "Blocked", "Start", "Target")
 ATTACH_BEGIN = "<!-- worktree-sync:attachments -->"
 ATTACH_END = "<!-- /worktree-sync:attachments -->"
 ATTACH_CONTRACT = (
@@ -398,6 +399,7 @@ def task_snapshot(task, deps_text, blocked, body_text) -> dict:
     PULL_FIELDS half is ever compared back."""
     return {"blocked": blocked, "body_hash": body_hash(body_text),
             "depends_on": deps_text, "group": (task.get("group") or "").strip(),
+            "owner": (task.get("owner") or "").strip(),
             "start": task.get("start") or "", "status": task["status"],
             "target": task.get("target") or "", "title": task["title"]}
 
@@ -417,6 +419,21 @@ def conflicts(task, fields=None):
     return out
 
 
+def fix_command(project, task, field, value):
+    """The exact command that would take the tool's value forward for a field."""
+    tid, val = task["id"], f'"{value}"' if value else '""'
+    if field in ("group", "owner"):
+        return f"task set {project} {tid} {field} {val} --ack-human"
+    if field in ("start", "target"):
+        return (f"task dates {project} {tid} {task.get('start') or '-'} "
+                f"{task.get('target') or '-'} --ack-human")
+    if field == "body":
+        return f"task body {project} {tid} --file <path> --ack-human"
+    if field == "title":
+        return f"task set {project} {tid} {task['status'].lower()} {val} --ack-human"
+    return f"task set {project} {tid} <new|wip|done> --ack-human"
+
+
 def print_conflict(project, task, rows):
     """The quotable prompt an agent must relay verbatim — never resolve alone."""
     print("", file=sys.stderr)
@@ -429,10 +446,13 @@ def print_conflict(project, task, rows):
         print(f"    tool wants: {tool!r}", file=sys.stderr)
     print("  options :", file=sys.stderr)
     print("    keep    — do nothing; the human's value stands", file=sys.stderr)
-    print(f"    accept  — worktree_sync.py task set <project> {task['id']} "
-          f"<status> --ack-human", file=sys.stderr)
-    print(f"    revert  — worktree_sync.py task set <project> {task['id']} "
-          f"<the human's value>", file=sys.stderr)
+    for field, human, tool, _when in rows:
+        print(f"    accept  — worktree_sync.py "
+              f"{fix_command(project, task, field, tool)}", file=sys.stderr)
+        print(f"    revert  — worktree_sync.py "
+              f"{fix_command(project, task, field, human)}".replace(
+                  " --ack-human", "  (drop --ack-human: it is already his value)"),
+              file=sys.stderr)
     print("  Ask the owner which one. Do not choose for him.", file=sys.stderr)
 
 
@@ -590,11 +610,13 @@ def render_tasks(tasks):
         return []
     by_id = {t["id"]: t for t in tasks}
     groups = group_names(tasks)
+    has_owner = any((t.get("owner") or "").strip() for t in tasks)
     has_deps = any(t.get("depends_on") for t in tasks)
     has_dates = any(t.get("start") or t.get("target") for t in tasks)
     has_notes = any(t.get("body") or t.get("attachments") or t.get("human_edited")
                     for t in tasks)
     head = ["Task", "Status"]
+    head += ["Owner"] if has_owner else []
     head += ["Depends on"] if has_deps else []
     head += ["Dates"] if has_dates else []
     head += ["Title"]
@@ -602,6 +624,8 @@ def render_tasks(tasks):
 
     def row(t):
         cells = [f"`{t['id']}`", t["status"]]
+        if has_owner:
+            cells.append((t.get("owner") or "").strip() or "—")
         if has_deps:
             ids = ", ".join(f"`{d}`" for d in t.get("depends_on") or []) or "—"
             state = blocked_state(t, by_id)
@@ -810,9 +834,9 @@ TASK_ALIASES = {"new": "New", "todo": "New",
 # visible fields" — so its column list is None, meaning "send no configuration".
 VIEW_SPEC = [
     ("Tasks · Board", "BOARD_LAYOUT", "kind:Task",
-     ["Title", "Status", "Group", "Depends on", "Blocked", "Last sync"]),
+     ["Title", "Status", "Group", "Owner", "Depends on", "Blocked", "Last sync"]),
     ("Tasks · List", "TABLE_LAYOUT", "kind:Task",
-     ["Title", "Status", "Group", "Depends on", "Blocked",
+     ["Title", "Status", "Group", "Owner", "Depends on", "Blocked",
       "Start", "Target", "Last sync"]),
     ("Tasks · Roadmap", "ROADMAP_LAYOUT", "kind:Task", None),
     ("PRs · Board", "BOARD_LAYOUT", "kind:PR",
@@ -899,6 +923,10 @@ def field_spec(manifest=None):
     if groups:
         spec.append(("Group", "SINGLE_SELECT", groups))
     spec += [
+        # Free TEXT on purpose: "TechOps (Patricia)" is a team plus a person, and
+        # a select would force a taxonomy nobody has. "Owner" was probed and is
+        # free; "Assignee" IS reserved ("Name cannot have a reserved value").
+        ("Owner", "TEXT", None),
         ("Depends on", "TEXT", None),
         ("Blocked", "SINGLE_SELECT", BLOCKED_STATES),
         ("Start", "DATE", None),
@@ -1262,7 +1290,9 @@ def push_project(entry, manifest, dry_run=False, ack=False):
         deps_text = deps_label(t, by_id)
         blocked = blocked_state(t, by_id)
         values = {"Kind": "Task", "Status": t["status"], "Last sync": today,
-                  "Group": (t.get("group") or "").strip(), "Depends on": deps_text,
+                  "Group": (t.get("group") or "").strip(),
+                  "Owner": (t.get("owner") or "").strip(),
+                  "Depends on": deps_text,
                   "Blocked": blocked, "Start": t.get("start") or "",
                   "Target": t.get("target") or ""}
         queue_values(item, values)
@@ -1592,6 +1622,8 @@ def cmd_context(args):
             bits = [f"  {t['id']} [{t['status']}]"]
             if t.get("group"):
                 bits.append(f"[{t['group']}]")
+            if t.get("owner"):
+                bits.append(f"[owner: {t['owner']}]")
             bits.append(t["title"])
             if blocked_state(t, by_id) == "Blocked":
                 bits.append(f"(BLOCKED by {', '.join(t['depends_on'])})")
@@ -1712,48 +1744,53 @@ def cmd_task(args):
         print(f"  ack: {task['id']}.{field} — overriding the human's "
               f"{stamp.get('value')!r} with {value!r}")
 
+    def label(task):
+        tags = "".join(f" [{task[k]}]" for k in ("group", "owner") if task.get(k))
+        return f"[{task['status']}]{tags} {task['title']}"
+
     if act == "add":
         if not rest:
-            sys.exit('usage: task add <project> "Title" [--status wip] [--group "…"]')
+            sys.exit('usage: task add <project> "Title" [--status wip] '
+                     '[--group "…"] [--owner "TechOps (Patricia)"]')
         task = {"id": f"t{max((task_num(t) for t in tasks), default=0) + 1}",
                 "title": " ".join(rest),
                 "status": TASK_ALIASES.get(args.status.lower(), "New"),
                 "created": datetime.now(timezone.utc).date().isoformat()}
-        if args.group:
-            task["group"] = args.group.strip()
+        for key, val in (("group", args.group), ("owner", args.owner)):
+            if val:
+                task[key] = val.strip()
         tasks.append(task)
-        print(f"added {task['id']} [{task['status']}]"
-              f"{' [' + task['group'] + ']' if task.get('group') else ''} "
-              f"{task['title']}")
+        print(f"added {task['id']} {label(task)}")
 
     elif act == "set":
         if len(rest) < 2:
             sys.exit("usage: task set <project> <id> <new|wip|done> [title...]\n"
                      '       task set <project> <id> group "Phase 3 — POA"\n'
+                     '       task set <project> <id> owner "TechOps (Patricia)"\n'
                      "       task set <project> <id> dates <start> <target>")
         task, verb = pick(rest[0]), rest[1].lower()
-        if verb == "group":
+        if verb in ("group", "owner"):
             new = " ".join(rest[2:]).strip()
-            guarded(task, "group", new)
-            task["group"] = new
+            guarded(task, verb, new)
+            task[verb] = new
         elif verb == "dates":
             set_dates(task, rest[2:], guarded)
         else:
             status = TASK_ALIASES.get(verb)
             if not status:
-                sys.exit(f"unknown status {rest[1]!r} "
-                         f"(use: {', '.join(sorted(set(TASK_ALIASES)))}, group, dates)")
+                sys.exit(f"unknown status {rest[1]!r} (use: "
+                         f"{', '.join(sorted(set(TASK_ALIASES)))}, group, owner, dates)")
             guarded(task, "status", status)
             task["status"] = status
             if len(rest) > 2:
                 guarded(task, "title", " ".join(rest[2:]))
                 task["title"] = " ".join(rest[2:])
-        if args.group is not None and verb != "group":
-            guarded(task, "group", args.group.strip())
-            task["group"] = args.group.strip()
-        print(f"{task['id']} -> [{task['status']}]"
-              f"{' [' + task['group'] + ']' if task.get('group') else ''} "
-              f"{task['title']}")
+        # --group/--owner also work alongside a status change, and "" clears.
+        for key, val in (("group", args.group), ("owner", args.owner)):
+            if val is not None and verb != key:
+                guarded(task, key, val.strip())
+                task[key] = val.strip()
+        print(f"{task['id']} -> {label(task)}")
 
     elif act == "dep":
         if len(rest) < 2:
@@ -1883,12 +1920,18 @@ def schedule_tasks(tasks, args, guarded):
 
 
 def list_tasks(entry, tasks):
-    """id, status, Group (third column), then title with deps/blocked/markers."""
+    """id, status, Group, Owner, then title with deps/blocked/markers.
+
+    Group is the third column (what is this part of) and Owner the fourth (who
+    answers for it) — the two accountability columns sit together, ahead of the
+    title, so a glance down the list answers "whose phase is stuck".
+    """
     if not tasks:
         print(f"no tasks in {entry['name']}")
         return
     by_id = {t["id"]: t for t in tasks}
     width = max([len(t.get("group") or "") for t in tasks] + [5])
+    owidth = max([len((t.get("owner") or "").strip()) for t in tasks] + [5])
     for t in ordered_tasks(tasks):
         marks = []
         if t.get("depends_on"):
@@ -1905,7 +1948,9 @@ def list_tasks(entry, tasks):
             marks.append("HUMAN:" + ",".join(sorted(t["human_edited"])))
         tail = f"   [{'; '.join(marks)}]" if marks else ""
         print(f"  {t['id']:<5} {t['status']:<12} "
-              f"{(t.get('group') or '—'):<{width}}  {t['title']}{tail}")
+              f"{(t.get('group') or '—'):<{width}}  "
+              f"{((t.get('owner') or '').strip() or '—'):<{owidth}}  "
+              f"{t['title']}{tail}")
 
 
 def cmd_project(args):
@@ -1996,6 +2041,9 @@ def main():
     p.add_argument("--status", default="new", help="initial status for add")
     p.add_argument("--group", default=None,
                    help='grouping, e.g. "Phase 2 — KAIF" ("" clears it)')
+    p.add_argument("--owner", default=None,
+                   help='who answers for it, e.g. "TechOps (Patricia)" '
+                        '("" clears it)')
     p.add_argument("--note", default=None, help="attach: a note for the attachment")
     p.add_argument("--kind", default=None,
                    help="attach: override the inferred kind "
