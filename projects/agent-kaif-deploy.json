@@ -914,6 +914,40 @@
       },
       "status": "New",
       "title": "Kill-run API: terminate stuck Argo runs via registry (KAIF Admin)"
+    },
+    {
+      "created": "2026-08-02",
+      "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3ry8",
+      "id": "t10",
+      "last_pushed": {
+        "blocked": "",
+        "body_hash": "e3b0c44298fc1c14",
+        "depends_on": "",
+        "group": "",
+        "start": "",
+        "status": "Complete",
+        "target": "",
+        "title": "Instant-approve HITL proof on MANETU (wrapped agent5, #272 live)"
+      },
+      "status": "Complete",
+      "title": "Instant-approve HITL proof on MANETU (wrapped agent5, #272 live)"
+    },
+    {
+      "created": "2026-08-02",
+      "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3rzY",
+      "id": "t11",
+      "last_pushed": {
+        "blocked": "",
+        "body_hash": "e3b0c44298fc1c14",
+        "depends_on": "",
+        "group": "",
+        "start": "",
+        "status": "New",
+        "target": "",
+        "title": "Flake remainder: guest exit-1 shutdown fix + registry #272/#275 rollout on cto-dev"
+      },
+      "status": "New",
+      "title": "Flake remainder: guest exit-1 shutdown fix + registry #272/#275 rollout on cto-dev"
     }
   ],
   "view": {

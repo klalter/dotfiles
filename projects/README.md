@@ -5,22 +5,25 @@ Source of truth is the per-project JSON next to this file.
 
 ## agent-kaif-deploy
 
-`/workspaces/.wt/feat/agent-kaif-deploy` · lane `feat` · 17 repos · 29 PRs · 8 tasks · synced 2026-08-01T23:24:34Z
+`/workspaces/.wt/feat/agent-kaif-deploy` · lane `feat` · 17 repos · 29 PRs · 11 tasks · synced 2026-08-01T23:24:34Z
 
 Board: [feat/agent-kaif-deploy](https://github.com/users/klalter_kyndryl/projects/3)
 
 > Base branches per the worktree CLAUDE.md: bridge-kaif-reusable-workflows targets agentvisortest, NOT main.
 
-| Task | Status | Title |
-| --- | --- | --- |
-| `t1` | New | Roll remaining .wt worktrees into the tracked index |
-| `t2` | New | Rotate the plaintext PAT embedded in the dotfiles origin URL |
-| `t3` | New | Point daily-report at projects/agent-kaif-deploy.json as its PR source |
-| `t4` | New | Wire 'project push' into 'sync --commit' as one call |
-| `t5` | Complete | Redesign GitHub project: per-worktree, Tasks + PR views |
-| `t6` | Complete | Remove the work feature from dev-shell (CLI, daemon, UI) — agent on feat/remove-work-feature |
-| `t7` | Complete | Full 5-agent x 3-tenant E2E: wrapped + pure-KAIF matrices, Grafana-confirmed, deck 2026-08-02-e2e-matrix.pptx |
-| `t8` | New | Push feat/remove-work-feature and open the dev-shell PR for team review |
+| Task | Status | Title | Notes |
+| --- | --- | --- | --- |
+| `t1` | New | Roll remaining .wt worktrees into the tracked index | — |
+| `t2` | New | Rotate the plaintext PAT embedded in the dotfiles origin URL | — |
+| `t3` | New | Point daily-report at projects/agent-kaif-deploy.json as its PR source | — |
+| `t4` | New | Wire 'project push' into 'sync --commit' as one call | — |
+| `t5` | Complete | Redesign GitHub project: per-worktree, Tasks + PR views | — |
+| `t6` | Complete | Remove the work feature from dev-shell (CLI, daemon, UI) — agent on feat/remove-work-feature | — |
+| `t7` | Complete | Full 5-agent x 3-tenant E2E: wrapped + pure-KAIF matrices, Grafana-confirmed, deck 2026-08-02-e2e-matrix.pptx | — |
+| `t8` | New | Push feat/remove-work-feature and open the dev-shell PR for team review | — |
+| `t9` | New | Kill-run API: terminate stuck Argo runs via registry (KAIF Admin) | body |
+| `t10` | Complete | Instant-approve HITL proof on MANETU (wrapped agent5, #272 live) | — |
+| `t11` | New | Flake remainder: guest exit-1 shutdown fix + registry #272/#275 rollout on cto-dev | — |
 
 | Repo | Branch | Base | Ahead/Behind | PRs |
 | --- | --- | --- | --- | --- |
@@ -60,7 +63,7 @@ Board: [feat/dev-shell-remove-work](https://github.com/users/klalter_kyndryl/pro
 
 ## sandbox-cicd
 
-`/workspaces/.wt/feat/sandbox-cicd` · lane `feat` · 6 repos · 7 PRs · 9 tasks · synced 2026-08-02T13:35:27Z
+`/workspaces/.wt/feat/sandbox-cicd` · lane `feat` · 6 repos · 7 PRs · 25 tasks · synced 2026-08-02T13:35:27Z
 
 Board: [feat/sandbox-cicd](https://github.com/users/klalter_kyndryl/projects/5)
 
@@ -68,17 +71,45 @@ Board: [feat/sandbox-cicd](https://github.com/users/klalter_kyndryl/projects/5)
 > §4 settled: Option B, branch-dependent image names. §5 Step 4 settled: replace — the sandbox app ships the whole environment.
 > bom-input#971 and bom-calculator#226 are TechOps-authored (Patricia Batista Duarte); we have read-only access there, so our role is review, not authorship.
 
-| Task | Status | Title |
-| --- | --- | --- |
-| `t1` | Complete | Step 0 — create development branches on policy-service and policy-console |
-| `t2` | Complete | Step 1 — policy-sandbox onboard-input content (PR #1) |
-| `t3` | Complete | Step 2 — policy-sandbox chart in policy-helm-charts (PR #231) |
-| `t4` | Complete | Step 2b — helm-charts build.yaml job for the sandbox chart (PR #233) |
-| `t5` | In progress | Step 3 — development build triggers + Option B image names (service #465, console #266) |
-| `t6` | In progress | Step 4 — review TechOps BOM PRs: bom-input#971 and bom-calculator#226 |
-| `t7` | New | Step 5 — verify the sandbox deploy on cto-dev-kpr |
-| `t8` | New | Ask TechOps to add the three bdg-eng-tops-* teams to the two phm-*-policy-sandbox repos |
-| `t9` | New | Decide branch protection for the new development branches (main ruleset is ~DEFAULT_BRANCH only) |
+**Phase 1 — Policy PoC**
+
+| Task | Status | Depends on | Dates | Title | Notes |
+| --- | --- | --- | --- | --- | --- |
+| `t1` | Complete | — | 2026-07-30 → 2026-07-31 | Step 0 — create development branches on policy-service and policy-console | — |
+| `t3` | Complete | — | 2026-07-30 → 2026-07-31 | Step 2 — policy-sandbox chart in policy-helm-charts (PR #231) | — |
+| `t2` | Complete | `t3` | 2026-07-31 → 2026-07-31 | Step 1 — policy-sandbox onboard-input content (PR #1) | — |
+| `t9` | New | `t1` | 2026-08-08 → 2026-08-12 | Decide branch protection for the new development branches (main ruleset is ~DEFAULT_BRANCH only) | — |
+| `t4` | Complete | `t2` | 2026-07-31 → 2026-07-31 | Step 2b — helm-charts build.yaml job for the sandbox chart (PR #233) | — |
+| `t6` | In progress | `t2` | 2026-08-03 → 2026-08-07 | Step 4 — review TechOps BOM PRs: bom-input#971 and bom-calculator#226 | — |
+| `t8` | New | `t2` | 2026-08-13 → 2026-08-17 | Ask TechOps to add the three bdg-eng-tops-* teams to the two phm-*-policy-sandbox repos | — |
+| `t5` | In progress | `t6` **blocked** | 2026-08-08 → 2026-08-12 | Step 3 — development build triggers + Option B image names (service #465, console #266) | — |
+| `t7` | New | `t5` **blocked** | 2026-08-23 → 2026-08-27 | Step 5 — verify the sandbox deploy on cto-dev-kpr | — |
+| `t10` | New | `t5`, `t6`, `t7` **blocked** | 2026-08-28 → 2026-09-01 | Validation gate — prove Phase 1 E2E, then rewrite the KAIF and POA DRAFT tasks from what actually worked | body |
+| `t11` | New | `t10` **blocked** | 2026-09-02 → 2026-09-06 | Document the E2E sandbox flow for TechOps — draw.io diagram + PPT deck + docs/e2e-flow.md | body |
+
+**Phase 2 — KAIF**
+
+| Task | Status | Depends on | Dates | Title | Notes |
+| --- | --- | --- | --- | --- | --- |
+| `t12` | New | `t10` **blocked** | 2026-09-02 → 2026-09-06 | DRAFT · KAIF Step 0 — create the pre-trunk branch on every two-stream KAIF repo | body |
+| `t14` | New | `t12` **blocked** | 2026-09-07 → 2026-09-11 | DRAFT · KAIF Step 2 — add the kaif-sandbox chart to the KAIF chart repo | body |
+| `t13` | New | `t12`, `t14` **blocked** | 2026-09-12 → 2026-09-16 | DRAFT · KAIF Step 1 — populate the kaif-sandbox onboard-input repo | body |
+| `t15` | New | `t13` **blocked** | 2026-09-17 → 2026-09-21 | DRAFT · KAIF Step 2b — add the sandbox job to the chart repo's build.yaml | body |
+| `t17` | New | `t13` **blocked** | 2026-09-17 → 2026-09-21 | DRAFT · KAIF Step 4 — BOM: register kaif-sandbox and switch the environment over | body |
+| `t16` | New | `t17` **blocked** | 2026-09-22 → 2026-09-26 | DRAFT · KAIF Step 3 — build triggers on the pre-trunk branch + branch-dependent image names | body |
+| `t18` | New | `t16` **blocked** | 2026-09-27 → 2026-10-01 | DRAFT · KAIF Step 5 — verify the kaif-sandbox deploy | body |
+
+**Phase 3 — POA**
+
+| Task | Status | Depends on | Dates | Title | Notes |
+| --- | --- | --- | --- | --- | --- |
+| `t19` | New | `t10`, `t18` **blocked** | 2026-10-02 → 2026-10-06 | DRAFT · POA Step 0 — create the pre-trunk branch on every two-stream POA repo | body |
+| `t21` | New | `t19` **blocked** | 2026-10-07 → 2026-10-11 | DRAFT · POA Step 2 — add the poa-sandbox chart to the POA chart repo | body |
+| `t20` | New | `t19`, `t21` **blocked** | 2026-10-12 → 2026-10-16 | DRAFT · POA Step 1 — populate the poa-sandbox onboard-input repo | body |
+| `t22` | New | `t20` **blocked** | 2026-10-17 → 2026-10-21 | DRAFT · POA Step 2b — add the sandbox job to the chart repo's build.yaml | body |
+| `t24` | New | `t20` **blocked** | 2026-10-17 → 2026-10-21 | DRAFT · POA Step 4 — BOM: register poa-sandbox and switch the environment over | body |
+| `t23` | New | `t24` **blocked** | 2026-10-22 → 2026-10-26 | DRAFT · POA Step 3 — build triggers on the pre-trunk branch + branch-dependent image names | body |
+| `t25` | New | `t23` **blocked** | 2026-10-27 → 2026-10-31 | DRAFT · POA Step 5 — verify the poa-sandbox deploy | body |
 
 | Repo | Branch | Base | Ahead/Behind | PRs |
 | --- | --- | --- | --- | --- |
