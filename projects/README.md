@@ -74,13 +74,13 @@ Board: [feat/agent-kaif-deploy](https://github.com/users/klalter_kyndryl/project
 
 ## dev-shell-remove-work
 
-`/workspaces/.wt/feat/dev-shell-remove-work` · lane `feat` · 1 repos · 1 PRs · 0 tasks · synced 2026-08-02T18:07:59Z
+`/workspaces/.wt/feat/dev-shell-remove-work` · lane `feat` · 1 repos · 1 PRs · 0 tasks · synced 2026-08-02T18:58:53Z
 
 Board: [feat/dev-shell-remove-work](https://github.com/users/klalter_kyndryl/projects/4)
 
 | Repo | Branch | Base | Ahead/Behind | PRs |
 | --- | --- | --- | --- | --- |
-| [kyndryl-cto/bdg-sw-auto-console-dev-shell](https://github.com/kyndryl-cto/bdg-sw-auto-console-dev-shell) | `feat/remove-work-feature` | `main` | +5 / −0 | [#69](https://github.com/kyndryl-cto/bdg-sw-auto-console-dev-shell/pull/69) Open |
+| [kyndryl-cto/bdg-sw-auto-console-dev-shell](https://github.com/kyndryl-cto/bdg-sw-auto-console-dev-shell) | `feat/remove-work-feature` | `main` | +6 / −0 | [#69](https://github.com/kyndryl-cto/bdg-sw-auto-console-dev-shell/pull/69) Open |
 
 [All PRs for this worktree](https://github.com/pulls?q=is%3Apr%20head%3Afeat%2Fremove-work-feature%20repo%3Akyndryl-cto%2Fbdg-sw-auto-console-dev-shell)
 

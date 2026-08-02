@@ -3,13 +3,13 @@
   "branches_no_pr": [],
   "exclude_prs": [],
   "extra_prs": [],
-  "generated_at": "2026-08-02T18:07:59Z",
+  "generated_at": "2026-08-02T18:58:53Z",
   "lane": "feat",
   "name": "dev-shell-remove-work",
   "notes": [],
   "prs": [
     {
-      "checks": "PENDING",
+      "checks": "SUCCESS",
       "created": "2026-08-02",
       "draft": false,
       "head": "feat/remove-work-feature",
@@ -26,16 +26,16 @@
   ],
   "repos": [
     {
-      "ahead": 5,
+      "ahead": 6,
       "base": "main",
       "behind": 0,
       "branch": "feat/remove-work-feature",
       "dir": "bdg-sw-auto-console-dev-shell",
       "dirty": false,
       "last_commit": {
-        "date": "2026-08-02T18:05:11Z",
-        "sha": "9dc8d8f",
-        "subject": "chore: remove remaining work-feature config, docs and scripts"
+        "date": "2026-08-02T18:33:54Z",
+        "sha": "44a8b58",
+        "subject": "chore(devcontainer): start the shared sshd listener on container start"
       },
       "prs": [
         "kyndryl-cto/bdg-sw-auto-console-dev-shell#69"
