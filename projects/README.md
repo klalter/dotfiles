@@ -46,7 +46,7 @@ Board: [feat/agent-kaif-deploy](https://github.com/users/klalter_kyndryl/project
 
 | Task | Status | Owner | Depends on | Dates | Title | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-| `t12` | Complete | — | — | — | MANETU with/without AgentVisor E2E (5+5) + 2-slide deck | 1 file(s) |
+| `t12` | Complete | — | — | — | MANETU with/without AgentVisor E2E (5+5) + 2-slide deck | 2 file(s) |
 
 | Repo | Branch | Base | Ahead/Behind | PRs |
 | --- | --- | --- | --- | --- |

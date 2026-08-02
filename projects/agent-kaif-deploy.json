@@ -1118,8 +1118,13 @@
       "attachments": [
         {
           "kind": "pptx",
-          "note": "2-slide deck: p.82 WITHOUT AgentVisor (pure baseline) / p.83 WITH AgentVisor \u2014 MANETU 10/10 green, 02-Aug",
-          "path": "deliverables/daily-report/2026-08-02-manetu-with-without-agentvisor.pptx"
+          "note": "2-slide deck: p.82 WITHOUT AgentVisor / p.83 WITH AgentVisor \u2014 MANETU 10/10 green, 02-Aug (real file, downloadable)",
+          "path": "https://github.com/klalter/dotfiles/blob/main/projects/assets/agent-kaif-deploy/2026-08-02-manetu-with-without-agentvisor.pptx"
+        },
+        {
+          "kind": "drawio",
+          "note": "AgentVisor master dataflows diagram (real file, downloadable)",
+          "path": "https://github.com/klalter/dotfiles/blob/main/projects/assets/agent-kaif-deploy/agentvisor-master-dataflows.drawio"
         }
       ],
       "created": "2026-08-02",
@@ -1127,7 +1132,7 @@
       "id": "t12",
       "last_pushed": {
         "blocked": "",
-        "body_hash": "e3b0c44298fc1c14",
+        "body_hash": "41da19946f6d36e2",
         "depends_on": "",
         "group": "",
         "owner": "",
