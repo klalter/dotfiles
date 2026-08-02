@@ -210,9 +210,12 @@ the owner moved.
 
 ## The everyday call
 
-`sync <name> --commit` chains sync → render → commit+push to dotfiles `main`.
-Committing straight to `main` here is standing pre-approved for the dotfiles repo
-only. Report what changed — the `NEW:` / `GONE:` / `DIRTY:` lines — not the whole table.
+`sync <name> --commit` chains sync → render → commit+push to **whatever branch the
+dotfiles checkout is on** — normally `main`, where committing straight is standing
+pre-approved for this repo only. It is deliberately *not* `HEAD:main`: while a
+tooling branch is checked out here, a hardcoded target would push that branch's
+commits to `main` and merge something nobody approved. Report what changed — the
+`NEW:` / `GONE:` / `DIRTY:` lines — not the whole table.
 
 Add `--fetch` when ahead/behind matters (it refreshes `origin/<base>` per repo);
 skip it for a quick pass, since without it those counts are as stale as the last fetch.

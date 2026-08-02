@@ -9,7 +9,7 @@ so `git status` staying clean *is* the "nothing moved" signal.
     worktree_sync.py sync   <worktree|name>       # + PRs, writes the manifest
     worktree_sync.py status [name]                # read manifests, print table
     worktree_sync.py render                       # regenerate projects/README.md
-    worktree_sync.py commit                       # commit + push dotfiles main
+    worktree_sync.py commit                       # commit + push dotfiles (current branch)
     worktree_sync.py project pull <name>          # board -> manifest (human wins)
     worktree_sync.py project push <name>          # GitHub Projects v2 (gated)
 
@@ -715,11 +715,16 @@ def cmd_status(args):
 
 
 def do_commit(message, dry_run=False):
-    """Commit projects/ to dotfiles main with the correct identity, and push.
+    """Commit projects/ to the dotfiles checkout's current branch, and push it.
 
     The Codespace exports GIT_COMMITTER_* as "GitHub <noreply@github.com>", which
     would otherwise land on every commit, so both author and committer are forced
     on the command itself.
+
+    The push target is the branch that is checked out, NOT a hardcoded main: while
+    a tooling branch is checked out here, `HEAD:main` would quietly land that
+    branch's commits on main — a merge nobody asked for, and the one mistake in
+    this repo that cannot be undone by explaining it afterwards.
     """
     d = dotfiles_dir()
     if dry_run:
@@ -735,7 +740,8 @@ def do_commit(message, dry_run=False):
            "GIT_COMMITTER_NAME": COMMITTER[0], "GIT_COMMITTER_EMAIL": COMMITTER[1]}
     subprocess.run(["git", "-C", str(d), "commit", "-m", message], env=env, check=True)
     print(sh("git", "-C", str(d), "log", "-1", "--format=%h %an <%ae> | %cn <%ce>"))
-    push = subprocess.run(["git", "-C", str(d), "push", "origin", "HEAD:main"],
+    branch = sh("git", "-C", str(d), "rev-parse", "--abbrev-ref", "HEAD").strip()
+    push = subprocess.run(["git", "-C", str(d), "push", "origin", f"HEAD:{branch}"],
                           capture_output=True, text=True)
     if push.returncode:
         print(push.stderr.strip(), file=sys.stderr)
@@ -1952,7 +1958,7 @@ def main():
     p.add_argument("--dry-run", action="store_true")
     p.set_defaults(func=cmd_render)
 
-    p = sub.add_parser("commit", help="commit + push dotfiles main")
+    p = sub.add_parser("commit", help="commit + push dotfiles (current branch)")
     p.add_argument("-m", "--message", default="chore(projects): sync worktree manifests")
     p.add_argument("--dry-run", action="store_true")
     p.set_defaults(func=cmd_commit)

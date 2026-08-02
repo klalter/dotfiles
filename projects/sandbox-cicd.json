@@ -235,65 +235,326 @@
     {
       "created": "2026-08-02",
       "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rUU",
+      "group": "Phase 1 \u2014 Policy PoC",
       "id": "t1",
+      "start": "2026-07-30",
       "status": "Complete",
+      "target": "2026-07-31",
       "title": "Step 0 \u2014 create development branches on policy-service and policy-console"
     },
     {
       "created": "2026-08-02",
+      "depends_on": [
+        "t3"
+      ],
       "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rUY",
+      "group": "Phase 1 \u2014 Policy PoC",
       "id": "t2",
+      "start": "2026-07-31",
       "status": "Complete",
+      "target": "2026-07-31",
       "title": "Step 1 \u2014 policy-sandbox onboard-input content (PR #1)"
     },
     {
       "created": "2026-08-02",
       "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rUg",
+      "group": "Phase 1 \u2014 Policy PoC",
       "id": "t3",
+      "start": "2026-07-30",
       "status": "Complete",
+      "target": "2026-07-31",
       "title": "Step 2 \u2014 policy-sandbox chart in policy-helm-charts (PR #231)"
     },
     {
       "created": "2026-08-02",
+      "depends_on": [
+        "t2"
+      ],
       "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rUo",
+      "group": "Phase 1 \u2014 Policy PoC",
       "id": "t4",
+      "start": "2026-07-31",
       "status": "Complete",
+      "target": "2026-07-31",
       "title": "Step 2b \u2014 helm-charts build.yaml job for the sandbox chart (PR #233)"
     },
     {
       "created": "2026-08-02",
+      "depends_on": [
+        "t6"
+      ],
       "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rUs",
+      "group": "Phase 1 \u2014 Policy PoC",
       "id": "t5",
+      "start": "2026-08-08",
       "status": "In progress",
+      "target": "2026-08-12",
       "title": "Step 3 \u2014 development build triggers + Option B image names (service #465, console #266)"
     },
     {
       "created": "2026-08-02",
+      "depends_on": [
+        "t2"
+      ],
       "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rUw",
+      "group": "Phase 1 \u2014 Policy PoC",
       "id": "t6",
+      "start": "2026-08-03",
       "status": "In progress",
+      "target": "2026-08-07",
       "title": "Step 4 \u2014 review TechOps BOM PRs: bom-input#971 and bom-calculator#226"
     },
     {
       "created": "2026-08-02",
+      "depends_on": [
+        "t5"
+      ],
       "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rU0",
+      "group": "Phase 1 \u2014 Policy PoC",
       "id": "t7",
+      "start": "2026-08-23",
       "status": "New",
+      "target": "2026-08-27",
       "title": "Step 5 \u2014 verify the sandbox deploy on cto-dev-kpr"
     },
     {
       "created": "2026-08-02",
+      "depends_on": [
+        "t2"
+      ],
       "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rU4",
+      "group": "Phase 1 \u2014 Policy PoC",
       "id": "t8",
+      "start": "2026-08-13",
       "status": "New",
+      "target": "2026-08-17",
       "title": "Ask TechOps to add the three bdg-eng-tops-* teams to the two phm-*-policy-sandbox repos"
     },
     {
       "created": "2026-08-02",
+      "depends_on": [
+        "t1"
+      ],
       "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rU8",
+      "group": "Phase 1 \u2014 Policy PoC",
       "id": "t9",
+      "start": "2026-08-08",
       "status": "New",
+      "target": "2026-08-12",
       "title": "Decide branch protection for the new development branches (main ruleset is ~DEFAULT_BRANCH only)"
+    },
+    {
+      "body": "**This task has two halves and is not done until both are.**\n\n**Half 1 \u2014 validate Phase 1 for real.** Not \"the PRs merged\" \u2014 evidence that the flow works end to end:\n\n- a push to `development` on policy-service and policy-console builds under the sandbox image names (`bridge-policy/service-sandbox`, `bridge-policy/console-sandbox`) and touches no master-stream image;\n- the build writes the `_sandbox`-suffixed manifest keys, and `manifest_conf` kept every one of them (a key missing from `manifest_conf` is silently pruned \u2014 evidence E12);\n- master-stream environments are unaffected: no deploy fired on any environment other than cto-dev-kpr;\n- on cto-dev-kpr the `policy-sandbox` ArgoCD Application is healthy, `policy.yaml` is **gone** from `bdg-eng-tops-techops-argocd-pipeline/applications/cto-dev-kpr/templates/`, and only one Application owns namespace `policy` (two would prune each other \u2014 evidence E18);\n- the four `manifest_conf` components are all present on the environment, including `agentvisorsample` and `adapterservice`, which the base chart defaults to `false` (evidence E16);\n- the sandbox chart still renders byte-identical to the original modulo name and image keys (the drift guard).\n\nRecord the evidence in `docs/evidence.md` and mark PLAN.md \u00a75 Step 5 done.\n\n**Half 2 \u2014 turn the DRAFT tasks into real ones.** Every Phase 2 (KAIF) and Phase 3 (POA) task was written from PLAN.md \u00a79 *before* anything was proven. Go through each one and:\n\n- replace every `TO CONFIRM` with the answer, or promote it to a blocking question for that phase;\n- fold in every lesson Phase 1 taught that \u00a79 does not yet say \u2014 and update \u00a79 itself, since it is the reusable recipe and must stay application-agnostic;\n- correct the order, the repo names, and the per-step acceptance criteria;\n- drop the `DRAFT \u00b7` prefix from each task title as it becomes real work.\n\nDo not start Phase 2 before this task is Complete. The whole point of the phasing is that KAIF inherits a proven recipe instead of a plausible one.",
+      "created": "2026-08-02",
+      "depends_on": [
+        "t5",
+        "t6",
+        "t7"
+      ],
+      "group": "Phase 1 \u2014 Policy PoC",
+      "id": "t10",
+      "start": "2026-08-28",
+      "status": "New",
+      "target": "2026-09-01",
+      "title": "Validation gate \u2014 prove Phase 1 E2E, then rewrite the KAIF and POA DRAFT tasks from what actually worked"
+    },
+    {
+      "body": "Only start once the validation gate is Complete \u2014 this documents what was proven, not what was planned.\n\n**Audience: TechOps** (Patricia Batista Duarte, Esteban Herrera Vargas). They own the automator, the BOM repos and the pipeline; the deck has to make sense to people who know that machinery better than we do, and it doubles as the pitch for \u00a74 Option A.\n\nThree artefacts, one story:\n\n1. **`docs/e2e-flow.drawio`** \u2014 the flow end to end: push to `development` \u2192 build trigger \u2192 branch-dependent `DOCKER_IMAGE_NAME` \u2192 manifest key \u2192 `manifest_conf` \u2192 onboard-input \u2192 automator \u2192 the two `phm-*` repos \u2192 bom-calculator \u2192 bom-input \u2192 ArgoCD Application on cto-dev-kpr. Show both streams side by side so the collision Option B solves is visible. Use the `kyndryl-drawio-deck` skill for the Kyndryl style.\n2. **`deliverables/Policy-Sandbox-E2E-Flow.pptx`** \u2014 the TechOps-facing deck: the problem, why the two obvious shortcuts fail (\u00a72), Option B and its cost, the six-repo change set, the order and why it is fixed, the three tooling asks (\u00a77), and the \u00a79 recipe as the reusable pattern. Embed the draw.io as the architecture slide. Kyndryl storyboard style.\n3. **`docs/e2e-flow.md`** \u2014 the written version, the source of truth for both. PLAN.md is our working document and too long to hand over; this is the narrative one.\n\nNotes:\n- `deliverables/make_docx.py` is the single source for `plan.md` and the existing `.docx` \u2014 do not hand-edit its outputs. Decide deliberately whether the new deck joins that generator or stands alone, and write the answer down.\n- Refresh all three after Phase 2 and Phase 3, since the point of the document is the *pattern*, not the policy instance.\n- Attach the finished `.drawio` and `.pptx` back onto this task so later sessions can read them.",
+      "created": "2026-08-02",
+      "depends_on": [
+        "t10"
+      ],
+      "group": "Phase 1 \u2014 Policy PoC",
+      "id": "t11",
+      "start": "2026-09-02",
+      "status": "New",
+      "target": "2026-09-06",
+      "title": "Document the E2E sandbox flow for TechOps \u2014 draw.io diagram + PPT deck + docs/e2e-flow.md"
+    },
+    {
+      "body": "DRAFT \u2014 written from PLAN.md \u00a79 before Phase 1 was proven. The validation gate rewrites this task; do not execute it as written.\n\n\u00a79 step 0: on each KAIF source repo that will carry **two streams**, create `<devbranch>` off trunk. Suffix only genuinely two-stream repos (rule 1) \u2014 a single-branch repo shares the un-suffixed manifest key safely, and suffixing it just doubles image storage.\n\nConfirmed from the local mirror (`/workspaces/kaif`):\n- The component list is already written down: `bdg-sw-aifn-kaif-onboard-input/kaif-metadata.json` \u2192 `build_module.manifest_conf`, **36 entries**, each with `repository` and `trunk_branch`. Start there, not from a guess.\n- Trunks are near-uniform: 35 on `main`, 1 on `master` (`kaif_ragservice` \u2192 `bdg-sw-aifn-ragservice`). So \"off trunk\" is per-repo, but only one repo is the exception.\n- Manifest keys are flat `kaif_<component>` \u2014 no `org/` prefix, unlike policy's `bridge_policy/...`. The `-` \u2192 `_` rule still applies to `DOCKER_IMAGE_NAME`, but the shape of the key differs from Phase 1, so do not copy policy's naming blindly.\n\nTO CONFIRM:\n- **Which of the 36 components actually need a sandbox stream.** This is the first real decision of Phase 2 and everything else follows from it.\n- The branch name (policy used `development`; \u00a72a shows the trigger treats `main`/`master` as equivalent, so the name matters).\n- Which environment the KAIF sandbox owns.\n- Branch protection: Phase 1 left this open \u2014 the `main` ruleset is scoped to `~DEFAULT_BRANCH` and will not match a new branch (evidence E15). Decide up front this time.",
+      "created": "2026-08-02",
+      "depends_on": [
+        "t10"
+      ],
+      "group": "Phase 2 \u2014 KAIF",
+      "id": "t12",
+      "start": "2026-09-02",
+      "status": "New",
+      "target": "2026-09-06",
+      "title": "DRAFT \u00b7 KAIF Step 0 \u2014 create the pre-trunk branch on every two-stream KAIF repo"
+    },
+    {
+      "body": "DRAFT \u2014 validate against Phase 1 before executing.\n\n\u00a79 step 1: a new onboard-input repo holding `kaif-sandbox-metadata.json` + `build.yml`, copied from the existing one.\n\nConfirmed source: `bdg-sw-aifn-kaif-onboard-input` (trunk `main`), holding `kaif-metadata.json` \u2014 `app_name: kaif`, `json_key: kaif-helm-package`, `app_charts_folder: kaif`, `helm_dir: kaif`.\n\nThe sandbox copy changes: `app_name: kaif-sandbox`, `is_newapp: true`, `promote_release: false`, a `json_key` different from `kaif-helm-package`, chart-folder paths pointing at the new chart folder, and `environments`/`middlewares` trimmed to the sandbox environment only.\n\n**`manifest_conf` is the expensive part here.** Policy's has 4 entries; KAIF's has **36**. Rule 3 says every key the builds write must be listed or the automator prunes it; rule 4 says the sandbox application must cover the *whole* environment, not just the branch-tracking components. So the sandbox metadata carries all 36 (minus anything the target environment genuinely does not run), with the `_sandbox` suffix on **only** the two-stream ones. Note the policy precedent: `policy-sandbox-metadata.json` already declares `trunk_branch: development` on the suffixed entries \u2014 \u00a72b explains why that declaration alone does not redirect the build.\n\nMerging this PR is what runs the automator, which creates `bdg-eng-tops-phm-pipeline-kaif-sandbox` and `bdg-eng-tops-phm-helm-manifests-kaif-sandbox` (plural *manifests*). Never create those two by hand. Note `bdg-eng-tops-phm-helm-manifests-kaif` and `-pipeline-kaif` already exist for the parent app \u2014 useful references for what the automator will produce.\n\nTO CONFIRM: the new repo's name and how it gets created (KDE request?), and the target environment's true component list.",
+      "created": "2026-08-02",
+      "depends_on": [
+        "t12",
+        "t14"
+      ],
+      "group": "Phase 2 \u2014 KAIF",
+      "id": "t13",
+      "start": "2026-09-12",
+      "status": "New",
+      "target": "2026-09-16",
+      "title": "DRAFT \u00b7 KAIF Step 1 \u2014 populate the kaif-sandbox onboard-input repo"
+    },
+    {
+      "body": "DRAFT \u2014 validate against Phase 1 before executing.\n\n\u00a79 step 2: copy the KAIF chart to a `kaif-sandbox` sibling. Must merge **before** the Step 1 onboard-input PR, because that merge runs the automator and it packages a chart folder that must already exist.\n\nConfirmed from the local mirror: the chart repo is **`bdg-sw-aifn-devops-kaif`**, trunk **`master`** (so PRs base on `master`, not `main`). Its layout is *not* policy's `charts/stable/<app>/` \u2014 the chart sits at the repo root as `kaif/` (`Chart.yaml`, `config/`, `env-config/`, `templates/`, `values.yaml`), alongside `deployments/`, `merge-child-env-config.sh` and its own **`verify_docs.sh`**. So the copy is `kaif/` \u2192 `kaif-sandbox/`, and `verify_docs.sh` is the same patch target as in Phase 1.\n\nThe \u00a79 chart rules, all still apply:\n- `templates/` byte-identical to the original, plus the drift guard (`sandbox-chart-drift.yaml` in the policy helm-charts repo is the template to copy).\n- Suffixed image keys are **values**, not template code \u2014 that is why Option B cost two lines (evidence E13).\n- `deployNamespace` = the original app's namespace, or in-cluster DNS breaks.\n- `helmRepo` in `env-config/metadata.json` \u2192 `bdg-eng-tops-phm-helm-manifests-kaif-sandbox`.\n- Check `.gitignore` before committing: dependency tarballs (`*.tgz`) are commonly ignored yet force-tracked. `git ls-files kaif/` tells you what is really tracked.\n- A second `env-config` in one repo breaks `check_config.sh` \u2014 it `find`s `env-config` dirs and ignores `CHECK_CONFIG` (evidence E19). KAIF has exactly one today (`kaif/env-config`), so adding `kaif-sandbox/env-config` trips it. Patch this repo's `verify_docs.sh` the way Phase 1 patched policy's. The failure masquerades as a missing environment file; restoring the trimmed tree does not fix it.\n- Then trim `kaif-sandbox/env-config` to the environments it actually serves.\n\nTO CONFIRM: what `merge-child-env-config.sh` does to the copied chart, and whether `deployments/` needs a sandbox entry too.",
+      "created": "2026-08-02",
+      "depends_on": [
+        "t12"
+      ],
+      "group": "Phase 2 \u2014 KAIF",
+      "id": "t14",
+      "start": "2026-09-07",
+      "status": "New",
+      "target": "2026-09-11",
+      "title": "DRAFT \u00b7 KAIF Step 2 \u2014 add the kaif-sandbox chart to the KAIF chart repo"
+    },
+    {
+      "body": "DRAFT \u2014 validate against Phase 1 before executing.\n\n\u00a79 rule 7: `bdg-sw-aifn-devops-kaif`'s build workflow needs a second job for the sandbox chart, and it can only be added **after** the onboard-input PR merges \u2014 it names `bdg-eng-tops-phm-pipeline-kaif-sandbox`, a repo the automator has not created before then. This is the one step that fits in neither the chart PR nor the onboard-input PR. Base the PR on `master`.\n\nTO CONFIRM: whether this repo drives the shared `helm-build.yml` the way policy's does, and whether `package_pattern` needs widening to pick up the second chart directory.",
+      "created": "2026-08-02",
+      "depends_on": [
+        "t13"
+      ],
+      "group": "Phase 2 \u2014 KAIF",
+      "id": "t15",
+      "start": "2026-09-17",
+      "status": "New",
+      "target": "2026-09-21",
+      "title": "DRAFT \u00b7 KAIF Step 2b \u2014 add the sandbox job to the chart repo's build.yaml"
+    },
+    {
+      "body": "DRAFT \u2014 validate against Phase 1 before executing.\n\n\u00a79 step 3, and it goes **last**. Add `<devbranch>` to the build trigger **and** the branch-dependent `DOCKER_IMAGE_NAME` in the same PR, on every two-stream repo from Step 0.\n\nWhy last: until the sandbox application exists, a push to the pre-trunk branch aliases onto the master stream (\u00a72a) and deploys to **every** environment that auto-deploys KAIF. With 36 components in play this is the step that most deserves a dry run.\n\nThe image name yields the manifest key by `-` \u2192 `_`, and KAIF's keys are flat (`kaif_<component>`), not `org/component` like policy's \u2014 so work out the exact key the build will write, and make `manifest_conf` match it. A mismatch either prunes the key silently or hard-fails the chart render at `_techops.tpl`'s `fail` branch.\n\nTO CONFIRM: the two-stream repo list from Step 0, the image namespace KAIF builds under, and whether TechOps landed \u00a74 Option A by then \u2014 if so, this step becomes pure configuration and rules 1\u20132 disappear.",
+      "created": "2026-08-02",
+      "depends_on": [
+        "t17"
+      ],
+      "group": "Phase 2 \u2014 KAIF",
+      "id": "t16",
+      "start": "2026-09-22",
+      "status": "New",
+      "target": "2026-09-26",
+      "title": "DRAFT \u00b7 KAIF Step 3 \u2014 build triggers on the pre-trunk branch + branch-dependent image names"
+    },
+    {
+      "body": "DRAFT \u2014 validate against Phase 1 before executing.\n\n\u00a79 rule 9 \u2014 **two** TechOps repos, both read-only to us, so this is a request-and-review job, not authorship:\n\n- `bdg-eng-tops-techops-bom-calculator` \u2014 register `kaif-sandbox` in `services-manifest.json`, with `manifest` pointing at **its own** chart's `env-config` (`kaif-sandbox/env-config`, not `kaif/env-config`). The path is copy-pasted from the parent service, and the wrong path silently reunites the two streams: wrong `helmRepo`, no `deployNamespace`, every environment back in scope. This entry is a prerequisite \u2014 without it the name does not resolve.\n- `bdg-eng-tops-techops-bom-input` \u2014 on the target environment: `kaif` disabled, `kaif-sandbox` enabled.\n\nRule 10: watch **how** the original is switched off. Renaming the key is the dominant convention (54 environments omit a service, 1 disables it), but no transformer logic deletes the ArgoCD template of a service that vanished from the BOM (evidence E23). `enabled: false` is the explicit form. Either way, confirm `kaif.yaml` actually disappears from `bdg-eng-tops-techops-argocd-pipeline/applications/<env>/templates/` \u2014 if it lingers, both Applications own the namespace and both prune.\n\nRule 11: the moment `bdg-eng-tops-phm-pipeline-kaif-sandbox` and `bdg-eng-tops-phm-helm-manifests-kaif-sandbox` appear, ask TechOps to add `bdg-eng-tops-admin` (admin), `bdg-eng-tops-read-write` (write) and `bdg-eng-tops-read-only` (read). The automator creates the repos but not the grants \u2014 raise it then, not when a build first fails.\n\nTO CONFIRM: the target environment, and whether Phase 1 settled the rename-vs-disable question with TechOps.",
+      "created": "2026-08-02",
+      "depends_on": [
+        "t13"
+      ],
+      "group": "Phase 2 \u2014 KAIF",
+      "id": "t17",
+      "start": "2026-09-17",
+      "status": "New",
+      "target": "2026-09-21",
+      "title": "DRAFT \u00b7 KAIF Step 4 \u2014 BOM: register kaif-sandbox and switch the environment over"
+    },
+    {
+      "body": "DRAFT \u2014 validate against Phase 1 before executing.\n\nSame acceptance criteria as the Phase 1 validation gate, applied to KAIF: a push to the pre-trunk branch builds only sandbox image names; the suffixed manifest keys survive `manifest_conf`; no master-stream environment moves; the `kaif-sandbox` ArgoCD Application is healthy on the target environment; the original `kaif.yaml` template is gone; every component the environment enables is present \u2014 with 36 in `manifest_conf`, check the count, do not eyeball it.\n\nWhen this is green, refresh the TechOps documentation \u2014 the deck's value is the *pattern*, and the second instance is what proves it generalises.",
+      "created": "2026-08-02",
+      "depends_on": [
+        "t16"
+      ],
+      "group": "Phase 2 \u2014 KAIF",
+      "id": "t18",
+      "start": "2026-09-27",
+      "status": "New",
+      "target": "2026-10-01",
+      "title": "DRAFT \u00b7 KAIF Step 5 \u2014 verify the kaif-sandbox deploy"
+    },
+    {
+      "body": "DRAFT \u2014 written from PLAN.md \u00a79 before Phase 1 was proven, and before KAIF exercised it a second time. Expect this to be rewritten twice.\n\n\u00a79 step 0 for POA (Automation Service / Orchestration): create `<devbranch>` off trunk on each repo that will carry two streams. Suffix only genuinely two-stream repos (rule 1).\n\nConfirmed from the local mirror (`/workspaces/orch`): the source repos **do share one trunk** \u2014 every `bdg-sw-auto-orch-*` deploy repo is on `main` (`console`, `console-workflow`, `controller`, `interpreter`, `resource-service`, `worker-sdk`, `worker-servicenow`, `test-catalog`, plus `bdg-sw-auto-flags` and `bdg-sw-auto-mcp`). The two exceptions are not counter-examples: `bdg-sw-auto-orch-docs` is on `publish` and is not a deploy repo, and `bdg-sw-auto-orch-helm-chart` is on `master` but is the *chart* repo (Step 2), not a Step 0 target. So Step 0 here is uniform.\n\nTO CONFIRM:\n- The BOM app name (`poa-sandbox`?) \u2014 POA is called POA / Automation Service / Orchestration depending on audience; the BOM name is the one that matters.\n- Which of those repos genuinely carry two streams.\n- The branch name and the target environment.\n- POA's component count, which drives how hard rule 4 (cover the *whole* environment) bites. Read its onboard-input `manifest_conf` first, the way KAIF's 36 entries were read.",
+      "created": "2026-08-02",
+      "depends_on": [
+        "t10",
+        "t18"
+      ],
+      "group": "Phase 3 \u2014 POA",
+      "id": "t19",
+      "start": "2026-10-02",
+      "status": "New",
+      "target": "2026-10-06",
+      "title": "DRAFT \u00b7 POA Step 0 \u2014 create the pre-trunk branch on every two-stream POA repo"
+    },
+    {
+      "body": "DRAFT \u2014 validate against Phase 1 and Phase 2 before executing.\n\n\u00a79 step 1: new onboard-input repo with `<app>-sandbox-metadata.json` + `build.yml` copied from POA's. `app_name`, `is_newapp: true`, `promote_release: false`, distinct `json_key`, chart-folder paths, `environments`/`middlewares` trimmed to the sandbox environment.\n\n`manifest_conf` must name every key the builds write (rule 3) and cover the **whole** environment, not just the branch-tracking components (rule 4): enumerate the target environment's values overlay and list every component it enables, including ones the base chart defaults to `false`. That is the failure policy hit with `agentvisorsample` and `adapterservice`.\n\nMerging runs the automator, which creates `bdg-eng-tops-phm-pipeline-<app>-sandbox` and `bdg-eng-tops-phm-helm-manifests-<app>-sandbox`. Never by hand.\n\nTO CONFIRM: **where POA's onboard-input repo lives** \u2014 it is not in the local `/workspaces/orch` mirror, unlike policy's and KAIF's. Find it before anything else in this phase; it carries the component list, the trunk branches and the `json_key` that everything else keys off.",
+      "created": "2026-08-02",
+      "depends_on": [
+        "t19",
+        "t21"
+      ],
+      "group": "Phase 3 \u2014 POA",
+      "id": "t20",
+      "start": "2026-10-12",
+      "status": "New",
+      "target": "2026-10-16",
+      "title": "DRAFT \u00b7 POA Step 1 \u2014 populate the poa-sandbox onboard-input repo"
+    },
+    {
+      "body": "DRAFT \u2014 validate against Phase 1 and Phase 2 before executing.\n\n\u00a79 step 2: copy the POA chart to a `poa-sandbox` sibling. Merge **before** the Step 1 onboard-input PR.\n\nConfirmed from the local mirror: the chart repo is **`bdg-sw-auto-orch-helm-chart`**, trunk **`master`** (PRs base on `master`), laid out like policy's \u2014 `charts/stable/`. It already carries **two** chart folders, `poa` and `temporal`, plus `check_config.sh` and `verify_docs.sh` at the root.\n\nThat two-chart fact needs care rather than relief: `check_config.sh` breaks on two **`env-config` directories**, not two charts (evidence E19), and today only `charts/stable/poa/env-config` exists \u2014 which is exactly why the repo survives with two charts. Adding `charts/stable/poa-sandbox/env-config` makes it two and trips rule 8. Patch this repo's own `verify_docs.sh` the way Phase 1 patched policy's, and expect the failure to masquerade as a missing environment file.\n\nThe rest of the \u00a79 chart rules apply unchanged: `templates/` byte-identical plus the drift guard; suffixed image keys as values only; `deployNamespace` = the original namespace; `helmRepo` \u2192 the sandbox helm-manifests repo; dependency tarballs actually committed despite `.gitignore`; `env-config` trimmed to the environments the sandbox serves.\n\nTO CONFIRM: whether `temporal` is in scope for the sandbox environment (it is a second chart in the same repo and may or may not need a sandbox twin), and what `install_consume.sh` in `charts/stable/` expects.",
+      "created": "2026-08-02",
+      "depends_on": [
+        "t19"
+      ],
+      "group": "Phase 3 \u2014 POA",
+      "id": "t21",
+      "start": "2026-10-07",
+      "status": "New",
+      "target": "2026-10-11",
+      "title": "DRAFT \u00b7 POA Step 2 \u2014 add the poa-sandbox chart to the POA chart repo"
+    },
+    {
+      "body": "DRAFT \u2014 validate against Phase 1 and Phase 2 before executing.\n\n\u00a79 rule 7: `bdg-sw-auto-orch-helm-chart`'s build workflow needs a second job for the sandbox chart, added **only after** the onboard-input PR merges, because it names the `phm-pipeline-<app>-sandbox` repo the automator creates on that merge. Base the PR on `master`.\n\nTO CONFIRM: whether this repo uses the shared `helm-build.yml` reusable workflow, and whether `package_pattern` needs widening \u2014 it already packages more than one chart, so this may be the one repo where that part is already solved.",
+      "created": "2026-08-02",
+      "depends_on": [
+        "t20"
+      ],
+      "group": "Phase 3 \u2014 POA",
+      "id": "t22",
+      "start": "2026-10-17",
+      "status": "New",
+      "target": "2026-10-21",
+      "title": "DRAFT \u00b7 POA Step 2b \u2014 add the sandbox job to the chart repo's build.yaml"
+    },
+    {
+      "body": "DRAFT \u2014 validate against Phase 1 and Phase 2 before executing.\n\n\u00a79 step 3, **last** in the order. Trigger and `DOCKER_IMAGE_NAME` in the same PR, on every two-stream repo. Until the sandbox application exists, a push to the pre-trunk branch aliases onto the master stream (\u00a72a) and deploys to every environment that auto-deploys POA \u2014 the highest-consequence ordering mistake in the plan, and POA has the widest environment footprint of the three phases.\n\nManifest key = image name with `-` \u2192 `_`; must match `manifest_conf` exactly, or the key is pruned or the render hard-fails at `_techops.tpl`.\n\nTO CONFIRM: the two-stream repo list, POA's image namespace and key shape (policy uses `org/component`, KAIF uses flat `kaif_component` \u2014 check which POA follows), and whether TechOps landed \u00a74 Option A in the meantime; if so, drop the workaround.",
+      "created": "2026-08-02",
+      "depends_on": [
+        "t24"
+      ],
+      "group": "Phase 3 \u2014 POA",
+      "id": "t23",
+      "start": "2026-10-22",
+      "status": "New",
+      "target": "2026-10-26",
+      "title": "DRAFT \u00b7 POA Step 3 \u2014 build triggers on the pre-trunk branch + branch-dependent image names"
+    },
+    {
+      "body": "DRAFT \u2014 validate against Phase 1 and Phase 2 before executing.\n\n\u00a79 rule 9, two TechOps-owned repos, both read-only to us:\n- `bdg-eng-tops-techops-bom-calculator` \u2014 register the sandbox service, `manifest` pointing at **its own** chart's `env-config`, not the parent's.\n- `bdg-eng-tops-techops-bom-input` \u2014 on the target environment, original disabled, sandbox enabled.\n\nRule 10: confirm the original application's ArgoCD template actually disappears from `bdg-eng-tops-techops-argocd-pipeline/applications/<env>/templates/`; two Applications on one namespace prune each other.\n\nRule 11: as soon as the two `phm-*-<app>-sandbox` repos appear, ask TechOps for the `bdg-eng-tops-admin` / `read-write` / `read-only` team grants.\n\nTO CONFIRM: the target environment and the BOM service name.",
+      "created": "2026-08-02",
+      "depends_on": [
+        "t20"
+      ],
+      "group": "Phase 3 \u2014 POA",
+      "id": "t24",
+      "start": "2026-10-17",
+      "status": "New",
+      "target": "2026-10-21",
+      "title": "DRAFT \u00b7 POA Step 4 \u2014 BOM: register poa-sandbox and switch the environment over"
+    },
+    {
+      "body": "DRAFT \u2014 validate against Phase 1 and Phase 2 before executing.\n\nSame acceptance criteria as the Phase 1 validation gate, applied to POA: sandbox-only image names on a pre-trunk push; suffixed manifest keys surviving `manifest_conf`; no master-stream environment moving; the sandbox ArgoCD Application healthy; the original template gone; every component the environment enables present.\n\nWhen this is green the pattern has three instances across three different repo layouts \u2014 policy's `charts/stable/<app>` on `main`, KAIF's root-level `kaif/` on `master`, POA's `charts/stable/` with a pre-existing second chart. Close the loop: fold anything still surprising back into PLAN.md \u00a79, refresh the TechOps deck, and make the case for \u00a74 Option A with three applications' worth of evidence behind it.",
+      "created": "2026-08-02",
+      "depends_on": [
+        "t23"
+      ],
+      "group": "Phase 3 \u2014 POA",
+      "id": "t25",
+      "start": "2026-10-27",
+      "status": "New",
+      "target": "2026-10-31",
+      "title": "DRAFT \u00b7 POA Step 5 \u2014 verify the poa-sandbox deploy"
     }
   ],
   "view": {

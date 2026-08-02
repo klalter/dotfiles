@@ -765,6 +765,16 @@
       "created": "2026-08-01",
       "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3jcc",
       "id": "t1",
+      "last_pushed": {
+        "blocked": "",
+        "body_hash": "e3b0c44298fc1c14",
+        "depends_on": "",
+        "group": "",
+        "start": "",
+        "status": "New",
+        "target": "",
+        "title": "Roll remaining .wt worktrees into the tracked index"
+      },
       "status": "New",
       "title": "Roll remaining .wt worktrees into the tracked index"
     },
@@ -772,6 +782,16 @@
       "created": "2026-08-01",
       "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3jcg",
       "id": "t2",
+      "last_pushed": {
+        "blocked": "",
+        "body_hash": "e3b0c44298fc1c14",
+        "depends_on": "",
+        "group": "",
+        "start": "",
+        "status": "New",
+        "target": "",
+        "title": "Rotate the plaintext PAT embedded in the dotfiles origin URL"
+      },
       "status": "New",
       "title": "Rotate the plaintext PAT embedded in the dotfiles origin URL"
     },
@@ -779,6 +799,16 @@
       "created": "2026-08-01",
       "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3jck",
       "id": "t3",
+      "last_pushed": {
+        "blocked": "",
+        "body_hash": "e3b0c44298fc1c14",
+        "depends_on": "",
+        "group": "",
+        "start": "",
+        "status": "New",
+        "target": "",
+        "title": "Point daily-report at projects/agent-kaif-deploy.json as its PR source"
+      },
       "status": "New",
       "title": "Point daily-report at projects/agent-kaif-deploy.json as its PR source"
     },
@@ -786,6 +816,16 @@
       "created": "2026-08-01",
       "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3jco",
       "id": "t4",
+      "last_pushed": {
+        "blocked": "",
+        "body_hash": "e3b0c44298fc1c14",
+        "depends_on": "",
+        "group": "",
+        "start": "",
+        "status": "New",
+        "target": "",
+        "title": "Wire 'project push' into 'sync --commit' as one call"
+      },
       "status": "New",
       "title": "Wire 'project push' into 'sync --commit' as one call"
     },
@@ -793,6 +833,16 @@
       "created": "2026-08-01",
       "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3jcs",
       "id": "t5",
+      "last_pushed": {
+        "blocked": "",
+        "body_hash": "e3b0c44298fc1c14",
+        "depends_on": "",
+        "group": "",
+        "start": "",
+        "status": "Complete",
+        "target": "",
+        "title": "Redesign GitHub project: per-worktree, Tasks + PR views"
+      },
       "status": "Complete",
       "title": "Redesign GitHub project: per-worktree, Tasks + PR views"
     },
@@ -800,6 +850,16 @@
       "created": "2026-08-02",
       "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3lTk",
       "id": "t6",
+      "last_pushed": {
+        "blocked": "",
+        "body_hash": "e3b0c44298fc1c14",
+        "depends_on": "",
+        "group": "",
+        "start": "",
+        "status": "Complete",
+        "target": "",
+        "title": "Remove the work feature from dev-shell (CLI, daemon, UI) \u2014 agent on feat/remove-work-feature"
+      },
       "status": "Complete",
       "title": "Remove the work feature from dev-shell (CLI, daemon, UI) \u2014 agent on feat/remove-work-feature"
     },
@@ -807,6 +867,16 @@
       "created": "2026-08-02",
       "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3lU4",
       "id": "t7",
+      "last_pushed": {
+        "blocked": "",
+        "body_hash": "e3b0c44298fc1c14",
+        "depends_on": "",
+        "group": "",
+        "start": "",
+        "status": "Complete",
+        "target": "",
+        "title": "Full 5-agent x 3-tenant E2E: wrapped + pure-KAIF matrices, Grafana-confirmed, deck 2026-08-02-e2e-matrix.pptx"
+      },
       "status": "Complete",
       "title": "Full 5-agent x 3-tenant E2E: wrapped + pure-KAIF matrices, Grafana-confirmed, deck 2026-08-02-e2e-matrix.pptx"
     },
@@ -814,8 +884,36 @@
       "created": "2026-08-02",
       "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3lWE",
       "id": "t8",
+      "last_pushed": {
+        "blocked": "",
+        "body_hash": "e3b0c44298fc1c14",
+        "depends_on": "",
+        "group": "",
+        "start": "",
+        "status": "New",
+        "target": "",
+        "title": "Push feat/remove-work-feature and open the dev-shell PR for team review"
+      },
       "status": "New",
       "title": "Push feat/remove-work-feature and open the dev-shell PR for team review"
+    },
+    {
+      "body": "Implementation plan: deliverables/kill-api-plan.md (in the worktree). Base = existing open PR kyndryl-cto/bdg-sw-aifn-agent-registry#264 (terminate), rebased on main + CAS hardening + tests + kaif_iam_client route mapping (verify 1.1.42). Recommended role gate: kaif.ai.assistedit (KAIF Editor, resume precedent) with access-group check; kaif.kf.admin (KAIF Admin) as conservative fallback.",
+      "created": "2026-08-02",
+      "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3rqE",
+      "id": "t9",
+      "last_pushed": {
+        "blocked": "",
+        "body_hash": "0345cfef146b5ee6",
+        "depends_on": "",
+        "group": "",
+        "start": "",
+        "status": "New",
+        "target": "",
+        "title": "Kill-run API: terminate stuck Argo runs via registry (KAIF Admin)"
+      },
+      "status": "New",
+      "title": "Kill-run API: terminate stuck Argo runs via registry (KAIF Admin)"
     }
   ],
   "view": {
