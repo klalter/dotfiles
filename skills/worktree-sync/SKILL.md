@@ -198,6 +198,39 @@ cosmetic and is the price of both boards grouping correctly with zero UI setup.
 only differences. Items whose PR or task left the manifest are archived, not
 deleted.
 
+## Creating a new worktree
+
+**This is the only supported way.** `devx work new` is gone — the whole `devx
+work` tree was deleted from dev-shell. Do **not** create `/workspaces/.ai/work/`
+folders, work items or ADO links for a worktree; the manifest is the only
+metadata.
+
+```bash
+python3 $S new feat/my-thing bdg-sw-plcy-policy-service bdg-sw-auto-orch-controller
+python3 $S project push my-thing     # optional; creates the GitHub board
+```
+
+- `<lane>/<slug>` — lane is free text (`feat`, `fix`, `refactor`, `study`, …);
+  the slug is the `<project>` name every other command takes.
+- Repos are bare names found under `/workspaces` (or one level down, e.g.
+  `channels/<repo>`) or absolute paths. At least one is required.
+- Branch is `<lane>/<slug>` in every repo, cut from that repo's `origin/HEAD`
+  (falling back to `origin/main`, then `origin/master`); `--branch` overrides it,
+  and an existing local branch of that name is reused, not recreated.
+
+It creates `/workspaces/.wt/<lane>/<slug>/<repo>/` per repo, appends to
+`projects/index.json` with `github_project: null`, writes the seeded manifest, and
+re-renders the dashboard. It refuses — exit 1, nothing created — on a name without
+a `/`, an already-tracked slug, or an unresolvable repo.
+
+`new` is entirely offline apart from a `git fetch` per repo. `project push` is
+the only networked step and it needs the gh `project` scope; a worktree works
+fine with `github_project: null` if you skip it. Confirm each repo's seeded
+`base` before trusting ahead/behind (rule 17).
+
+A repo whose `origin` is not a GitHub remote is created as a worktree but lands
+in the manifest with no `repos` entry — there is no slug to key it by.
+
 ## Tracking an existing worktree
 
 1. Append to `projects/index.json`: `name`, `worktree` (absolute path), `lane`,
@@ -206,15 +239,19 @@ deleted.
 3. Seed `base` per repo in the manifest (rule 17), then re-sync.
 4. `python3 $S sync <project> --commit`, then `python3 $S project push <project>`.
 
-For a *new* worktree use `new <lane>/<slug> <repo>…` instead. It makes
-`/workspaces/.wt/<lane>/<slug>/`, adds a git worktree per repo on branch
-`<lane>/<slug>` cut from that repo's `origin/HEAD` (reused if the branch already
-exists), registers the project, seeds the manifest with detected base branches and
-renders the dashboard. Repos may be paths or bare names found under `/workspaces`.
-Then `project push <slug>` creates the GitHub project.
+## Untracking / deleting a worktree
 
-Do **not** create `/workspaces/.ai/work/` folders, `devx work` items or ADO links
-for these; the manifest is the only metadata.
+There is no subcommand for this. It is manual, in this order:
+
+```bash
+git -C /workspaces/<repo> worktree remove /workspaces/.wt/<lane>/<slug>/<repo>   # per repo
+rmdir /workspaces/.wt/<lane>/<slug>
+# by hand: drop the entry from projects/index.json, delete projects/<slug>.json
+python3 $S render
+```
+
+Archiving the GitHub project itself is a manual UI step — say so, never claim the
+tool did it.
 
 ## Reference
 

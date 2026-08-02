@@ -29,8 +29,11 @@ an org-only permission on fine-grained tokens), so the scope has to come from
 
 **`devx` is deliberately not involved.** The `.wt` slugs are hand-made worktree
 sets devx does not manage; nothing here reads or writes devx state, and no
-`/workspaces/.ai/work/` folders or `devx work` items are created for them. The
-manifest is the only metadata.
+`/workspaces/.ai/work/` folders or work items are created for them. The
+manifest is the only metadata. This stopped being a choice and became the only
+option when the entire `devx work` tree (work items, `worktree-config.yaml`
+reconciliation, the ADO bridge, the `/api/work/*` routes and the Work UI) was
+deleted from dev-shell.
 
 ---
 

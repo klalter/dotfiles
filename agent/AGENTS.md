@@ -98,9 +98,11 @@ it**:
   tool exits **3** it is refusing to overwrite a human edit: relay its block
   verbatim and wait for his answer. Never pass `--ack-human` on your own
   judgement, and never silently revert a lane he moved.
-- **New worktrees**: create with `worktree_sync.py new <lane>/<slug> <repo>…`.
-  Do NOT create `/workspaces/.ai/work/` item folders or `devx work` items for
-  these worktrees; the manifest is the only metadata.
+- **New worktrees**: create with `worktree_sync.py new <lane>/<slug> <repo>…` —
+  the only supported way. `devx work` no longer exists (the whole command tree
+  was deleted from dev-shell), so do NOT reach for `devx work new`, and do NOT
+  create `/workspaces/.ai/work/` item folders, `worktree-config.yaml` or ADO
+  links for these worktrees; the manifest is the only metadata.
 
 ## Always link repo references
 
