@@ -763,30 +763,35 @@
   "tasks": [
     {
       "created": "2026-08-01",
+      "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3jcc",
       "id": "t1",
       "status": "New",
       "title": "Roll remaining .wt worktrees into the tracked index"
     },
     {
       "created": "2026-08-01",
+      "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3jcg",
       "id": "t2",
       "status": "New",
       "title": "Rotate the plaintext PAT embedded in the dotfiles origin URL"
     },
     {
       "created": "2026-08-01",
+      "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3jck",
       "id": "t3",
       "status": "New",
       "title": "Point daily-report at projects/agent-kaif-deploy.json as its PR source"
     },
     {
       "created": "2026-08-01",
+      "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3jco",
       "id": "t4",
       "status": "New",
       "title": "Wire 'project push' into 'sync --commit' as one call"
     },
     {
       "created": "2026-08-01",
+      "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3jcs",
       "id": "t5",
       "status": "Complete",
       "title": "Redesign GitHub project: per-worktree, Tasks + PR views"

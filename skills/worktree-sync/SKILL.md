@@ -34,8 +34,9 @@ like `--commit` inside an unquoted title break argparse).
 - Lanes: `New` → `In progress` → `Complete` (aliases: `new/todo`,
   `wip/started/progress`, `done/complete`).
 - Tasks live in the manifest's `tasks` key (merged forward, never clobbered) and
-  appear on the project as draft-issue items titled `t<n> · <title>`. Retitles
-  update the same item — identity is the `t<n>` prefix, so never strip it by hand.
+  appear on the project as draft-issue items titled exactly the task title — no id
+  prefix. Identity is the `draft_id` the push records into each task entry, so
+  retitles update the same item; never delete or copy `draft_id` by hand.
 - `task set <name> <id> <status> [new title...]` also retitles.
 
 ## The everyday call
@@ -83,8 +84,11 @@ by the tool on every push:
 |---|---|---|---|
 | Tasks · Board | Kanban | `kind:Task` | New / In progress / Complete |
 | Tasks · List | table | `kind:Task` | — |
-| PRs · Board | Kanban | `type:pr` (built-in) | Draft / Open / Merged / Cancelled |
-| PRs · List | table | `type:pr` | — |
+| PRs · Board | Kanban | `kind:PR` | Draft / Open / Merged / Cancelled |
+| PRs · List | table | `kind:PR` | — |
+
+All four filter on the custom `Kind` field — the built-in `type:pr` qualifier
+rendered an **empty** view when tried, so do not go back to it.
 
 Item kinds: **Task** (draft issue, lanes on the built-in `Status` field), **PR**
 (every PR the worktree produced; lanes on `PR status`, review state in `Review`),

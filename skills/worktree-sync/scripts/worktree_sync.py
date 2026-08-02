@@ -474,14 +474,15 @@ TASK_ALIASES = {"new": "New", "todo": "New",
                 "wip": "In progress", "started": "In progress",
                 "in-progress": "In progress", "progress": "In progress",
                 "done": "Complete", "complete": "Complete", "completed": "Complete"}
-# The four views, created/repaired on every push. "type:pr" is the BUILT-IN
-# content-type qualifier (robust); tasks need the custom Kind field — which is
-# named Kind, not Type, precisely so its filter doesn't collide with type:pr.
+# The four views, created/repaired on every push. Both filter on the custom
+# Kind field: the built-in "type:pr" qualifier rendered an EMPTY view when
+# tried, while custom-field filters are proven to work. (Kind is named Kind,
+# not Type, so its filter can't collide with the built-in type qualifier.)
 VIEW_SPEC = [
     ("Tasks · Board", "BOARD_LAYOUT", "kind:Task"),
     ("Tasks · List", "TABLE_LAYOUT", "kind:Task"),
-    ("PRs · Board", "BOARD_LAYOUT", "type:pr"),
-    ("PRs · List", "TABLE_LAYOUT", "type:pr"),
+    ("PRs · Board", "BOARD_LAYOUT", "kind:PR"),
+    ("PRs · List", "TABLE_LAYOUT", "kind:PR"),
 ]
 
 
@@ -619,9 +620,11 @@ ITEM_QUERY = """
 def item_key(content):
     """Stable identity for a board item.
 
-    PRs key on URL. Task drafts are titled 't<n> · <title>' and key on the
-    t-id alone, so a retitle updates the item instead of duplicating it.
-    Branch drafts ('owner/repo:branch') key on their full title.
+    PRs key on URL; branch drafts key on their 'owner/repo:branch' title.
+    Task drafts are NOT identified by title at all — their DraftIssue id is
+    recorded as draft_id in the manifest, so titles stay clean and retitles
+    update in place. The 't<n> · ' pattern is only recognised to adopt items
+    created before that change.
     """
     if content.get("url"):
         return content["url"]
@@ -748,71 +751,94 @@ def push_project(entry, manifest, dry_run=False):
         print(f"  views {'to create' if dry_run else 'reconciled'}: {', '.join(views)}")
 
     items = list_items(project["id"])
+    drafts_by_id = {i["content_id"]: i for i in items.values() if i.get("content_id")}
     today = (manifest.get("generated_at") or "")[:10]
     repo_meta = {r["slug"]: r for r in manifest["repos"]}
 
-    # key -> (field values, draft title or None)
-    wanted, updates, retitles = {}, [], []
+    kept, updates, retitles = set(), [], []
     added = {"Task": 0, "PR": 0, "Branch": 0}
+    manifest_dirty = False
 
+    def queue_values(item, values):
+        for fname, value in values.items():
+            if value and fname in fields and item["values"].get(fname) != value:
+                updates.append((item["id"], fields[fname], value))
+
+    # Tasks: matched by draft_id, never by title, so titles stay clean.
     for t in manifest.get("tasks", []):
-        wanted[f'task:{t["id"]}'] = ({
-            "Kind": "Task", "Status": t["status"], "Last sync": today,
-        }, f'{t["id"]} · {t["title"]}')
+        item = drafts_by_id.get(t.get("draft_id"))
+        if not item:
+            item = items.get(f'task:{t["id"]}')   # adopt a pre-rename 't1 · …' item
+        if not item:
+            if dry_run:
+                added["Task"] += 1
+                continue
+            data = gql(f'mutation{{addProjectV2DraftIssue(input:{{'
+                       f'projectId:{s(project["id"])},title:{s(t["title"])}}})'
+                       f'{{projectItem{{id content{{... on DraftIssue{{id}}}}}}}}}}')
+            node = data["addProjectV2DraftIssue"]["projectItem"]
+            item = {"id": node["id"], "values": {}, "title": t["title"],
+                    "content_id": node["content"]["id"]}
+            added["Task"] += 1
+        elif item.get("title") != t["title"]:
+            retitles.append((item["content_id"], t["title"]))
+        if t.get("draft_id") != item.get("content_id"):
+            t["draft_id"] = item["content_id"]
+            manifest_dirty = True
+        kept.add(item["id"])
+        queue_values(item, {"Kind": "Task", "Status": t["status"], "Last sync": today})
+
     for pr in manifest["prs"]:
-        wanted[pr["url"]] = ({
+        values = {
             "Kind": "PR", "PR status": pr["status"],
             "Repo slug": pr["repo"], "Branch": pr["head"],
             "Base": repo_meta.get(pr["repo"], {}).get("base", ""),
             "Review": review_label(pr), "Last sync": today,
-        }, None)
+        }
+        item = items.get(pr["url"])
+        if not item:
+            if dry_run:
+                added["PR"] += 1
+                continue
+            if not pr.get("node_id"):
+                print(f"  SKIP {pr['key']} — no node id; re-run sync")
+                continue
+            data = gql(f'mutation{{addProjectV2ItemById(input:{{'
+                       f'projectId:{s(project["id"])},contentId:{s(pr["node_id"])}}})'
+                       f'{{item{{id}}}}}}')
+            item = {"id": data["addProjectV2ItemById"]["item"]["id"], "values": {}}
+            added["PR"] += 1
+        kept.add(item["id"])
+        queue_values(item, values)
+
     for ref in manifest["branches_no_pr"]:
         slug, _, branch = ref.partition(":")
-        wanted[ref] = ({
-            "Kind": "Branch", "Repo slug": slug, "Branch": branch,
-            "Base": repo_meta.get(slug, {}).get("base", ""), "Last sync": today,
-        }, ref)
-
-    for key, (values, title_wanted) in wanted.items():
-        item = items.get(key)
+        values = {"Kind": "Branch", "Repo slug": slug, "Branch": branch,
+                  "Base": repo_meta.get(slug, {}).get("base", ""), "Last sync": today}
+        item = items.get(ref)
         if not item:
-            kind = values["Kind"]
             if dry_run:
-                added[kind] += 1
+                added["Branch"] += 1
                 continue
-            if kind == "PR":
-                pr = next(p for p in manifest["prs"] if p["url"] == key)
-                if not pr.get("node_id"):
-                    print(f"  SKIP {pr['key']} — no node id; re-run sync")
-                    continue
-                data = gql(f'mutation{{addProjectV2ItemById(input:{{'
-                           f'projectId:{s(project["id"])},contentId:{s(pr["node_id"])}}})'
-                           f'{{item{{id}}}}}}')
-                item = {"id": data["addProjectV2ItemById"]["item"]["id"], "values": {}}
-            else:
-                data = gql(f'mutation{{addProjectV2DraftIssue(input:{{'
-                           f'projectId:{s(project["id"])},title:{s(title_wanted)}}})'
-                           f'{{projectItem{{id}}}}}}')
-                item = {"id": data["addProjectV2DraftIssue"]["projectItem"]["id"],
-                        "values": {}, "title": title_wanted}
-            added[kind] += 1
-        elif (title_wanted and item.get("content_id")
-                and item.get("title") != title_wanted):
-            retitles.append((item["content_id"], title_wanted))
-        for fname, value in values.items():
-            if not value or fname not in fields:
-                continue
-            if item["values"].get(fname) != value:
-                updates.append((item["id"], fields[fname], value))
+            data = gql(f'mutation{{addProjectV2DraftIssue(input:{{'
+                       f'projectId:{s(project["id"])},title:{s(ref)}}})'
+                       f'{{projectItem{{id}}}}}}')
+            item = {"id": data["addProjectV2DraftIssue"]["projectItem"]["id"],
+                    "values": {}, "title": ref}
+            added["Branch"] += 1
+        kept.add(item["id"])
+        queue_values(item, values)
 
     if not dry_run:
         for content_id, new_title in retitles:
             gql(f'mutation{{updateProjectV2DraftIssue(input:{{'
                 f'draftIssueId:{s(content_id)},title:{s(new_title)}}})'
                 f'{{draftIssue{{id}}}}}}')
+        if manifest_dirty:
+            write_if_changed(projects_dir() / f"{entry['name']}.json", dump(manifest))
 
     # one project == one worktree, so anything not in the manifest is stale
-    stale = [i for k, i in items.items() if k not in wanted]
+    stale = [i for i in items.values() if i["id"] not in kept]
     if not dry_run:
         for i in stale:
             gql(f'mutation{{archiveProjectV2Item(input:{{projectId:{s(project["id"])},'
