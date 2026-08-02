@@ -25,7 +25,12 @@
       "worktree": "/workspaces/.wt/feat/dev-shell-remove-work"
     },
     {
-      "github_project": null,
+      "github_project": {
+        "id": "PVT_kwHOCPZR3M4BfKTh",
+        "number": 5,
+        "title": "feat/sandbox-cicd",
+        "url": "https://github.com/users/klalter_kyndryl/projects/5"
+      },
       "lane": "feat",
       "name": "sandbox-cicd",
       "status": "active",

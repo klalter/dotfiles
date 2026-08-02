@@ -234,54 +234,63 @@
   "tasks": [
     {
       "created": "2026-08-02",
+      "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rUU",
       "id": "t1",
       "status": "Complete",
       "title": "Step 0 \u2014 create development branches on policy-service and policy-console"
     },
     {
       "created": "2026-08-02",
+      "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rUY",
       "id": "t2",
       "status": "Complete",
       "title": "Step 1 \u2014 policy-sandbox onboard-input content (PR #1)"
     },
     {
       "created": "2026-08-02",
+      "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rUg",
       "id": "t3",
       "status": "Complete",
       "title": "Step 2 \u2014 policy-sandbox chart in policy-helm-charts (PR #231)"
     },
     {
       "created": "2026-08-02",
+      "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rUo",
       "id": "t4",
       "status": "Complete",
       "title": "Step 2b \u2014 helm-charts build.yaml job for the sandbox chart (PR #233)"
     },
     {
       "created": "2026-08-02",
+      "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rUs",
       "id": "t5",
       "status": "In progress",
       "title": "Step 3 \u2014 development build triggers + Option B image names (service #465, console #266)"
     },
     {
       "created": "2026-08-02",
+      "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rUw",
       "id": "t6",
       "status": "In progress",
       "title": "Step 4 \u2014 review TechOps BOM PRs: bom-input#971 and bom-calculator#226"
     },
     {
       "created": "2026-08-02",
+      "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rU0",
       "id": "t7",
       "status": "New",
       "title": "Step 5 \u2014 verify the sandbox deploy on cto-dev-kpr"
     },
     {
       "created": "2026-08-02",
+      "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rU4",
       "id": "t8",
       "status": "New",
       "title": "Ask TechOps to add the three bdg-eng-tops-* teams to the two phm-*-policy-sandbox repos"
     },
     {
       "created": "2026-08-02",
+      "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rU8",
       "id": "t9",
       "status": "New",
       "title": "Decide branch protection for the new development branches (main ruleset is ~DEFAULT_BRANCH only)"

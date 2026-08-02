@@ -62,6 +62,8 @@ Board: [feat/dev-shell-remove-work](https://github.com/users/klalter_kyndryl/pro
 
 `/workspaces/.wt/feat/sandbox-cicd` · lane `feat` · 6 repos · 7 PRs · 9 tasks · synced 2026-08-02T13:35:27Z
 
+Board: [feat/sandbox-cicd](https://github.com/users/klalter_kyndryl/projects/5)
+
 > Enable `development` → cto-dev-kpr for Bridge Policy via a second TechOps application, `policy-sandbox`. PLAN.md §9 is the reusable recipe (kaif-sandbox next).
 > §4 settled: Option B, branch-dependent image names. §5 Step 4 settled: replace — the sandbox app ships the whole environment.
 > bom-input#971 and bom-calculator#226 are TechOps-authored (Patricia Batista Duarte); we have read-only access there, so our role is review, not authorship.
