@@ -1115,6 +1115,13 @@
       "title": "Flake remainder: guest exit-1 shutdown fix + registry #272/#275 rollout on cto-dev"
     },
     {
+      "attachments": [
+        {
+          "kind": "pptx",
+          "note": "2-slide deck: p.82 WITHOUT AgentVisor (pure baseline) / p.83 WITH AgentVisor \u2014 MANETU 10/10 green, 02-Aug",
+          "path": "deliverables/daily-report/2026-08-02-manetu-with-without-agentvisor.pptx"
+        }
+      ],
       "created": "2026-08-02",
       "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3uqQ",
       "id": "t12",
@@ -1125,9 +1132,9 @@
         "group": "",
         "owner": "",
         "start": "",
-        "status": "In progress",
+        "status": "Complete",
         "target": "",
-        "title": "MANETU with/without AgentVisor E2E (5+5) + 2-slide deck"
+        "title": "\u2713 MANETU with/without AgentVisor E2E (5+5) + 2-slide deck"
       },
       "status": "Complete",
       "title": "MANETU with/without AgentVisor E2E (5+5) + 2-slide deck"
