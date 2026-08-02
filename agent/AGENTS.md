@@ -78,47 +78,29 @@ repo's own `CLAUDE.md` or `AGENTS.md`.
 registered in `$DOTFILES_DIR/projects/index.json`.** Anywhere else, skip this
 whole section — no status loading, no task bookkeeping, no autosync.
 
-Inside a tracked worktree the session is bound to that worktree's GitHub
-project (one project per worktree, titled `<lane>/<slug>`), kept current by the
-deterministic tool `$DOTFILES_DIR/skills/worktree-sync/scripts/worktree_sync.py`
-(skill: `worktree-sync`). The protocol is automatic — never ask permission for
-any of it:
+Inside one, the session is bound to that worktree's GitHub project, kept current
+by `worktree_sync.py` (skill: **`worktree-sync`** — read it for every command,
+argument and rule). The protocol is automatic; **never ask permission for any of
+it**:
 
-- **Status in**: a SessionStart hook injects the project status (open tasks,
-  PR counts, board URL). Treat it as the session's work context. If it is
-  missing, run `worktree_sync.py context` yourself.
-- **Status out**: a SessionEnd hook runs `worktree_sync.py autosync`
-  (sync → dashboard → dotfiles commit → GitHub project push). After a
-  significant milestone mid-session (PR opened/merged, task finished), also
-  run `sync <name> --commit` + `project push <name>` right away rather than
-  waiting for session end.
-- **Tasks, hands-free**: when a new unit of work starts in the chat, create it
-  immediately — `task add <name> "Title" [--status wip] [--group "Phase 2 —
-  KAIF"] --push`. When work finishes, close it — `task set <name> t<N> done
-  --push`. Do NOT ask whether to create or close; just do it and let the chat
-  show a one-line summary (e.g. ``task t7 → Complete: Fix HITL race``). One
-  conversation may spin up several tasks; each distinct deliverable gets its
-  own. Tasks also carry a Group, an Owner (free text, e.g. `TechOps
-  (Patricia)`), dependencies (`task dep <name> t9 add t5`) and dates — see the
-  `worktree-sync` skill for the full surface.
-- **Read the task before working it**: a task may carry an instruction `body`
-  and attachments (.pptx, .drawio, .md, images, URLs) the owner dropped in.
-  Read the body and *every* attachment before acting — `.drawio` via
-  `kyndryl-drawio-deck`, `.pptx` via the pptx skill. A task whose attachments
-  were not read has not been started.
-- **The human's board edit always wins.** If the owner moved something on the
-  GitHub project, that is the truth; `sync`/`autosync` merge it back before
-  pushing. The agent may *propose* a change (e.g. after validating a task was
-  really implemented) but when the tool exits **3** it is refusing to overwrite
-  a human edit: relay its block verbatim — what the human set and when, what
-  you believe it should be, and the keep / move-forward / move-back options —
-  and wait for his answer. Never pass `--ack-human` on your own judgement, and
-  never silently revert a lane he moved.
-- **New worktrees**: create with `worktree_sync.py new <lane>/<slug> <repo>…` —
-  it makes the directory, adds git worktrees, registers the project, seeds the
-  manifest, and updates the dashboard. Do NOT create `/workspaces/.ai/work/`
-  item folders or `devx work` items for these worktrees; the manifest is the
-  only metadata.
+- **Status in**: a SessionStart hook injects the project status. Treat it as the
+  session's work context. If it is missing, run `context` yourself.
+- **Status out**: a SessionEnd hook runs `autosync`. After a mid-session
+  milestone (PR opened/merged, task finished), run `sync <project> --commit` +
+  `project push <project>` right away rather than waiting.
+- **Tasks, hands-free**: create a task the moment a new unit of work starts in
+  the chat, close it the moment it finishes. Do NOT ask; just do it and show a
+  one-line summary (e.g. ``task t7 → Complete: Fix HITL race``). One
+  conversation may spin up several; each distinct deliverable gets its own.
+- **Read the task before working it**: read its `body` and *every* attachment
+  before acting. A task whose attachments were not read has not been started.
+- **The human's board edit always wins.** Propose, never overwrite. When the
+  tool exits **3** it is refusing to overwrite a human edit: relay its block
+  verbatim and wait for his answer. Never pass `--ack-human` on your own
+  judgement, and never silently revert a lane he moved.
+- **New worktrees**: create with `worktree_sync.py new <lane>/<slug> <repo>…`.
+  Do NOT create `/workspaces/.ai/work/` item folders or `devx work` items for
+  these worktrees; the manifest is the only metadata.
 
 ## Always link repo references
 
