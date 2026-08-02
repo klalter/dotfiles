@@ -263,7 +263,7 @@
       "group": "Phase 1 \u2014 Policy PoC",
       "id": "t2",
       "last_pushed": {
-        "blocked": "Ready",
+        "blocked": "",
         "body_hash": "e3b0c44298fc1c14",
         "depends_on": "t3 \u00b7 Step 2 \u2014 policy-sandbox cha\u2026",
         "group": "Phase 1 \u2014 Policy PoC",
@@ -310,7 +310,7 @@
       "group": "Phase 1 \u2014 Policy PoC",
       "id": "t4",
       "last_pushed": {
-        "blocked": "Ready",
+        "blocked": "",
         "body_hash": "e3b0c44298fc1c14",
         "depends_on": "t2 \u00b7 Step 1 \u2014 policy-sandbox onb\u2026",
         "group": "Phase 1 \u2014 Policy PoC",
