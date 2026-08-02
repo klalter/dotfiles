@@ -57,3 +57,20 @@ Board: [feat/dev-shell-remove-work](https://github.com/users/klalter_kyndryl/pro
 | [kyndryl-cto/bdg-sw-auto-console-dev-shell](https://github.com/kyndryl-cto/bdg-sw-auto-console-dev-shell) | `feat/remove-work-feature` | `main` | +5 / −0 | — |
 
 **Branches with no PR yet:** `kyndryl-cto/bdg-sw-auto-console-dev-shell:feat/remove-work-feature`
+
+## sandbox-cicd
+
+`/workspaces/.wt/feat/sandbox-cicd` · lane `feat` · 6 repos · 5 PRs · 0 tasks · synced 2026-08-02T13:34:50Z
+
+| Repo | Branch | Base | Ahead/Behind | PRs |
+| --- | --- | --- | --- | --- |
+| [kyndryl-cto/bdg-eng-tops-cicd-app-onboard-scripts](https://github.com/kyndryl-cto/bdg-eng-tops-cicd-app-onboard-scripts) | `feat/sandbox-cicd` | `main` | +0 / −0 | — |
+| [kyndryl-cto/bdg-eng-tops-techops-bom-input](https://github.com/kyndryl-cto/bdg-eng-tops-techops-bom-input) | `feat/policy-sandbox-cto-dev-kpr` | `main` | +1 / −1 | — |
+| [kyndryl-cto/bdg-sw-plcy-policy-console](https://github.com/kyndryl-cto/bdg-sw-plcy-policy-console) | `feat/sandbox-build-trigger` | `main` | +1 / −0 | [#266](https://github.com/kyndryl-cto/bdg-sw-plcy-policy-console/pull/266) Open |
+| [kyndryl-cto/bdg-sw-plcy-policy-helm-charts](https://github.com/kyndryl-cto/bdg-sw-plcy-policy-helm-charts) | `feat/sandbox-build-job` | `main` | +1 / −1 | [#231](https://github.com/kyndryl-cto/bdg-sw-plcy-policy-helm-charts/pull/231) Merged<br>[#233](https://github.com/kyndryl-cto/bdg-sw-plcy-policy-helm-charts/pull/233) Merged |
+| [kyndryl-cto/bdg-sw-plcy-policy-sandbox-onboard-input](https://github.com/kyndryl-cto/bdg-sw-plcy-policy-sandbox-onboard-input) | `feat/sandbox-cicd` | `main` | +0 / −1 | [#1](https://github.com/kyndryl-cto/bdg-sw-plcy-policy-sandbox-onboard-input/pull/1) Merged |
+| [kyndryl-cto/bdg-sw-plcy-policy-service](https://github.com/kyndryl-cto/bdg-sw-plcy-policy-service) | `feat/sandbox-build-trigger` | `main` | +1 / −1 | [#465](https://github.com/kyndryl-cto/bdg-sw-plcy-policy-service/pull/465) Open |
+
+**Branches with no PR yet:** `kyndryl-cto/bdg-eng-tops-cicd-app-onboard-scripts:feat/sandbox-cicd`, `kyndryl-cto/bdg-eng-tops-techops-bom-input:feat/policy-sandbox-cto-dev-kpr`, `kyndryl-cto/bdg-eng-tops-techops-bom-input:feat/sandbox-cicd`, `kyndryl-cto/bdg-sw-plcy-policy-console:feat/sandbox-cicd`, `kyndryl-cto/bdg-sw-plcy-policy-service:feat/sandbox-cicd`
+
+[All PRs for this worktree](https://github.com/pulls?q=is%3Apr%20head%3Afeat%2Fsandbox-build-job%20head%3Afeat%2Fsandbox-build-trigger%20head%3Afeat%2Fsandbox-cicd%20repo%3Akyndryl-cto%2Fbdg-sw-plcy-policy-console%20repo%3Akyndryl-cto%2Fbdg-sw-plcy-policy-helm-charts%20repo%3Akyndryl-cto%2Fbdg-sw-plcy-policy-sandbox-onboard-input%20repo%3Akyndryl-cto%2Fbdg-sw-plcy-policy-service)

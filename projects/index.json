@@ -23,6 +23,13 @@
       "name": "dev-shell-remove-work",
       "status": "active",
       "worktree": "/workspaces/.wt/feat/dev-shell-remove-work"
+    },
+    {
+      "github_project": null,
+      "lane": "feat",
+      "name": "sandbox-cicd",
+      "status": "active",
+      "worktree": "/workspaces/.wt/feat/sandbox-cicd"
     }
   ]
 }

@@ -1,0 +1,205 @@
+{
+  "branches": {},
+  "branches_no_pr": [
+    "kyndryl-cto/bdg-eng-tops-cicd-app-onboard-scripts:feat/sandbox-cicd",
+    "kyndryl-cto/bdg-eng-tops-techops-bom-input:feat/policy-sandbox-cto-dev-kpr",
+    "kyndryl-cto/bdg-eng-tops-techops-bom-input:feat/sandbox-cicd",
+    "kyndryl-cto/bdg-sw-plcy-policy-console:feat/sandbox-cicd",
+    "kyndryl-cto/bdg-sw-plcy-policy-service:feat/sandbox-cicd"
+  ],
+  "exclude_prs": [],
+  "extra_prs": [],
+  "generated_at": "2026-08-02T13:34:50Z",
+  "lane": "feat",
+  "name": "sandbox-cicd",
+  "notes": [],
+  "prs": [
+    {
+      "checks": "FAILURE",
+      "created": "2026-07-31",
+      "draft": false,
+      "head": "feat/sandbox-build-trigger",
+      "key": "kyndryl-cto/bdg-sw-plcy-policy-console#266",
+      "node_id": "PR_kwDOPB50us75Nxco",
+      "number": 266,
+      "repo": "kyndryl-cto/bdg-sw-plcy-policy-console",
+      "review": "REVIEW_REQUIRED",
+      "state": "OPEN",
+      "status": "Open",
+      "title": "feat: build the development branch as the sandbox image",
+      "url": "https://github.com/kyndryl-cto/bdg-sw-plcy-policy-console/pull/266"
+    },
+    {
+      "checks": "",
+      "created": "2026-07-31",
+      "draft": false,
+      "head": "feat/sandbox-cicd",
+      "key": "kyndryl-cto/bdg-sw-plcy-policy-helm-charts#231",
+      "node_id": "PR_kwDOQe5Tzc741Xq6",
+      "number": 231,
+      "repo": "kyndryl-cto/bdg-sw-plcy-policy-helm-charts",
+      "review": "",
+      "state": "MERGED",
+      "status": "Merged",
+      "title": "feat: add the policy-sandbox chart",
+      "url": "https://github.com/kyndryl-cto/bdg-sw-plcy-policy-helm-charts/pull/231"
+    },
+    {
+      "checks": "",
+      "created": "2026-07-31",
+      "draft": false,
+      "head": "feat/sandbox-build-job",
+      "key": "kyndryl-cto/bdg-sw-plcy-policy-helm-charts#233",
+      "node_id": "PR_kwDOQe5Tzc75Fia7",
+      "number": 233,
+      "repo": "kyndryl-cto/bdg-sw-plcy-policy-helm-charts",
+      "review": "",
+      "state": "MERGED",
+      "status": "Merged",
+      "title": "feat: build the policy-sandbox chart from this repo",
+      "url": "https://github.com/kyndryl-cto/bdg-sw-plcy-policy-helm-charts/pull/233"
+    },
+    {
+      "checks": "",
+      "created": "2026-07-31",
+      "draft": false,
+      "head": "feat/sandbox-cicd",
+      "key": "kyndryl-cto/bdg-sw-plcy-policy-sandbox-onboard-input#1",
+      "node_id": "PR_kwDOToraf874zUbj",
+      "number": 1,
+      "repo": "kyndryl-cto/bdg-sw-plcy-policy-sandbox-onboard-input",
+      "review": "",
+      "state": "MERGED",
+      "status": "Merged",
+      "title": "feat: onboard policy-sandbox application",
+      "url": "https://github.com/kyndryl-cto/bdg-sw-plcy-policy-sandbox-onboard-input/pull/1"
+    },
+    {
+      "checks": "SUCCESS",
+      "created": "2026-07-31",
+      "draft": false,
+      "head": "feat/sandbox-build-trigger",
+      "key": "kyndryl-cto/bdg-sw-plcy-policy-service#465",
+      "node_id": "PR_kwDOQXilxs75NxaO",
+      "number": 465,
+      "repo": "kyndryl-cto/bdg-sw-plcy-policy-service",
+      "review": "REVIEW_REQUIRED",
+      "state": "OPEN",
+      "status": "Open",
+      "title": "feat: build the development branch as the sandbox image",
+      "url": "https://github.com/kyndryl-cto/bdg-sw-plcy-policy-service/pull/465"
+    }
+  ],
+  "repos": [
+    {
+      "ahead": 0,
+      "base": "main",
+      "behind": 0,
+      "branch": "feat/sandbox-cicd",
+      "dir": "bdg-eng-tops-cicd-app-onboard-scripts",
+      "dirty": false,
+      "last_commit": {
+        "date": "2026-07-29T17:16:47+01:00",
+        "sha": "ddd254c",
+        "subject": "Remove APP_NAME from UPLOAD_PATH (#732)"
+      },
+      "prs": [],
+      "slug": "kyndryl-cto/bdg-eng-tops-cicd-app-onboard-scripts"
+    },
+    {
+      "ahead": 1,
+      "base": "main",
+      "behind": 1,
+      "branch": "feat/policy-sandbox-cto-dev-kpr",
+      "dir": "bdg-eng-tops-techops-bom-input",
+      "dirty": false,
+      "last_commit": {
+        "date": "2026-07-31T18:02:31Z",
+        "sha": "38f3ed0",
+        "subject": "feat: run policy-sandbox instead of policy on cto-dev-kpr"
+      },
+      "prs": [],
+      "slug": "kyndryl-cto/bdg-eng-tops-techops-bom-input"
+    },
+    {
+      "ahead": 1,
+      "base": "main",
+      "behind": 0,
+      "branch": "feat/sandbox-build-trigger",
+      "dir": "bdg-sw-plcy-policy-console",
+      "dirty": false,
+      "last_commit": {
+        "date": "2026-07-31T21:50:22Z",
+        "sha": "e7caefa",
+        "subject": "feat: build the development branch as the sandbox image"
+      },
+      "prs": [
+        "kyndryl-cto/bdg-sw-plcy-policy-console#266"
+      ],
+      "slug": "kyndryl-cto/bdg-sw-plcy-policy-console"
+    },
+    {
+      "ahead": 1,
+      "base": "main",
+      "behind": 1,
+      "branch": "feat/sandbox-build-job",
+      "dir": "bdg-sw-plcy-policy-helm-charts",
+      "dirty": false,
+      "last_commit": {
+        "date": "2026-07-31T15:37:45Z",
+        "sha": "e06348b",
+        "subject": "feat: build the policy-sandbox chart from this repo"
+      },
+      "prs": [
+        "kyndryl-cto/bdg-sw-plcy-policy-helm-charts#231",
+        "kyndryl-cto/bdg-sw-plcy-policy-helm-charts#233"
+      ],
+      "slug": "kyndryl-cto/bdg-sw-plcy-policy-helm-charts"
+    },
+    {
+      "ahead": 0,
+      "base": "main",
+      "behind": 1,
+      "branch": "feat/sandbox-cicd",
+      "dir": "bdg-sw-plcy-policy-sandbox-onboard-input",
+      "dirty": false,
+      "last_commit": {
+        "date": "2026-07-31T02:57:38Z",
+        "sha": "7fdc166",
+        "subject": "fix: cover all four components, not just service and console"
+      },
+      "prs": [
+        "kyndryl-cto/bdg-sw-plcy-policy-sandbox-onboard-input#1"
+      ],
+      "slug": "kyndryl-cto/bdg-sw-plcy-policy-sandbox-onboard-input"
+    },
+    {
+      "ahead": 1,
+      "base": "main",
+      "behind": 1,
+      "branch": "feat/sandbox-build-trigger",
+      "dir": "bdg-sw-plcy-policy-service",
+      "dirty": false,
+      "last_commit": {
+        "date": "2026-07-31T21:49:58Z",
+        "sha": "a32862ea",
+        "subject": "feat: build the development branch as the sandbox image"
+      },
+      "prs": [
+        "kyndryl-cto/bdg-sw-plcy-policy-service#465"
+      ],
+      "slug": "kyndryl-cto/bdg-sw-plcy-policy-service"
+    }
+  ],
+  "since": null,
+  "tasks": [],
+  "view": {
+    "color": "purple",
+    "icon": "code-review",
+    "name": "feat/sandbox-cicd",
+    "query": "is:pr head:feat/sandbox-build-job head:feat/sandbox-build-trigger head:feat/sandbox-cicd repo:kyndryl-cto/bdg-sw-plcy-policy-console repo:kyndryl-cto/bdg-sw-plcy-policy-helm-charts repo:kyndryl-cto/bdg-sw-plcy-policy-sandbox-onboard-input repo:kyndryl-cto/bdg-sw-plcy-policy-service",
+    "stray": [],
+    "url": "https://github.com/pulls?q=is%3Apr%20head%3Afeat%2Fsandbox-build-job%20head%3Afeat%2Fsandbox-build-trigger%20head%3Afeat%2Fsandbox-cicd%20repo%3Akyndryl-cto%2Fbdg-sw-plcy-policy-console%20repo%3Akyndryl-cto%2Fbdg-sw-plcy-policy-helm-charts%20repo%3Akyndryl-cto%2Fbdg-sw-plcy-policy-sandbox-onboard-input%20repo%3Akyndryl-cto%2Fbdg-sw-plcy-policy-service"
+  },
+  "worktree": "/workspaces/.wt/feat/sandbox-cicd"
+}
