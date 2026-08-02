@@ -1129,6 +1129,13 @@
       ],
       "created": "2026-08-02",
       "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3uqQ",
+      "human_edited": {
+        "body": {
+          "at": "2026-08-02T20:22:13Z",
+          "value": "",
+          "was": "<the body the tool pushed>"
+        }
+      },
       "id": "t12",
       "last_pushed": {
         "blocked": "",
@@ -1143,6 +1150,22 @@
       },
       "status": "Complete",
       "title": "MANETU with/without AgentVisor E2E (5+5) + 2-slide deck"
+    },
+    {
+      "created": "2026-08-02",
+      "group": "Phase 3 \u2014 dev-shell work-feature removal",
+      "id": "t13",
+      "owner": "Klalter",
+      "status": "Complete",
+      "title": "Clean-codespace validation campaign for dev-shell (14-point)"
+    },
+    {
+      "created": "2026-08-02",
+      "group": "Phase 3 \u2014 dev-shell work-feature removal",
+      "id": "t14",
+      "owner": "Klalter",
+      "status": "Complete",
+      "title": "Rewrite dev-shell skills post work-removal + clean-codespace test skill"
     }
   ],
   "view": {

@@ -5,7 +5,7 @@ Source of truth is the per-project JSON next to this file.
 
 ## agent-kaif-deploy
 
-`/workspaces/.wt/feat/agent-kaif-deploy` · lane `feat` · 17 repos · 31 PRs · 12 tasks · synced 2026-08-02T18:17:00Z
+`/workspaces/.wt/feat/agent-kaif-deploy` · lane `feat` · 17 repos · 31 PRs · 14 tasks · synced 2026-08-02T18:17:00Z
 
 Board: [feat/agent-kaif-deploy](https://github.com/users/klalter_kyndryl/projects/3)
 
@@ -26,6 +26,8 @@ Board: [feat/agent-kaif-deploy](https://github.com/users/klalter_kyndryl/project
 | Task | Status | Owner | Depends on | Dates | Title | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
 | `t6` | Complete | Klalter | — | 2026-07-31 → 2026-08-02 | Remove the work feature from dev-shell (CLI, daemon, UI) — agent on feat/remove-work-feature | — |
+| `t13` | Complete | Klalter | — | — | Clean-codespace validation campaign for dev-shell (14-point) | — |
+| `t14` | Complete | Klalter | — | — | Rewrite dev-shell skills post work-removal + clean-codespace test skill | — |
 | `t8` | New | Klalter | `t6` | 2026-08-03 → 2026-08-04 | Push feat/remove-work-feature and open the dev-shell PR for team review | body · human: status |
 
 **Phase 1 — AgentVisor E2E validation**
@@ -46,7 +48,7 @@ Board: [feat/agent-kaif-deploy](https://github.com/users/klalter_kyndryl/project
 
 | Task | Status | Owner | Depends on | Dates | Title | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-| `t12` | Complete | — | — | — | MANETU with/without AgentVisor E2E (5+5) + 2-slide deck | 2 file(s) |
+| `t12` | Complete | — | — | — | MANETU with/without AgentVisor E2E (5+5) + 2-slide deck | 2 file(s) · human: body |
 
 | Repo | Branch | Base | Ahead/Behind | PRs |
 | --- | --- | --- | --- | --- |
