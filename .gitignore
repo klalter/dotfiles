@@ -12,3 +12,8 @@ installation_id
 # Python bytecode — never commit
 __pycache__/
 *.pyc
+
+# worktree-sync hook scratch: the PostToolUse hint queue, the flush log, the
+# flush lock and any parked exit-3 conflict block. Transient per-machine state,
+# not versioned data — the manifests next to it are the versioned part.
+projects/.queue/

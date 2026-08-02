@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Offline tests for worktree_sync.py — no network, no real manifest touched.
+"""Offline tests for worktree_sync.py and its hooks — no network, no real
+manifest, no real board, no real queue touched.
 
     python3 skills/worktree-sync/scripts/test_worktree_sync.py
 
-Three things are locked down here:
+Six things are locked down here:
 
 1. The DONE_MARKER round-trip. A task is a DRAFT issue, which has no open/closed
    state, so a Complete task is rendered to the board as "✓ <title>". That
@@ -12,16 +13,31 @@ Three things are locked down here:
 2. The machine surface agents call: the --json shapes, and the exit-code
    contract (0 ok / 1 error / 3 needs-a-human-decision, nothing else).
 3. Blocked/Ready describing unfinished work only.
+4. **The human's board edit surviving an automated flush**: `project push`
+   pulls first, and `--ack-human` RELEASES a field instead of ratcheting it.
+   `commit` naming the branch it really pushed belongs to the same family — an
+   agent relays that line verbatim.
+5. **The hooks**: the detector's patterns and its cost, and that the Stop hook
+   detaches its flush and returns in milliseconds, holds a lock against a
+   second session, keeps the queue on failure and parks an exit-3 block instead
+   of guessing.
+6. **Self-location**: no script hardcodes a dotfiles path, so a copy of the
+   tree acts on the checkout it was copied into and not on a stale
+   `DOTFILES_DIR`.
 
 The board is faked at the seam the real code already has: ensure_project /
-ensure_fields / ensure_views / list_items / apply_drafts / gql. Everything
-between them — ordered_tasks, board_title, task_snapshot, the draft diff, the
-whole of pull_project — is the real code under test.
+ensure_fields / ensure_views / find_project / list_items / apply_drafts / gql.
+Everything between them — ordered_tasks, board_title, task_snapshot, the draft
+diff, the whole of pull_project — is the real code under test. The hook tests
+run the hook scripts as real subprocesses against a throwaway $WT_SYNC_HOME and
+a stub worktree_sync.py, because timing and detachment cannot be faked.
 """
 import io
 import json
+import os
 import subprocess
 import sys
+import time
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
@@ -551,7 +567,7 @@ class ExitCodeCase(BoardHarness):
                      ["scan", "/definitely/not/a/worktree"]):
             r = subprocess.run([sys.executable, str(script), *argv],
                                capture_output=True, text=True,
-                               env={**__import__("os").environ,
+                               env={**os.environ,
                                     "DOTFILES_DIR": str(self.dir.parent)})
             self.assertIn(r.returncode, (1, 2), f"{argv} -> {r.returncode}")
             self.assertNotEqual(r.returncode, ws.EXIT_HITL, argv)
@@ -770,6 +786,381 @@ class CommitCase(unittest.TestCase):
 
     def test_nothing_to_commit_is_quiet_and_pushes_nothing(self):
         self.assertIn("nothing to commit", self.commit())
+
+
+SCRIPTS = Path(__file__).resolve().parent
+
+# A stand-in for worktree_sync.py, so a test can drive a REAL detached worker
+# without touching a real manifest or the network. It records the step it was
+# asked to run, can be made slow, and can be made to fail with any exit code.
+FAKE_TOOL = '''#!/usr/bin/env python3
+import os, sys, time
+step = sys.argv[1]
+with open(os.environ["FAKE_MARK"], "a") as fh:
+    fh.write(step + "\\n")
+time.sleep(float(os.environ.get("FAKE_SLEEP", "0")))
+rc = int(os.environ.get("FAKE_RC_" + step.replace("-", "_").upper(), "0"))
+if rc == 3:
+    print("HUMAN-EDITED ON THE BOARD — needs a decision, not a retry",
+          file=sys.stderr)
+sys.exit(rc)
+'''
+
+
+class HookHarness(unittest.TestCase):
+    """A throwaway $DOTFILES_DIR with one tracked worktree, for the hook scripts.
+
+    The hooks are run as real subprocesses — that is the only way to measure
+    what they actually cost and to prove the flush is genuinely detached.
+    """
+
+    def setUp(self):
+        self.tmp = TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+        self.wt = self.root / "wt" / "feat" / "demo"
+        (self.wt / "repo").mkdir(parents=True)
+        (self.root / "projects").mkdir()
+        (self.root / "projects" / "index.json").write_text(json.dumps(
+            {"projects": [{"name": "demo", "worktree": str(self.wt),
+                           "lane": "feat", "status": "active",
+                           "github_project": None}]}))
+        self.queue = self.root / "projects" / ".queue"
+        self.fake = self.root / "fake_tool.py"
+        self.fake.write_text(FAKE_TOOL)
+        self.mark = self.root / "steps.txt"
+
+    def env(self, **extra):
+        # WT_SYNC_HOME, not DOTFILES_DIR: the hooks resolve their repo from
+        # their own path on purpose, and this is the one override that exists.
+        return {**os.environ, "WT_SYNC_HOME": str(self.root),
+                "WT_SYNC_TOOL": str(self.fake), "FAKE_MARK": str(self.mark),
+                **{k: str(v) for k, v in extra.items()}}
+
+    def run_hook(self, script, payload, *args, **env):
+        started = time.time()
+        r = subprocess.run([sys.executable, str(SCRIPTS / script), *args],
+                           input=json.dumps(payload), capture_output=True,
+                           text=True, env=self.env(**env))
+        return r, time.time() - started
+
+    def payload(self, command=None, cwd=None):
+        p = {"cwd": cwd or str(self.wt / "repo"), "hook_event_name": "PostToolUse"}
+        if command is not None:
+            p["tool_name"] = "Bash"
+            p["tool_input"] = {"command": command}
+        return p
+
+    def queue_lines(self):
+        path = self.queue / "demo.jsonl"
+        if not path.exists():
+            return []
+        return [json.loads(ln) for ln in path.read_text().splitlines() if ln.strip()]
+
+    def steps(self):
+        return self.mark.read_text().split() if self.mark.exists() else []
+
+    def wait_for(self, predicate, seconds=20):
+        deadline = time.time() + seconds
+        while time.time() < deadline:
+            if predicate():
+                return True
+            time.sleep(0.05)
+        return False
+
+
+class DetectorCase(HookHarness):
+    """PostToolUse[Bash]: notice, queue one line, cost nothing."""
+
+    def test_it_queues_the_commands_that_move_the_board(self):
+        wanted = (("gh pr create --fill", "prs-changed"),
+                  ("gh pr merge 12 --squash", "prs-changed"),
+                  ("gh pr close 12", "prs-changed"),
+                  ("gh pr ready 12", "prs-changed"),
+                  ("gh pr edit 12 --add-label x", "prs-changed"),
+                  ("git push -u origin feat/x", "prs-changed"),
+                  ("git -C /workspaces/repo push", "prs-changed"),
+                  ("cd /tmp && git push --force-with-lease", "prs-changed"),
+                  # both idioms an agent actually types for the tool
+                  ("python3 $S task set demo t7 done --push", "tasks-changed"),
+                  ("python3 skills/worktree-sync/scripts/worktree_sync.py "
+                   "task add demo 'Title'", "tasks-changed"))
+        for n, (command, kind) in enumerate(wanted, start=1):
+            r, _ = self.run_hook("hook_detect.py", self.payload(command))
+            self.assertEqual(r.returncode, 0, command)
+            lines = self.queue_lines()
+            self.assertEqual(len(lines), n, f"{command!r} queued nothing")
+            self.assertEqual(lines[-1]["kind"], kind, command)
+            self.assertEqual(lines[-1]["cmd"], command)
+
+    def test_it_ignores_everything_else(self):
+        for command in ("ls -la", "gh pr view 12", "gh pr list",
+                        "git status", "git log --oneline -5",
+                        "python3 $S status --json"):
+            self.run_hook("hook_detect.py", self.payload(command))
+        self.assertEqual(self.queue_lines(), [])
+
+    def test_outside_a_tracked_worktree_it_does_nothing_and_returns_fast(self):
+        r, elapsed = self.run_hook(
+            "hook_detect.py", self.payload("gh pr create", cwd="/tmp"))
+        self.assertEqual((r.returncode, r.stdout, r.stderr), (0, "", ""))
+        self.assertFalse(self.queue.exists())
+        self.assertLess(elapsed, 0.5, f"gate took {elapsed * 1000:.0f} ms")
+
+    def test_the_loop_guard_stops_the_flushers_own_commands(self):
+        r, _ = self.run_hook("hook_detect.py",
+                             self.payload("python3 $S task set demo t7 done"),
+                             WT_SYNC_INTERNAL="1")
+        self.assertEqual(r.returncode, 0)
+        self.assertEqual(self.queue_lines(), [])
+
+    def test_a_junk_payload_never_fails_a_tool_call(self):
+        for raw in ("", "not json", "[]", '{"tool_input": null}'):
+            r = subprocess.run([sys.executable, str(SCRIPTS / "hook_detect.py")],
+                               input=raw, capture_output=True, text=True,
+                               env=self.env())
+            self.assertEqual(r.returncode, 0, raw)
+        self.assertEqual(self.queue_lines(), [])
+
+    def test_concurrent_appends_all_survive_and_stay_parseable(self):
+        """Two sessions in the same worktree write the same queue file. Every
+        line must still parse — a torn line would poison the whole queue."""
+        payload = json.dumps(self.payload("gh pr create --fill"))
+        procs = [subprocess.Popen(
+            [sys.executable, str(SCRIPTS / "hook_detect.py")],
+            stdin=subprocess.PIPE, stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL, text=True, env=self.env())
+            for _ in range(24)]
+        for p in procs:
+            p.communicate(payload)
+        self.assertEqual([p.returncode for p in procs], [0] * 24)
+        lines = self.queue_lines()                       # parses, or it raises
+        self.assertEqual(len(lines), 24)
+        self.assertTrue(all(ln["kind"] == "prs-changed" for ln in lines))
+
+    def test_it_stays_under_the_50ms_budget(self):
+        """Measured, not assumed. The assertion is loose enough for a loaded
+        box; the number it prints is the one that matters."""
+        self.run_hook("hook_detect.py", self.payload("ls"))     # warm __pycache__
+        runs = 10
+        started = time.time()
+        for _ in range(runs):
+            self.run_hook("hook_detect.py", self.payload("gh pr create --fill"))
+        each = (time.time() - started) / runs
+        print(f"\n    [detector] {each * 1000:.1f} ms per Bash tool call")
+        self.assertLess(each, 0.25, f"{each * 1000:.0f} ms per call")
+
+
+class FlusherCase(HookHarness):
+    """Stop hook: decide, detach, return. The turn never waits on the board."""
+
+    def enqueue(self, n=1):
+        self.queue.mkdir(parents=True, exist_ok=True)
+        with open(self.queue / "demo.jsonl", "a") as fh:
+            for _ in range(n):
+                fh.write(json.dumps({"at": "2026-08-02T10:00:00Z",
+                                     "kind": "prs-changed", "cmd": "gh pr create"})
+                         + "\n")
+
+    def stop(self, *args, **env):
+        return self.run_hook("hook_flush.py",
+                             {"cwd": str(self.wt / "repo"),
+                              "hook_event_name": "Stop"}, *args, **env)
+
+    def test_an_empty_queue_and_a_fresh_flush_do_nothing(self):
+        self.queue.mkdir(parents=True)
+        (self.queue / "demo.last-flush").touch()
+        r, elapsed = self.stop()
+        self.assertEqual((r.returncode, r.stdout), (0, ""))
+        self.assertEqual(self.steps(), [])
+        self.assertLess(elapsed, 0.5)
+
+    def test_a_stale_project_flushes_even_with_an_empty_queue(self):
+        self.queue.mkdir(parents=True)
+        old = time.time() - 3600
+        stamp = self.queue / "demo.last-flush"
+        stamp.touch()
+        os.utime(stamp, (old, old))
+        self.stop()
+        self.assertTrue(self.wait_for(lambda: self.steps() == ["sync", "project"]))
+
+    def test_outside_a_tracked_worktree_it_returns_instantly(self):
+        r, elapsed = self.run_hook("hook_flush.py",
+                                   {"cwd": "/tmp", "hook_event_name": "Stop"})
+        self.assertEqual((r.returncode, r.stdout, r.stderr), (0, "", ""))
+        self.assertLess(elapsed, 0.5, f"gate took {elapsed * 1000:.0f} ms")
+
+    def test_the_hook_returns_while_the_work_is_still_running(self):
+        """The whole point. The flush sleeps for seconds; the hook must be back
+        in milliseconds, and the work must finish afterwards, unattended."""
+        self.enqueue()
+        _r, elapsed = self.stop(FAKE_SLEEP="3")
+        print(f"\n    [Stop hook] {elapsed * 1000:.0f} ms to detach a flush "
+              f"that then ran for ~6 s")
+        self.assertLess(elapsed, 0.6, f"Stop hook blocked for {elapsed:.2f}s")
+        self.assertLess(len(self.steps()), 2)            # still running
+        self.assertTrue(self.wait_for(lambda: self.steps() == ["sync", "project"]),
+                        "the detached worker never finished")
+        self.assertTrue(self.wait_for(lambda: self.queue_lines() == []),
+                        "the queue was not drained after a clean run")
+
+    def test_the_worker_survives_its_parent(self):
+        """setsid/start_new_session: the worker is in its own session, so it is
+        not killed when the session that started it goes away."""
+        self.enqueue()
+        self.stop(FAKE_SLEEP="2")
+        self.assertTrue(self.wait_for(lambda: self.steps()[:1] == ["sync"]))
+        pids = subprocess.run(["pgrep", "-f", "hook_flush.py --run demo"],
+                              capture_output=True, text=True).stdout.split()
+        self.assertTrue(pids, "no detached worker process found")
+        sid = subprocess.run(["ps", "-o", "sess=", "-p", pids[0]],
+                             capture_output=True, text=True).stdout.strip()
+        self.assertEqual(sid, pids[0], "worker is not a session leader")
+        self.assertTrue(self.wait_for(lambda: self.steps() == ["sync", "project"]))
+
+    def test_a_failed_run_keeps_the_queue_for_the_next_turn(self):
+        self.enqueue(3)
+        self.stop(FAKE_RC_SYNC="1")
+        self.assertTrue(self.wait_for(lambda: self.steps() == ["sync"]))
+        time.sleep(0.3)
+        self.assertEqual(self.steps(), ["sync"])         # push never ran
+        self.assertEqual(len(self.queue_lines()), 3)     # nothing dropped
+        self.assertIn("queue kept", (self.queue / "flush.log").read_text())
+
+    def test_exit_3_parks_the_conflict_and_stops(self):
+        self.enqueue()
+        self.stop(FAKE_RC_PROJECT="3")
+        self.assertTrue(self.wait_for(
+            lambda: (self.queue / "demo.conflict").exists()))
+        text = (self.queue / "demo.conflict").read_text()
+        self.assertIn("HUMAN-EDITED ON THE BOARD", text)
+        self.assertIn("Do not pass --ack-human", text)
+        self.assertEqual(len(self.queue_lines()), 1)     # retried next turn
+        log = (self.queue / "flush.log").read_text()
+        self.assertIn("NEEDS-HUMAN", log)
+        self.assertNotIn("--ack-human", log.split("Do not")[0])
+
+    def test_session_start_surfaces_a_parked_conflict_once(self):
+        self.queue.mkdir(parents=True)
+        (self.queue / "demo.conflict").write_text("HUMAN-EDITED ON THE BOARD — t1\n")
+        (self.queue / "demo.last-flush").touch()
+        r, _ = self.run_hook("hook_flush.py",
+                             {"cwd": str(self.wt), "hook_event_name": "SessionStart"},
+                             "--session-start")
+        self.assertIn("HUMAN-EDITED ON THE BOARD", r.stdout)
+        self.assertFalse((self.queue / "demo.conflict").exists())
+        # and a second session start does not repeat a block nobody resolved
+        r2, _ = self.run_hook("hook_flush.py",
+                              {"cwd": str(self.wt), "hook_event_name": "SessionStart"},
+                              "--session-start")
+        self.assertEqual(r2.stdout, "")
+
+    def test_session_start_drains_a_queue_a_killed_session_left_behind(self):
+        self.enqueue(2)
+        (self.queue / "demo.last-flush").touch()         # not stale, only queued
+        self.run_hook("hook_flush.py",
+                      {"cwd": str(self.wt), "hook_event_name": "SessionStart"},
+                      "--session-start")
+        self.assertTrue(self.wait_for(lambda: self.steps() == ["sync", "project"]))
+        self.assertTrue(self.wait_for(lambda: self.queue_lines() == []))
+
+    def test_the_loop_guard_stops_a_flush_inside_a_flush(self):
+        self.enqueue()
+        r, _ = self.stop(WT_SYNC_INTERNAL="1")
+        self.assertEqual(r.returncode, 0)
+        time.sleep(0.3)
+        self.assertEqual(self.steps(), [])
+
+    def test_a_second_worker_skips_while_the_first_holds_the_lock(self):
+        """Two sessions in different worktrees hit this for real. The loser must
+        exit without doing the work and without queueing more of it."""
+        self.enqueue()
+        first = subprocess.Popen(
+            [sys.executable, str(SCRIPTS / "hook_flush.py"), "--run", "demo",
+             "--reason", "test"], env=self.env(FAKE_SLEEP="2"),
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        self.addCleanup(first.wait)
+        self.assertTrue(self.wait_for(lambda: self.steps()[:1] == ["sync"]))
+        second = subprocess.run(
+            [sys.executable, str(SCRIPTS / "hook_flush.py"), "--run", "demo",
+             "--reason", "test2"], env=self.env(), capture_output=True, text=True)
+        self.assertEqual(second.returncode, 0)
+        self.assertIn("skip=lock-held", (self.queue / "flush.log").read_text())
+        self.assertEqual(self.steps(), ["sync"])         # the loser ran nothing
+        first.wait(timeout=30)
+        self.assertEqual(self.steps(), ["sync", "project"])
+
+    def test_only_the_consumed_prefix_of_the_queue_is_dropped(self):
+        """A hint queued while the flush was running must survive it."""
+        self.enqueue(2)
+        self.stop(FAKE_SLEEP="1.5")
+        self.assertTrue(self.wait_for(lambda: self.steps()[:1] == ["sync"]))
+        self.enqueue(1)                                  # arrives mid-flush
+        self.assertTrue(self.wait_for(lambda: self.steps() == ["sync", "project"]))
+        self.assertTrue(self.wait_for(lambda: len(self.queue_lines()) == 1))
+
+    def test_status_reports_the_queue_without_changing_anything(self):
+        self.enqueue(2)
+        r = subprocess.run([sys.executable, str(SCRIPTS / "hook_flush.py"),
+                            "--status"], capture_output=True, text=True,
+                           cwd=str(self.wt / "repo"), env=self.env())
+        self.assertIn("project        : demo", r.stdout)
+        self.assertIn("flush due      : queued", r.stdout)
+        self.assertEqual(len(self.queue_lines()), 2)
+        self.assertEqual(self.steps(), [])
+
+
+class SelfLocatingCase(unittest.TestCase):
+    """The tree must work from whatever checkout it was copied into.
+
+    This machinery has already been copied between two dotfiles checkouts, and
+    a stale `DOTFILES_DIR` pointing at the retired one is exactly how a hook in
+    one repo ends up writing the other repo's `projects/`.
+    """
+
+    FILES = ("worktree_sync.py", "hook_common.py", "hook_detect.py",
+             "hook_flush.py")
+
+    def test_no_absolute_repo_path_is_baked_into_any_script(self):
+        for name in self.FILES:
+            src = (SCRIPTS / name).read_text()
+            for token in ("/workspaces/my-dotfiles", "/workspaces/kas-dotfiles"):
+                self.assertNotIn(token, src, f"{name} hardcodes {token}")
+
+    def test_worktree_sync_defaults_to_the_repo_it_lives_in(self):
+        env = {k: v for k, v in os.environ.items() if k != "DOTFILES_DIR"}
+        r = subprocess.run(
+            [sys.executable, "-c",
+             "import sys; sys.path.insert(0, sys.argv[1]);"
+             "import worktree_sync as ws; print(ws.dotfiles_dir())",
+             str(SCRIPTS)], capture_output=True, text=True, env=env)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(r.stdout.strip(), str(SCRIPTS.parents[2]))
+
+    def test_a_copied_hook_ignores_a_stale_DOTFILES_DIR(self):
+        with TemporaryDirectory() as tmp:
+            home = Path(tmp) / "other-dotfiles"
+            dest = home / "skills" / "worktree-sync" / "scripts"
+            dest.mkdir(parents=True)
+            for name in ("hook_common.py", "hook_detect.py"):
+                (dest / name).write_text((SCRIPTS / name).read_text())
+            wt = home / "wt" / "feat" / "demo"
+            wt.mkdir(parents=True)
+            (home / "projects").mkdir()
+            (home / "projects" / "index.json").write_text(json.dumps(
+                {"projects": [{"name": "demo", "worktree": str(wt)}]}))
+
+            r = subprocess.run(
+                [sys.executable, str(dest / "hook_detect.py")],
+                input=json.dumps({"cwd": str(wt), "tool_name": "Bash",
+                                  "tool_input": {"command": "gh pr create"}}),
+                capture_output=True, text=True,
+                env={**os.environ, "DOTFILES_DIR": "/definitely/not/here"})
+
+            self.assertEqual(r.returncode, 0, r.stderr)
+            queued = home / "projects" / ".queue" / "demo.jsonl"
+            self.assertTrue(queued.exists(), "the copy wrote outside its own repo")
+            self.assertEqual(json.loads(queued.read_text())["kind"], "prs-changed")
 
 
 class HelpCase(unittest.TestCase):

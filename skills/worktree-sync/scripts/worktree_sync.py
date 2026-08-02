@@ -58,7 +58,12 @@ from wt_common import (  # noqa: E402
     build_query, discover, find_prs, gh_json, repo_slug, sh, worktree_name,
 )
 
-DEFAULT_DOTFILES = "/workspaces/my-dotfiles"
+# The dotfiles checkout this script LIVES in: scripts/ -> worktree-sync/ ->
+# skills/ -> the repo root. Not a hardcoded path: the machinery has already
+# been copied between checkouts once, and a baked-in absolute path is how one
+# copy ends up writing the other copy's projects/ while the hooks write here.
+# $DOTFILES_DIR still overrides, for a caller that means it (and for the tests).
+DEFAULT_DOTFILES = str(Path(__file__).resolve().parents[3])
 COMMITTER = ("Klalter De Abreu Santos", "klalter@kyndryl.com")
 PROJECT_SCOPE_HINT = (
     "GitHub Projects v2 needs the 'project' OAuth scope, which no token here has.\n"
