@@ -460,13 +460,13 @@
         "t7"
       ],
       "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rsI",
-      "group": "Phase 1 \u2014 Policy PoC",
+      "group": "Phase 4 \u2014 Validation & Documentation",
       "id": "t10",
       "last_pushed": {
         "blocked": "Blocked",
         "body_hash": "39baa12433b0a8f8",
         "depends_on": "t5 \u00b7 Step 3 \u2014 development build\u2026, t6 \u00b7 Step 4 \u2014 review TechOps BOM\u2026, t7 \u00b7 Step 5 \u2014 verify the sandbox\u2026",
-        "group": "Phase 1 \u2014 Policy PoC",
+        "group": "Phase 4 \u2014 Validation & Documentation",
         "owner": "Bridge Policy (Klalter)",
         "start": "2026-08-05",
         "status": "New",
@@ -480,29 +480,29 @@
       "title": "Validation gate \u2014 prove Phase 1 E2E, then rewrite the KAIF and POA DRAFT tasks from what actually worked"
     },
     {
-      "body": "Only start once the validation gate is Complete \u2014 this documents what was proven, not what was planned.\n\n**Audience: TechOps** (Patricia Batista Duarte, Esteban Herrera Vargas). They own the automator, the BOM repos and the pipeline; the deck has to make sense to people who know that machinery better than we do, and it doubles as the pitch for \u00a74 Option A.\n\nThree artefacts, one story:\n\n1. **`docs/e2e-flow.drawio`** \u2014 the flow end to end: push to `development` \u2192 build trigger \u2192 branch-dependent `DOCKER_IMAGE_NAME` \u2192 manifest key \u2192 `manifest_conf` \u2192 onboard-input \u2192 automator \u2192 the two `phm-*` repos \u2192 bom-calculator \u2192 bom-input \u2192 ArgoCD Application on cto-dev-kpr. Show both streams side by side so the collision Option B solves is visible. Use the `kyndryl-drawio-deck` skill for the Kyndryl style.\n2. **`deliverables/Policy-Sandbox-E2E-Flow.pptx`** \u2014 the TechOps-facing deck: the problem, why the two obvious shortcuts fail (\u00a72), Option B and its cost, the six-repo change set, the order and why it is fixed, the three tooling asks (\u00a77), and the \u00a79 recipe as the reusable pattern. Embed the draw.io as the architecture slide. Kyndryl storyboard style.\n3. **`docs/e2e-flow.md`** \u2014 the written version, the source of truth for both. PLAN.md is our working document and too long to hand over; this is the narrative one.\n\nNotes:\n- `deliverables/make_docx.py` is the single source for `plan.md` and the existing `.docx` \u2014 do not hand-edit its outputs. Decide deliberately whether the new deck joins that generator or stands alone, and write the answer down.\n- Refresh all three after Phase 2 and Phase 3, since the point of the document is the *pattern*, not the policy instance.\n- Attach the finished `.drawio` and `.pptx` back onto this task so later sessions can read them.",
+      "body": "**Hard stop: 8-Aug.** The three artefacts are due on the 8th, the day after KAIF and POA verify. Drafting starts as soon as the validation gate closes and runs alongside those two phases rather than waiting for them \u2014 what changes in the last two days is the evidence, not the story.\n\nOnly start once the validation gate is Complete \u2014 this documents what was proven, not what was planned.\n\n**Audience: TechOps** (Patricia Batista Duarte, Esteban Herrera Vargas). They own the automator, the BOM repos and the pipeline; the deck has to make sense to people who know that machinery better than we do, and it doubles as the pitch for \u00a74 Option A.\n\nThree artefacts, one story:\n\n1. **`docs/e2e-flow.drawio`** \u2014 the flow end to end: push to `development` \u2192 build trigger \u2192 branch-dependent `DOCKER_IMAGE_NAME` \u2192 manifest key \u2192 `manifest_conf` \u2192 onboard-input \u2192 automator \u2192 the two `phm-*` repos \u2192 bom-calculator \u2192 bom-input \u2192 ArgoCD Application on cto-dev-kpr. Show both streams side by side so the collision Option B solves is visible. Use the `kyndryl-drawio-deck` skill for the Kyndryl style.\n2. **`deliverables/Policy-Sandbox-E2E-Flow.pptx`** \u2014 the TechOps-facing deck: the problem, why the two obvious shortcuts fail (\u00a72), Option B and its cost, the six-repo change set, the order and why it is fixed, the three tooling asks (\u00a77), and the \u00a79 recipe as the reusable pattern. Embed the draw.io as the architecture slide. Kyndryl storyboard style.\n3. **`docs/e2e-flow.md`** \u2014 the written version, the source of truth for both. PLAN.md is our working document and too long to hand over; this is the narrative one.\n\nNotes:\n- `deliverables/make_docx.py` is the single source for `plan.md` and the existing `.docx` \u2014 do not hand-edit its outputs. Decide deliberately whether the new deck joins that generator or stands alone, and write the answer down.\n- Refresh all three after Phase 2 and Phase 3, since the point of the document is the *pattern*, not the policy instance.\n- Attach the finished `.drawio` and `.pptx` back onto this task so later sessions can read them.",
       "created": "2026-08-02",
       "depends_on": [
         "t10"
       ],
       "draft_id": "DI_lAHOCPZR3M4BfKThzgK3rsQ",
-      "group": "Phase 1 \u2014 Policy PoC",
+      "group": "Phase 4 \u2014 Validation & Documentation",
       "id": "t11",
       "last_pushed": {
         "blocked": "Blocked",
-        "body_hash": "3de80dbbc4d51e11",
+        "body_hash": "eb6dcb18d18d6f63",
         "depends_on": "t10 \u00b7 Validation gate \u2014 prove Pha\u2026",
-        "group": "Phase 1 \u2014 Policy PoC",
+        "group": "Phase 4 \u2014 Validation & Documentation",
         "owner": "Bridge Policy (Klalter)",
         "start": "2026-08-06",
         "status": "New",
-        "target": "2026-08-07",
+        "target": "2026-08-08",
         "title": "Document the E2E sandbox flow for TechOps \u2014 draw.io diagram + PPT deck + docs/e2e-flow.md"
       },
       "owner": "Bridge Policy (Klalter)",
       "start": "2026-08-06",
       "status": "New",
-      "target": "2026-08-07",
+      "target": "2026-08-08",
       "title": "Document the E2E sandbox flow for TechOps \u2014 draw.io diagram + PPT deck + docs/e2e-flow.md"
     },
     {
