@@ -5,7 +5,7 @@ Source of truth is the per-project JSON next to this file.
 
 ## agent-kaif-deploy
 
-`/workspaces/.wt/feat/agent-kaif-deploy` · lane `feat` · 17 repos · 31 PRs · 12 tasks · synced 2026-08-02T17:41:40Z
+`/workspaces/.wt/feat/agent-kaif-deploy` · lane `feat` · 17 repos · 31 PRs · 12 tasks · synced 2026-08-02T18:17:00Z
 
 Board: [feat/agent-kaif-deploy](https://github.com/users/klalter_kyndryl/projects/3)
 
@@ -46,12 +46,12 @@ Board: [feat/agent-kaif-deploy](https://github.com/users/klalter_kyndryl/project
 
 | Task | Status | Owner | Depends on | Dates | Title | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-| `t12` | In progress | — | — | — | MANETU with/without AgentVisor E2E (5+5) + 2-slide deck | — |
+| `t12` | Complete | — | — | — | MANETU with/without AgentVisor E2E (5+5) + 2-slide deck | — |
 
 | Repo | Branch | Base | Ahead/Behind | PRs |
 | --- | --- | --- | --- | --- |
 | [kyndryl-agentic-ai/bdg-sw-agents-actionable-insights-agent-agentvisor-test](https://github.com/kyndryl-agentic-ai/bdg-sw-agents-actionable-insights-agent-agentvisor-test) | `klalter/chatops-test` | `main` | +6 / −0 | — |
-| [kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test](https://github.com/kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test) | `wt-agentvisor-build` | `main` | +16 / −1 | [#9](https://github.com/kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test/pull/9) Open |
+| [kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test](https://github.com/kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test) | `wt-agentvisor-build` | `main` | +16 / −1 | [#9](https://github.com/kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test/pull/9) Cancelled |
 | [kyndryl-agentic-ai/bdg-sw-agents-debugging-remediation-v2](https://github.com/kyndryl-agentic-ai/bdg-sw-agents-debugging-remediation-v2) | `test/agentvisor-build` | `main` | +1 / −0 | — |
 | [kyndryl-agentic-ai/bdg-sw-agents-it-modernization-agent-v2-agentvisor-test](https://github.com/kyndryl-agentic-ai/bdg-sw-agents-it-modernization-agent-v2-agentvisor-test) | `wt-agentvisor-build` | `main` | +20 / −2 | — |
 | [kyndryl-agentic-ai/bdg-sw-agents-quality-parameter-check](https://github.com/kyndryl-agentic-ai/bdg-sw-agents-quality-parameter-check) | `test/agentvisor-build` | `main` | +5 / −0 | — |

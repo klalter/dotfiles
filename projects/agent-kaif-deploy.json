@@ -23,7 +23,7 @@
   ],
   "exclude_prs": [],
   "extra_prs": [],
-  "generated_at": "2026-08-02T17:41:40Z",
+  "generated_at": "2026-08-02T18:17:00Z",
   "lane": "feat",
   "name": "agent-kaif-deploy",
   "notes": [
@@ -31,7 +31,7 @@
   ],
   "prs": [
     {
-      "checks": "SUCCESS",
+      "checks": "",
       "created": "2026-07-23",
       "draft": false,
       "head": "fix/porting-agent-data",
@@ -39,9 +39,9 @@
       "node_id": "PR_kwDOTTYQuc71gJH1",
       "number": 9,
       "repo": "kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test",
-      "review": "REVIEW_REQUIRED",
-      "state": "OPEN",
-      "status": "Open",
+      "review": "",
+      "state": "CLOSED",
+      "status": "Cancelled",
       "title": "fix(input): share platform-input normalization with the wrapped (AgentVisor) path",
       "url": "https://github.com/kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test/pull/9"
     },
@@ -1129,7 +1129,7 @@
         "target": "",
         "title": "MANETU with/without AgentVisor E2E (5+5) + 2-slide deck"
       },
-      "status": "In progress",
+      "status": "Complete",
       "title": "MANETU with/without AgentVisor E2E (5+5) + 2-slide deck"
     }
   ],
