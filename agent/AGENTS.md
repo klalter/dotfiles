@@ -72,6 +72,38 @@ repo's own `CLAUDE.md` or `AGENTS.md`.
   generated files. Do not include lines such as `Co-authored-by`, `Generated
   with`, `Assisted by`, or tool names like Claude, Codex, or Copilot.
 
+## Tracked worktrees (`/workspaces/.wt/<lane>/<slug>`)
+
+**Applies ONLY when the session's working directory is inside a worktree
+registered in `$DOTFILES_DIR/projects/index.json`.** Anywhere else, skip this
+whole section — no status loading, no task bookkeeping, no autosync.
+
+Inside a tracked worktree the session is bound to that worktree's GitHub
+project (one project per worktree, titled `<lane>/<slug>`), kept current by the
+deterministic tool `$DOTFILES_DIR/skills/worktree-sync/scripts/worktree_sync.py`
+(skill: `worktree-sync`). The protocol is automatic — never ask permission for
+any of it:
+
+- **Status in**: a SessionStart hook injects the project status (open tasks,
+  PR counts, board URL). Treat it as the session's work context. If it is
+  missing, run `worktree_sync.py context` yourself.
+- **Status out**: a SessionEnd hook runs `worktree_sync.py autosync`
+  (sync → dashboard → dotfiles commit → GitHub project push). After a
+  significant milestone mid-session (PR opened/merged, task finished), also
+  run `sync <name> --commit` + `project push <name>` right away rather than
+  waiting for session end.
+- **Tasks, hands-free**: when a new unit of work starts in the chat, create it
+  immediately — `task add <name> "Title" [--status wip] --push`. When work
+  finishes, close it — `task set <name> t<N> done --push`. Do NOT ask whether
+  to create or close; just do it and let the chat show a one-line summary
+  (e.g. ``task t7 → Complete: Fix HITL race``). One conversation may spin up
+  several tasks; each distinct deliverable gets its own.
+- **New worktrees**: create with `worktree_sync.py new <lane>/<slug> <repo>…` —
+  it makes the directory, adds git worktrees, registers the project, seeds the
+  manifest, and updates the dashboard. Do NOT create `/workspaces/.ai/work/`
+  item folders or `devx work` items for these worktrees; the manifest is the
+  only metadata.
+
 ## Always link repo references
 
 Whenever a reply names a repository, make it a clickable markdown link so it can

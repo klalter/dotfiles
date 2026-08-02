@@ -1,6 +1,6 @@
 ---
 name: "worktree-sync"
-description: "Track the git worktrees under /workspaces/.wt in a deterministic, version-controlled manifest — which repos and branches each worktree holds, how far each branch is from its base, and every PR that came out of it. Use when Klalter says sync the worktrees, update the worktree manifest, refresh projects, what's in flight, what am I working on, which repos are in this worktree, which PRs belong to this worktree, track this worktree, add this worktree to the board, or after opening a PR in a tracked worktree. Also use when he asks about the GitHub project board for worktrees or why it is not updating."
+description: "Track the git worktrees under /workspaces/.wt in a deterministic, version-controlled manifest — which repos and branches each worktree holds, every PR that came out of it, and the chat-spawned Tasks — mirrored to one GitHub Project per worktree. Use when Klalter says sync the worktrees, update the worktree manifest, refresh projects, what's in flight, which PRs belong to this worktree, track this worktree, add/close a task, create a new worktree (worktree_sync.py new — NOT devx work), or after opening a PR in a tracked worktree. Also use when he asks about the GitHub project board for worktrees or why it is not updating. Inside a tracked worktree the protocol is automatic: hooks load status at session start and autosync at session end; tasks are created/closed without asking."
 ---
 
 # Worktree sync
@@ -20,9 +20,41 @@ python3 $S project push agent-kaif-deploy          # render manifest -> GitHub p
 python3 $S task add agent-kaif-deploy "Title" [--status wip] [--push]
 python3 $S task set agent-kaif-deploy t3 done --push
 python3 $S task list agent-kaif-deploy
+python3 $S new feat/my-thing repo1 repo2           # create + track a new worktree
 python3 $S status -v                               # what's in flight, no network
 python3 $S scan /workspaces/.wt/feat/foo           # git-only, untracked ok
+python3 $S context [--cwd DIR]                     # session-start block (hook)
+python3 $S autosync [--cwd DIR]                    # session-end full update (hook)
 ```
+
+## Automatic protocol (hooks — no asking, ever)
+
+`~/.claude/settings.json` wires two hooks, both gated on the session cwd being
+inside a worktree registered in `projects/index.json` (outside one they are
+silent, instant no-ops):
+
+- **SessionStart → `context`**: injects the project status (open tasks, PR
+  counts, board URL) into the session context. No network.
+- **SessionEnd → `autosync`**: sync → dashboard → dotfiles commit → GitHub
+  project push. Best-effort, never blocks the session from ending.
+
+The behavioral half lives in `agent/AGENTS.md` ("Tracked worktrees"): create a
+task the moment new work starts in a chat, close it the moment it finishes,
+never ask, show a one-line summary; after a mid-session milestone run
+`sync --commit` + `project push` immediately instead of waiting for SessionEnd.
+
+## Creating a new tracked worktree
+
+`new <lane>/<slug> <repo>…` does everything in one shot: makes
+`/workspaces/.wt/<lane>/<slug>/`, adds a git worktree per repo (branch
+`<lane>/<slug>` cut from each repo's `origin/HEAD`, reused if it exists),
+registers the project in `index.json`, seeds the manifest with detected base
+branches, and re-renders the dashboard. Repos may be paths or bare names found
+under `/workspaces`. Then `project push <slug>` creates the GitHub project.
+
+This replaces the old ceremony for these worktrees: do NOT create
+`/workspaces/.ai/work/<app>/<lane>/<kind>/<slug>/` folders, `devx work` items,
+or ADO links — the manifest is the only metadata.
 
 ## Tasks — track chat-spawned work, not just PRs
 

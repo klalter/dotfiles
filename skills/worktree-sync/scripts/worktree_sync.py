@@ -932,6 +932,173 @@ def push_project(entry, manifest, dry_run=False):
         write_if_changed(projects_dir() / "index.json", dump(index))
 
 
+def resolve_repo(ref):
+    """A repo argument may be a path or a bare name found under /workspaces."""
+    p = Path(ref).expanduser()
+    if p.is_dir() and (p / ".git").exists():
+        return p.resolve()
+    for cand in [Path("/workspaces") / ref, *Path("/workspaces").glob(f"*/{ref}")]:
+        if cand.is_dir() and (cand / ".git").exists():
+            return cand.resolve()
+    return None
+
+
+def default_branch(repo: Path) -> str:
+    head = sh("git", "-C", str(repo), "symbolic-ref", "--short", "-q",
+              "refs/remotes/origin/HEAD")
+    if head.startswith("origin/"):
+        return head[len("origin/"):]
+    for cand in ("main", "master"):
+        if not subprocess.run(["git", "-C", str(repo), "rev-parse", "--verify",
+                               "--quiet", f"origin/{cand}"],
+                              capture_output=True).returncode:
+            return cand
+    return "main"
+
+
+def cmd_new(args):
+    """Create a tracked worktree in one shot: directory, git worktrees for the
+    named repos, index registration, seed manifest, dashboard. No devx work
+    items, no /workspaces/.ai/work folders — the manifest IS the metadata.
+    """
+    if "/" not in args.name:
+        sys.exit("name must be <lane>/<slug>, e.g. feat/my-thing")
+    lane, _, slug = args.name.partition("/")
+    root = Path("/workspaces/.wt") / lane / slug
+    index = load_index()
+    if find_entry(index, slug):
+        sys.exit(f"project {slug!r} is already tracked")
+    branch = args.branch or args.name
+
+    repos = []
+    for ref in args.repos:
+        repo = resolve_repo(ref)
+        if not repo:
+            sys.exit(f"cannot find repo {ref!r} under /workspaces")
+        repos.append(repo)
+    if not repos:
+        sys.exit("name at least one repo (path or bare name under /workspaces)")
+
+    root.mkdir(parents=True, exist_ok=True)
+    seed = []
+    for repo in repos:
+        dest = root / repo.name
+        base = default_branch(repo)
+        if dest.exists():
+            print(f"  exists  {dest}")
+        else:
+            subprocess.run(["git", "-C", str(repo), "fetch", "--quiet", "origin", base],
+                           capture_output=True)
+            has_branch = not subprocess.run(
+                ["git", "-C", str(repo), "rev-parse", "--verify", "--quiet", branch],
+                capture_output=True).returncode
+            cmd = ["git", "-C", str(repo), "worktree", "add", str(dest)]
+            cmd += [branch] if has_branch else ["-b", branch, f"origin/{base}"]
+            r = subprocess.run(cmd, capture_output=True, text=True)
+            if r.returncode:
+                sys.exit(f"worktree add failed for {repo.name}:\n{r.stderr.strip()}")
+            print(f"  created {dest}  [{branch} from origin/{base}]")
+        wt_slug = repo_slug(dest)
+        if wt_slug:
+            seed.append({"slug": wt_slug, "base": base})
+
+    index["projects"].append({
+        "name": slug, "worktree": str(root), "lane": lane,
+        "status": "active", "github_project": None,
+    })
+    write_if_changed(projects_dir() / "index.json", dump(index))
+
+    entry = find_entry(load_index(), slug)
+    manifest = build_manifest(entry, root, {"repos": seed}, fetch=False)
+    manifest["generated_at"] = (datetime.now(timezone.utc)
+                                .replace(microsecond=0).isoformat()
+                                .replace("+00:00", "Z"))
+    write_if_changed(projects_dir() / f"{slug}.json", dump(manifest))
+    render()
+    print(f"\ntracked: {slug}  ({len(seed)} repos, branch {branch})")
+    print(f"next: worktree_sync.py project push {slug}   # creates the GitHub project")
+
+
+def entry_for_cwd(cwd=None):
+    """The tracked project whose worktree contains cwd, or None.
+
+    This is the gate for all automatic behavior: outside a tracked worktree
+    both hook commands must no-op instantly and silently.
+    """
+    cwd = Path(cwd or os.getcwd()).resolve()
+    for e in load_index()["projects"]:
+        root = Path(e["worktree"]).resolve()
+        if cwd == root or str(cwd).startswith(str(root) + os.sep):
+            return e
+    return None
+
+
+def cmd_context(args):
+    """Session-start context block. Reads the manifest only — no network."""
+    entry = entry_for_cwd(args.cwd)
+    if not entry:
+        return                      # not a tracked worktree: stay silent
+    m = read_json(projects_dir() / f"{entry['name']}.json")
+    if not m:
+        print(f"[worktree-sync] {entry['name']} is tracked but never synced — "
+              f"run: worktree_sync.py sync {entry['name']}")
+        return
+    gp = entry.get("github_project") or {}
+    counts = {}
+    for p in m["prs"]:
+        counts[p["status"]] = counts.get(p["status"], 0) + 1
+    lines = [
+        f"[worktree-sync] Tracked worktree: {entry['name']} "
+        f"({len(m['repos'])} repos, last synced {m.get('generated_at', '?')})",
+        f"GitHub project: {gp.get('url', 'not created yet')}",
+        "PRs: " + (", ".join(f"{v} {k.lower()}" for k, v in sorted(counts.items()))
+                   or "none"),
+    ]
+    open_tasks = [t for t in m.get("tasks", []) if t["status"] != "Complete"]
+    if open_tasks:
+        lines.append("Open tasks:")
+        lines += [f"  {t['id']} [{t['status']}] {t['title']}" for t in open_tasks]
+    else:
+        lines.append("Open tasks: none")
+    if m.get("branches_no_pr"):
+        lines.append(f"Branches without a PR: {len(m['branches_no_pr'])}")
+    lines.append(
+        "Protocol: this session must keep the project current — create a task "
+        "(`task add`) when new work starts, close it (`task set <id> done`) when it "
+        "finishes, without asking; autosync pushes everything at session end.")
+    print("\n".join(lines))
+
+
+def cmd_autosync(args):
+    """Session-end auto-update: sync -> render -> commit -> project push.
+
+    Must never fail loudly or block a session from ending: every step is
+    best-effort and the exit code is always 0.
+    """
+    entry = entry_for_cwd(args.cwd)
+    if not entry:
+        return
+    try:
+        path = projects_dir() / f"{entry['name']}.json"
+        prev = read_json(path, {}) or {}
+        root = Path(entry["worktree"]).resolve()
+        manifest = build_manifest(entry, root, prev, fetch=False)
+        body_changed = {k: v for k, v in prev.items() if k != "generated_at"} != manifest
+        manifest["generated_at"] = (
+            datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+            .replace("+00:00", "Z")
+            if body_changed or not prev.get("generated_at") else prev["generated_at"])
+        write_if_changed(path, dump(manifest))
+        render()
+        do_commit(f"chore(projects): autosync {entry['name']}")
+        push_project(entry, manifest, dry_run=False)
+        print(f"[worktree-sync] autosync done for {entry['name']}")
+    except SystemExit as e:          # sys.exit from helpers (e.g. missing scope)
+        print(f"[worktree-sync] autosync partial: {e}", file=sys.stderr)
+    except Exception as e:           # noqa: BLE001 — never block session end
+        print(f"[worktree-sync] autosync failed: {e}", file=sys.stderr)
+
+
 def cmd_task(args):
     """Manage the worktree's Tasks — units of work, often spun up mid-chat."""
     entry = find_entry(load_index(), args.name)
@@ -1037,6 +1204,20 @@ def main():
     p.add_argument("name", nargs="?")
     p.add_argument("--dry-run", action="store_true")
     p.set_defaults(func=cmd_project)
+
+    p = sub.add_parser("new", help="create + track a new /workspaces/.wt worktree")
+    p.add_argument("name", help="<lane>/<slug>, e.g. feat/my-thing")
+    p.add_argument("repos", nargs="*", help="repo paths or bare names under /workspaces")
+    p.add_argument("--branch", default=None, help="branch name (default: <lane>/<slug>)")
+    p.set_defaults(func=cmd_new)
+
+    p = sub.add_parser("context", help="session-start context block (hook)")
+    p.add_argument("--cwd", default=None)
+    p.set_defaults(func=cmd_context)
+
+    p = sub.add_parser("autosync", help="session-end auto sync+commit+push (hook)")
+    p.add_argument("--cwd", default=None)
+    p.set_defaults(func=cmd_autosync)
 
     p = sub.add_parser("task", help="manage a worktree's Tasks")
     p.add_argument("action", choices=["add", "set", "list"])

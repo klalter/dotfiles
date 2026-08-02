@@ -795,6 +795,13 @@
       "id": "t5",
       "status": "Complete",
       "title": "Redesign GitHub project: per-worktree, Tasks + PR views"
+    },
+    {
+      "created": "2026-08-02",
+      "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3lTk",
+      "id": "t6",
+      "status": "In progress",
+      "title": "Remove the work feature from dev-shell (CLI, daemon, UI) \u2014 agent on feat/remove-work-feature"
     }
   ],
   "view": {
