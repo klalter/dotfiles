@@ -5,25 +5,25 @@ Source of truth is the per-project JSON next to this file.
 
 ## agent-kaif-deploy
 
-`/workspaces/.wt/feat/agent-kaif-deploy` · lane `feat` · 17 repos · 29 PRs · 11 tasks · synced 2026-08-01T23:24:34Z
+`/workspaces/.wt/feat/agent-kaif-deploy` · lane `feat` · 17 repos · 30 PRs · 11 tasks · synced 2026-08-02T14:45:54Z
 
 Board: [feat/agent-kaif-deploy](https://github.com/users/klalter_kyndryl/projects/3)
 
 > Base branches per the worktree CLAUDE.md: bridge-kaif-reusable-workflows targets agentvisortest, NOT main.
 
-| Task | Status | Title | Notes |
-| --- | --- | --- | --- |
-| `t1` | New | Roll remaining .wt worktrees into the tracked index | — |
-| `t2` | New | Rotate the plaintext PAT embedded in the dotfiles origin URL | — |
-| `t3` | New | Point daily-report at projects/agent-kaif-deploy.json as its PR source | — |
-| `t4` | New | Wire 'project push' into 'sync --commit' as one call | — |
-| `t5` | Complete | Redesign GitHub project: per-worktree, Tasks + PR views | — |
-| `t6` | Complete | Remove the work feature from dev-shell (CLI, daemon, UI) — agent on feat/remove-work-feature | — |
-| `t7` | Complete | Full 5-agent x 3-tenant E2E: wrapped + pure-KAIF matrices, Grafana-confirmed, deck 2026-08-02-e2e-matrix.pptx | — |
-| `t8` | New | Push feat/remove-work-feature and open the dev-shell PR for team review | — |
-| `t9` | New | Kill-run API: terminate stuck Argo runs via registry (KAIF Admin) | body |
-| `t10` | Complete | Instant-approve HITL proof on MANETU (wrapped agent5, #272 live) | — |
-| `t11` | New | Flake remainder: guest exit-1 shutdown fix + registry #272/#275 rollout on cto-dev | — |
+| Task | Status | Dates | Title | Notes |
+| --- | --- | --- | --- | --- |
+| `t1` | New | — | Roll remaining .wt worktrees into the tracked index | — |
+| `t2` | New | — | Rotate the plaintext PAT embedded in the dotfiles origin URL | — |
+| `t3` | New | — | Point daily-report at projects/agent-kaif-deploy.json as its PR source | — |
+| `t4` | New | — | Wire 'project push' into 'sync --commit' as one call | — |
+| `t5` | Complete | — | Redesign GitHub project: per-worktree, Tasks + PR views | — |
+| `t6` | Complete | — | Remove the work feature from dev-shell (CLI, daemon, UI) — agent on feat/remove-work-feature | — |
+| `t7` | Complete | — | Full 5-agent x 3-tenant E2E: wrapped + pure-KAIF matrices, Grafana-confirmed, deck 2026-08-02-e2e-matrix.pptx | — |
+| `t8` | New | — | Push feat/remove-work-feature and open the dev-shell PR for team review | — |
+| `t9` | New | — | Kill-run API: terminate stuck Argo runs via registry (KAIF Admin) | body |
+| `t10` | Complete | 2026-07-02 → 2026-07-02 | Instant-approve HITL proof on MANETU (wrapped agent5, #272 live) | human: start, target |
+| `t11` | New | — | Flake remainder: guest exit-1 shutdown fix + registry #272/#275 rollout on cto-dev | — |
 
 | Repo | Branch | Base | Ahead/Behind | PRs |
 | --- | --- | --- | --- | --- |
@@ -43,11 +43,11 @@ Board: [feat/agent-kaif-deploy](https://github.com/users/klalter_kyndryl/project
 | [kyndryl-agentic-ai/bdg-sw-it-modernization-agent-v2](https://github.com/kyndryl-agentic-ai/bdg-sw-it-modernization-agent-v2) | `main` | `main` | +0 / −0 | — |
 | [kyndryl-cto/bdg-sw-plcy-kyn-base](https://github.com/kyndryl-cto/bdg-sw-plcy-kyn-base) | `feat/egress-platform-postgres` | `main` | +1 / −1 | [#5](https://github.com/kyndryl-cto/bdg-sw-plcy-kyn-base/pull/5) Merged<br>[#6](https://github.com/kyndryl-cto/bdg-sw-plcy-kyn-base/pull/6) Merged<br>[#8](https://github.com/kyndryl-cto/bdg-sw-plcy-kyn-base/pull/8) Merged |
 | [kyndryl-cto/bdg-sw-plcy-policy-service](https://github.com/kyndryl-cto/bdg-sw-plcy-policy-service) | `klalter/temp-test` | `main` | +0 / −59 | — |
-| [kyndryl-agentic-ai/bridge-kaif-reusable-workflows](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows) | `fix/invoke-run-poll` | `agentvisortest` | +0 / −1 | [#33](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/33) Merged<br>[#34](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/34) Merged<br>[#35](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/35) Merged<br>[#36](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/36) Merged<br>[#37](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/37) Merged<br>[#38](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/38) Merged<br>[#39](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/39) Merged<br>[#40](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/40) Merged<br>[#41](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/41) Merged |
+| [kyndryl-agentic-ai/bridge-kaif-reusable-workflows](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows) | `fix/guest-exit-diagnostics` | `agentvisortest` | +1 / −0 | [#33](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/33) Merged<br>[#34](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/34) Merged<br>[#35](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/35) Merged<br>[#36](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/36) Merged<br>[#37](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/37) Merged<br>[#38](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/38) Merged<br>[#39](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/39) Merged<br>[#40](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/40) Merged<br>[#41](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/41) Merged<br>[#42](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/42) Open |
 
 **Branches with no PR yet:** `kyndryl-agentic-ai/bdg-sw-agents-actionable-insights-agent-agentvisor-test:klalter/chatops-test`, `kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test:release-2026.07.28`, `kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test:test/channel-lift-28jul`, `kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test:wt-agentvisor-build`, `kyndryl-agentic-ai/bdg-sw-agents-debugging-remediation-v2:test/agentvisor-build`, `kyndryl-agentic-ai/bdg-sw-agents-it-modernization-agent-v2-agentvisor-test:test/agentvisor-build`, `kyndryl-agentic-ai/bdg-sw-agents-it-modernization-agent-v2-agentvisor-test:wt-agentvisor-build`, `kyndryl-agentic-ai/bdg-sw-agents-quality-parameter-check:test/agentvisor-build`, `kyndryl-agentic-ai/bdg-sw-agents-quality-parameter-check:wt-a3`, `kyndryl-agentic-ai/bdg-sw-agents-rca-auto-generation:test/agentvisor-build`, `kyndryl-agentic-ai/bdg-sw-aifn-change-request-risk-assessment:test/agentvisor-build`, `kyndryl-agentic-ai/bridge-kaif-reusable-workflows:feat/pdp-bundle-identifier`, `kyndryl-cto/bdg-sw-aifn-agent-registry:feat/pdp-bundle-identifier`, `kyndryl-cto/bdg-sw-aifn-jobengine:klalter/temp-test`, `kyndryl-cto/bdg-sw-auto-orch-helm-chart:klalter/temp-test`, `kyndryl-cto/bdg-sw-plcy-kyn-base:demo/chatops-deny`, `kyndryl-cto/bdg-sw-plcy-kyn-base:klalter/temp-test`, `kyndryl-cto/bdg-sw-plcy-kyn-base:stage`, `kyndryl-cto/bdg-sw-plcy-policy-service:klalter/temp-test`
 
-[All PRs for this worktree](https://github.com/pulls?q=is%3Apr%20head%3Afeat%2Fagentvisor-license-guardrail%20head%3Afeat%2Fagentvisor-v0.5.0-55.202%20head%3Afeat%2Fchatops-egress-permanent%20head%3Afeat%2Fegress-platform-postgres%20head%3Afeat%2Fgrafana-generic-log-tools%20head%3Afeat%2Fhitl-agentvisor-v2%20head%3Afeat%2Fhitl-agentvisor-v3%20head%3Afeat%2Fiam-authz-tools%20head%3Afeat%2Flangfuse-connection%20head%3Afeat%2Flangfuse-provider%20head%3Afeat%2Fmanetu-egress-allow%20head%3Afeat%2Fmemory-host-relay%20head%3Afeat%2Fsidecar-memory-env%20head%3Afeat%2Fupdates-kaif-tests%20head%3Afix%2Fagentvisor-guest-memory-env%20head%3Afix%2Fhitl-async-node-sync-bridge%20head%3Afix%2Fhitl-resume-input%20head%3Afix%2Fhitl-resume-suspend-race%20head%3Afix%2Fhitl-wrapper-updates%20head%3Afix%2Finvoke-run-poll%20head%3Afix%2Fklalter-28-jul%20head%3Afix%2Fporting-agent-data%20head%3Afix%2Fquery-alias-28jul%20head%3Afix%2Fsidecar-memory-resources%20head%3Afix%2Fwrapper-updates%20repo%3Akyndryl-agentic-ai%2Fbdg-sw-agents-autonomous-doc-creation-agentvisor-test%20repo%3Akyndryl-agentic-ai%2Fbridge-kaif-reusable-workflows%20repo%3Akyndryl-cto%2Fbdg-sw-aifn-agent-registry%20repo%3Akyndryl-cto%2Fbdg-sw-aifn-common-services-gateway%20repo%3Akyndryl-cto%2Fbdg-sw-auto-dev-shell-mcp%20repo%3Akyndryl-cto%2Fbdg-sw-base-foundation-connections-metadata%20repo%3Akyndryl-cto%2Fbdg-sw-plcy-kyn-base)
+[All PRs for this worktree](https://github.com/pulls?q=is%3Apr%20head%3Afeat%2Fagentvisor-license-guardrail%20head%3Afeat%2Fagentvisor-v0.5.0-55.202%20head%3Afeat%2Fchatops-egress-permanent%20head%3Afeat%2Fegress-platform-postgres%20head%3Afeat%2Fgrafana-generic-log-tools%20head%3Afeat%2Fhitl-agentvisor-v2%20head%3Afeat%2Fhitl-agentvisor-v3%20head%3Afeat%2Fiam-authz-tools%20head%3Afeat%2Flangfuse-connection%20head%3Afeat%2Flangfuse-provider%20head%3Afeat%2Fmanetu-egress-allow%20head%3Afeat%2Fmemory-host-relay%20head%3Afeat%2Fsidecar-memory-env%20head%3Afeat%2Fupdates-kaif-tests%20head%3Afix%2Fagentvisor-guest-memory-env%20head%3Afix%2Fguest-exit-diagnostics%20head%3Afix%2Fhitl-async-node-sync-bridge%20head%3Afix%2Fhitl-resume-input%20head%3Afix%2Fhitl-resume-suspend-race%20head%3Afix%2Fhitl-wrapper-updates%20head%3Afix%2Finvoke-run-poll%20head%3Afix%2Fklalter-28-jul%20head%3Afix%2Fporting-agent-data%20head%3Afix%2Fquery-alias-28jul%20head%3Afix%2Fsidecar-memory-resources%20head%3Afix%2Fwrapper-updates%20repo%3Akyndryl-agentic-ai%2Fbdg-sw-agents-autonomous-doc-creation-agentvisor-test%20repo%3Akyndryl-agentic-ai%2Fbridge-kaif-reusable-workflows%20repo%3Akyndryl-cto%2Fbdg-sw-aifn-agent-registry%20repo%3Akyndryl-cto%2Fbdg-sw-aifn-common-services-gateway%20repo%3Akyndryl-cto%2Fbdg-sw-auto-dev-shell-mcp%20repo%3Akyndryl-cto%2Fbdg-sw-base-foundation-connections-metadata%20repo%3Akyndryl-cto%2Fbdg-sw-plcy-kyn-base)
 
 ## dev-shell-remove-work
 

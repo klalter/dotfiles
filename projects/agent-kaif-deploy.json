@@ -23,7 +23,7 @@
   ],
   "exclude_prs": [],
   "extra_prs": [],
-  "generated_at": "2026-08-01T23:24:34Z",
+  "generated_at": "2026-08-02T14:45:54Z",
   "lane": "feat",
   "name": "agent-kaif-deploy",
   "notes": [
@@ -179,6 +179,21 @@
       "status": "Merged",
       "title": "fix(agentvisor): poll the run record instead of betting the step on one long-held connection",
       "url": "https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/41"
+    },
+    {
+      "checks": "SUCCESS",
+      "created": "2026-08-02",
+      "draft": false,
+      "head": "fix/guest-exit-diagnostics",
+      "key": "kyndryl-agentic-ai/bridge-kaif-reusable-workflows#42",
+      "node_id": "PR_kwDORbGMpM75qixT",
+      "number": 42,
+      "repo": "kyndryl-agentic-ai/bridge-kaif-reusable-workflows",
+      "review": "REVIEW_REQUIRED",
+      "state": "OPEN",
+      "status": "Open",
+      "title": "fix(agentvisor): surface the guest's dying traceback on the real stderr fd",
+      "url": "https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/42"
     },
     {
       "checks": "",
@@ -734,16 +749,16 @@
       "slug": "kyndryl-cto/bdg-sw-plcy-policy-service"
     },
     {
-      "ahead": 0,
+      "ahead": 1,
       "base": "agentvisortest",
-      "behind": 1,
-      "branch": "fix/invoke-run-poll",
+      "behind": 0,
+      "branch": "fix/guest-exit-diagnostics",
       "dir": "bridge-kaif-reusable-workflows",
       "dirty": false,
       "last_commit": {
-        "date": "2026-08-01T17:14:29Z",
-        "sha": "a946eb1",
-        "subject": "fix(agentvisor): poll the run record instead of betting the step on one long-held connection"
+        "date": "2026-08-02T14:45:14Z",
+        "sha": "7f17c61",
+        "subject": "fix(agentvisor): surface the guest's dying traceback on the real stderr fd"
       },
       "prs": [
         "kyndryl-agentic-ai/bridge-kaif-reusable-workflows#33",
@@ -754,7 +769,8 @@
         "kyndryl-agentic-ai/bridge-kaif-reusable-workflows#38",
         "kyndryl-agentic-ai/bridge-kaif-reusable-workflows#39",
         "kyndryl-agentic-ai/bridge-kaif-reusable-workflows#40",
-        "kyndryl-agentic-ai/bridge-kaif-reusable-workflows#41"
+        "kyndryl-agentic-ai/bridge-kaif-reusable-workflows#41",
+        "kyndryl-agentic-ai/bridge-kaif-reusable-workflows#42"
       ],
       "slug": "kyndryl-agentic-ai/bridge-kaif-reusable-workflows"
     }
@@ -918,18 +934,32 @@
     {
       "created": "2026-08-02",
       "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3ry8",
+      "human_edited": {
+        "start": {
+          "at": "2026-08-02T14:45:54Z",
+          "value": "2026-07-02",
+          "was": ""
+        },
+        "target": {
+          "at": "2026-08-02T14:45:54Z",
+          "value": "2026-07-02",
+          "was": ""
+        }
+      },
       "id": "t10",
       "last_pushed": {
         "blocked": "",
         "body_hash": "e3b0c44298fc1c14",
         "depends_on": "",
         "group": "",
-        "start": "",
+        "start": "2026-07-02",
         "status": "Complete",
-        "target": "",
+        "target": "2026-07-02",
         "title": "Instant-approve HITL proof on MANETU (wrapped agent5, #272 live)"
       },
+      "start": "2026-07-02",
       "status": "Complete",
+      "target": "2026-07-02",
       "title": "Instant-approve HITL proof on MANETU (wrapped agent5, #272 live)"
     },
     {
@@ -954,9 +984,9 @@
     "color": "purple",
     "icon": "code-review",
     "name": "feat/agent-kaif-deploy",
-    "query": "is:pr head:feat/agentvisor-license-guardrail head:feat/agentvisor-v0.5.0-55.202 head:feat/chatops-egress-permanent head:feat/egress-platform-postgres head:feat/grafana-generic-log-tools head:feat/hitl-agentvisor-v2 head:feat/hitl-agentvisor-v3 head:feat/iam-authz-tools head:feat/langfuse-connection head:feat/langfuse-provider head:feat/manetu-egress-allow head:feat/memory-host-relay head:feat/sidecar-memory-env head:feat/updates-kaif-tests head:fix/agentvisor-guest-memory-env head:fix/hitl-async-node-sync-bridge head:fix/hitl-resume-input head:fix/hitl-resume-suspend-race head:fix/hitl-wrapper-updates head:fix/invoke-run-poll head:fix/klalter-28-jul head:fix/porting-agent-data head:fix/query-alias-28jul head:fix/sidecar-memory-resources head:fix/wrapper-updates repo:kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test repo:kyndryl-agentic-ai/bridge-kaif-reusable-workflows repo:kyndryl-cto/bdg-sw-aifn-agent-registry repo:kyndryl-cto/bdg-sw-aifn-common-services-gateway repo:kyndryl-cto/bdg-sw-auto-dev-shell-mcp repo:kyndryl-cto/bdg-sw-base-foundation-connections-metadata repo:kyndryl-cto/bdg-sw-plcy-kyn-base",
+    "query": "is:pr head:feat/agentvisor-license-guardrail head:feat/agentvisor-v0.5.0-55.202 head:feat/chatops-egress-permanent head:feat/egress-platform-postgres head:feat/grafana-generic-log-tools head:feat/hitl-agentvisor-v2 head:feat/hitl-agentvisor-v3 head:feat/iam-authz-tools head:feat/langfuse-connection head:feat/langfuse-provider head:feat/manetu-egress-allow head:feat/memory-host-relay head:feat/sidecar-memory-env head:feat/updates-kaif-tests head:fix/agentvisor-guest-memory-env head:fix/guest-exit-diagnostics head:fix/hitl-async-node-sync-bridge head:fix/hitl-resume-input head:fix/hitl-resume-suspend-race head:fix/hitl-wrapper-updates head:fix/invoke-run-poll head:fix/klalter-28-jul head:fix/porting-agent-data head:fix/query-alias-28jul head:fix/sidecar-memory-resources head:fix/wrapper-updates repo:kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test repo:kyndryl-agentic-ai/bridge-kaif-reusable-workflows repo:kyndryl-cto/bdg-sw-aifn-agent-registry repo:kyndryl-cto/bdg-sw-aifn-common-services-gateway repo:kyndryl-cto/bdg-sw-auto-dev-shell-mcp repo:kyndryl-cto/bdg-sw-base-foundation-connections-metadata repo:kyndryl-cto/bdg-sw-plcy-kyn-base",
     "stray": [],
-    "url": "https://github.com/pulls?q=is%3Apr%20head%3Afeat%2Fagentvisor-license-guardrail%20head%3Afeat%2Fagentvisor-v0.5.0-55.202%20head%3Afeat%2Fchatops-egress-permanent%20head%3Afeat%2Fegress-platform-postgres%20head%3Afeat%2Fgrafana-generic-log-tools%20head%3Afeat%2Fhitl-agentvisor-v2%20head%3Afeat%2Fhitl-agentvisor-v3%20head%3Afeat%2Fiam-authz-tools%20head%3Afeat%2Flangfuse-connection%20head%3Afeat%2Flangfuse-provider%20head%3Afeat%2Fmanetu-egress-allow%20head%3Afeat%2Fmemory-host-relay%20head%3Afeat%2Fsidecar-memory-env%20head%3Afeat%2Fupdates-kaif-tests%20head%3Afix%2Fagentvisor-guest-memory-env%20head%3Afix%2Fhitl-async-node-sync-bridge%20head%3Afix%2Fhitl-resume-input%20head%3Afix%2Fhitl-resume-suspend-race%20head%3Afix%2Fhitl-wrapper-updates%20head%3Afix%2Finvoke-run-poll%20head%3Afix%2Fklalter-28-jul%20head%3Afix%2Fporting-agent-data%20head%3Afix%2Fquery-alias-28jul%20head%3Afix%2Fsidecar-memory-resources%20head%3Afix%2Fwrapper-updates%20repo%3Akyndryl-agentic-ai%2Fbdg-sw-agents-autonomous-doc-creation-agentvisor-test%20repo%3Akyndryl-agentic-ai%2Fbridge-kaif-reusable-workflows%20repo%3Akyndryl-cto%2Fbdg-sw-aifn-agent-registry%20repo%3Akyndryl-cto%2Fbdg-sw-aifn-common-services-gateway%20repo%3Akyndryl-cto%2Fbdg-sw-auto-dev-shell-mcp%20repo%3Akyndryl-cto%2Fbdg-sw-base-foundation-connections-metadata%20repo%3Akyndryl-cto%2Fbdg-sw-plcy-kyn-base"
+    "url": "https://github.com/pulls?q=is%3Apr%20head%3Afeat%2Fagentvisor-license-guardrail%20head%3Afeat%2Fagentvisor-v0.5.0-55.202%20head%3Afeat%2Fchatops-egress-permanent%20head%3Afeat%2Fegress-platform-postgres%20head%3Afeat%2Fgrafana-generic-log-tools%20head%3Afeat%2Fhitl-agentvisor-v2%20head%3Afeat%2Fhitl-agentvisor-v3%20head%3Afeat%2Fiam-authz-tools%20head%3Afeat%2Flangfuse-connection%20head%3Afeat%2Flangfuse-provider%20head%3Afeat%2Fmanetu-egress-allow%20head%3Afeat%2Fmemory-host-relay%20head%3Afeat%2Fsidecar-memory-env%20head%3Afeat%2Fupdates-kaif-tests%20head%3Afix%2Fagentvisor-guest-memory-env%20head%3Afix%2Fguest-exit-diagnostics%20head%3Afix%2Fhitl-async-node-sync-bridge%20head%3Afix%2Fhitl-resume-input%20head%3Afix%2Fhitl-resume-suspend-race%20head%3Afix%2Fhitl-wrapper-updates%20head%3Afix%2Finvoke-run-poll%20head%3Afix%2Fklalter-28-jul%20head%3Afix%2Fporting-agent-data%20head%3Afix%2Fquery-alias-28jul%20head%3Afix%2Fsidecar-memory-resources%20head%3Afix%2Fwrapper-updates%20repo%3Akyndryl-agentic-ai%2Fbdg-sw-agents-autonomous-doc-creation-agentvisor-test%20repo%3Akyndryl-agentic-ai%2Fbridge-kaif-reusable-workflows%20repo%3Akyndryl-cto%2Fbdg-sw-aifn-agent-registry%20repo%3Akyndryl-cto%2Fbdg-sw-aifn-common-services-gateway%20repo%3Akyndryl-cto%2Fbdg-sw-auto-dev-shell-mcp%20repo%3Akyndryl-cto%2Fbdg-sw-base-foundation-connections-metadata%20repo%3Akyndryl-cto%2Fbdg-sw-plcy-kyn-base"
   },
   "worktree": "/workspaces/.wt/feat/agent-kaif-deploy"
 }
