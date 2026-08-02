@@ -23,7 +23,7 @@
   ],
   "exclude_prs": [],
   "extra_prs": [],
-  "generated_at": "2026-08-02T16:18:10Z",
+  "generated_at": "2026-08-02T17:41:40Z",
   "lane": "feat",
   "name": "agent-kaif-deploy",
   "notes": [
@@ -196,7 +196,7 @@
       "url": "https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/42"
     },
     {
-      "checks": "SUCCESS",
+      "checks": "",
       "created": "2026-08-02",
       "draft": false,
       "head": "fix/terminal-relay-size-cap",
@@ -204,9 +204,9 @@
       "node_id": "PR_kwDORbGMpM75ryaF",
       "number": 43,
       "repo": "kyndryl-agentic-ai/bridge-kaif-reusable-workflows",
-      "review": "REVIEW_REQUIRED",
-      "state": "OPEN",
-      "status": "Open",
+      "review": "",
+      "state": "MERGED",
+      "status": "Merged",
       "title": "fix(agentvisor): retry the terminal relay with a compact envelope when a size cap rejects it",
       "url": "https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/43"
     },
@@ -560,16 +560,16 @@
       "slug": "kyndryl-agentic-ai/bdg-sw-agents-it-modernization-agent-v2-agentvisor-test"
     },
     {
-      "ahead": 4,
+      "ahead": 5,
       "base": "main",
       "behind": 0,
       "branch": "test/agentvisor-build",
       "dir": "bdg-sw-agents-quality-parameter-check",
       "dirty": false,
       "last_commit": {
-        "date": "2026-08-02T15:59:29Z",
-        "sha": "8cc5a0a",
-        "subject": "chore: rebuild with reusable-workflows@agentvisortest PR #42 (guest fatal-error diagnostics)"
+        "date": "2026-08-02T17:34:28Z",
+        "sha": "24ea5da",
+        "subject": "chore: rebuild with reusable-workflows@agentvisortest PR #43 (terminal relay compact-envelope retry)"
       },
       "prs": [],
       "slug": "kyndryl-agentic-ai/bdg-sw-agents-quality-parameter-check"
@@ -764,9 +764,9 @@
       "slug": "kyndryl-cto/bdg-sw-plcy-policy-service"
     },
     {
-      "ahead": 1,
+      "ahead": 0,
       "base": "agentvisortest",
-      "behind": 0,
+      "behind": 1,
       "branch": "fix/terminal-relay-size-cap",
       "dir": "bridge-kaif-reusable-workflows",
       "dirty": false,
@@ -795,170 +795,243 @@
   "tasks": [
     {
       "created": "2026-08-01",
+      "depends_on": [
+        "t5"
+      ],
       "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3jcc",
+      "group": "Phase 4 \u2014 Worktree tracking & dotfiles hygiene",
       "id": "t1",
       "last_pushed": {
-        "blocked": "",
+        "blocked": "Ready",
         "body_hash": "e3b0c44298fc1c14",
-        "depends_on": "",
-        "group": "",
-        "owner": "",
-        "start": "",
+        "depends_on": "t5 \u00b7 Redesign GitHub project: pe\u2026",
+        "group": "Phase 4 \u2014 Worktree tracking & dotfiles hygiene",
+        "owner": "Klalter",
+        "start": "2026-08-03",
         "status": "New",
-        "target": "",
+        "target": "2026-08-05",
         "title": "Roll remaining .wt worktrees into the tracked index"
       },
+      "owner": "Klalter",
+      "start": "2026-08-03",
       "status": "New",
+      "target": "2026-08-05",
       "title": "Roll remaining .wt worktrees into the tracked index"
     },
     {
       "created": "2026-08-01",
       "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3jcg",
+      "group": "Phase 4 \u2014 Worktree tracking & dotfiles hygiene",
       "id": "t2",
       "last_pushed": {
         "blocked": "",
         "body_hash": "e3b0c44298fc1c14",
         "depends_on": "",
-        "group": "",
-        "owner": "",
-        "start": "",
+        "group": "Phase 4 \u2014 Worktree tracking & dotfiles hygiene",
+        "owner": "Klalter",
+        "start": "2026-08-04",
         "status": "New",
-        "target": "",
+        "target": "2026-08-06",
         "title": "Rotate the plaintext PAT embedded in the dotfiles origin URL"
       },
+      "owner": "Klalter",
+      "start": "2026-08-04",
       "status": "New",
+      "target": "2026-08-06",
       "title": "Rotate the plaintext PAT embedded in the dotfiles origin URL"
     },
     {
       "created": "2026-08-01",
+      "depends_on": [
+        "t5"
+      ],
       "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3jck",
+      "group": "Phase 4 \u2014 Worktree tracking & dotfiles hygiene",
       "id": "t3",
       "last_pushed": {
-        "blocked": "",
+        "blocked": "Ready",
         "body_hash": "e3b0c44298fc1c14",
-        "depends_on": "",
-        "group": "",
-        "owner": "",
-        "start": "",
+        "depends_on": "t5 \u00b7 Redesign GitHub project: pe\u2026",
+        "group": "Phase 4 \u2014 Worktree tracking & dotfiles hygiene",
+        "owner": "Klalter",
+        "start": "2026-08-03",
         "status": "New",
-        "target": "",
+        "target": "2026-08-05",
         "title": "Point daily-report at projects/agent-kaif-deploy.json as its PR source"
       },
+      "owner": "Klalter",
+      "start": "2026-08-03",
       "status": "New",
+      "target": "2026-08-05",
       "title": "Point daily-report at projects/agent-kaif-deploy.json as its PR source"
     },
     {
       "created": "2026-08-01",
+      "depends_on": [
+        "t5"
+      ],
       "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3jco",
+      "group": "Phase 4 \u2014 Worktree tracking & dotfiles hygiene",
       "id": "t4",
       "last_pushed": {
-        "blocked": "",
+        "blocked": "Ready",
         "body_hash": "e3b0c44298fc1c14",
-        "depends_on": "",
-        "group": "",
-        "owner": "",
-        "start": "",
+        "depends_on": "t5 \u00b7 Redesign GitHub project: pe\u2026",
+        "group": "Phase 4 \u2014 Worktree tracking & dotfiles hygiene",
+        "owner": "Klalter",
+        "start": "2026-08-03",
         "status": "New",
-        "target": "",
+        "target": "2026-08-05",
         "title": "Wire 'project push' into 'sync --commit' as one call"
       },
+      "owner": "Klalter",
+      "start": "2026-08-03",
       "status": "New",
+      "target": "2026-08-05",
       "title": "Wire 'project push' into 'sync --commit' as one call"
     },
     {
       "created": "2026-08-01",
       "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3jcs",
+      "group": "Phase 4 \u2014 Worktree tracking & dotfiles hygiene",
       "id": "t5",
       "last_pushed": {
         "blocked": "",
         "body_hash": "e3b0c44298fc1c14",
         "depends_on": "",
-        "group": "",
-        "owner": "",
-        "start": "",
+        "group": "Phase 4 \u2014 Worktree tracking & dotfiles hygiene",
+        "owner": "Klalter",
+        "start": "2026-08-01",
         "status": "Complete",
-        "target": "",
+        "target": "2026-08-02",
         "title": "\u2713 Redesign GitHub project: per-worktree, Tasks + PR views"
       },
+      "owner": "Klalter",
+      "start": "2026-08-01",
       "status": "Complete",
+      "target": "2026-08-02",
       "title": "Redesign GitHub project: per-worktree, Tasks + PR views"
     },
     {
       "created": "2026-08-02",
       "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3lTk",
+      "group": "Phase 3 \u2014 dev-shell work-feature removal",
       "id": "t6",
       "last_pushed": {
         "blocked": "",
         "body_hash": "e3b0c44298fc1c14",
         "depends_on": "",
-        "group": "",
-        "owner": "",
-        "start": "",
+        "group": "Phase 3 \u2014 dev-shell work-feature removal",
+        "owner": "Klalter",
+        "start": "2026-07-31",
         "status": "Complete",
-        "target": "",
+        "target": "2026-08-02",
         "title": "\u2713 Remove the work feature from dev-shell (CLI, daemon, UI) \u2014 agent on feat/remove-work-feature"
       },
+      "owner": "Klalter",
+      "start": "2026-07-31",
       "status": "Complete",
+      "target": "2026-08-02",
       "title": "Remove the work feature from dev-shell (CLI, daemon, UI) \u2014 agent on feat/remove-work-feature"
     },
     {
       "created": "2026-08-02",
       "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3lU4",
+      "group": "Phase 1 \u2014 AgentVisor E2E validation",
       "id": "t7",
       "last_pushed": {
         "blocked": "",
         "body_hash": "e3b0c44298fc1c14",
         "depends_on": "",
-        "group": "",
-        "owner": "",
-        "start": "",
+        "group": "Phase 1 \u2014 AgentVisor E2E validation",
+        "owner": "Klalter",
+        "start": "2026-07-28",
         "status": "Complete",
-        "target": "",
+        "target": "2026-08-01",
         "title": "\u2713 Full 5-agent x 3-tenant E2E: wrapped + pure-KAIF matrices, Grafana-confirmed, deck 2026-08-02-e2e-matrix.pptx"
       },
+      "owner": "Klalter",
+      "start": "2026-07-28",
       "status": "Complete",
+      "target": "2026-08-01",
       "title": "Full 5-agent x 3-tenant E2E: wrapped + pure-KAIF matrices, Grafana-confirmed, deck 2026-08-02-e2e-matrix.pptx"
     },
     {
+      "body": "Branch feat/remove-work-feature is local-only. Push it to kyndryl-cto/bdg-sw-auto-console-dev-shell and open the PR against main for team review. Removal covers CLI, daemon and UI surfaces of the 'work' feature; check no devx work references survive in docs before opening.",
       "created": "2026-08-02",
+      "depends_on": [
+        "t6"
+      ],
       "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3lWE",
+      "group": "Phase 3 \u2014 dev-shell work-feature removal",
+      "human_edited": {
+        "status": {
+          "at": "2026-08-02T17:40:14Z",
+          "value": "In progress",
+          "was": "New"
+        }
+      },
       "id": "t8",
       "last_pushed": {
-        "blocked": "",
-        "body_hash": "e3b0c44298fc1c14",
-        "depends_on": "",
-        "group": "",
-        "owner": "",
-        "start": "",
-        "status": "New",
-        "target": "",
+        "blocked": "Ready",
+        "body_hash": "c8bb84bb2cd745e8",
+        "depends_on": "t6 \u00b7 Remove the work feature fro\u2026",
+        "group": "Phase 3 \u2014 dev-shell work-feature removal",
+        "owner": "Klalter",
+        "start": "2026-08-03",
+        "status": "In progress",
+        "target": "2026-08-04",
         "title": "Push feat/remove-work-feature and open the dev-shell PR for team review"
       },
-      "status": "New",
+      "owner": "Klalter",
+      "start": "2026-08-03",
+      "status": "In progress",
+      "target": "2026-08-04",
       "title": "Push feat/remove-work-feature and open the dev-shell PR for team review"
     },
     {
+      "attachments": [
+        {
+          "kind": "md",
+          "note": "implementation plan",
+          "path": "deliverables/kill-api-plan.md"
+        }
+      ],
       "body": "Implementation plan: deliverables/kill-api-plan.md (in the worktree). Base = existing open PR kyndryl-cto/bdg-sw-aifn-agent-registry#264 (terminate), rebased on main + CAS hardening + tests + kaif_iam_client route mapping (verify 1.1.42). Recommended role gate: kaif.ai.assistedit (KAIF Editor, resume precedent) with access-group check; kaif.kf.admin (KAIF Admin) as conservative fallback.",
       "created": "2026-08-02",
       "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3rqE",
+      "group": "Phase 2 \u2014 KAIF registry & run control",
+      "human_edited": {
+        "owner": {
+          "acked_at": "2026-08-02T17:41:13Z",
+          "acked_value": "Klalter \u2014 with KAIF Admin / registry review",
+          "at": "2026-08-02T17:40:14Z",
+          "value": "Navin (registry team)",
+          "was": "Klalter \u2014 with KAIF Admin / registry review"
+        }
+      },
       "id": "t9",
       "last_pushed": {
         "blocked": "",
-        "body_hash": "0345cfef146b5ee6",
+        "body_hash": "36bbb651c436a68c",
         "depends_on": "",
-        "group": "",
-        "owner": "",
-        "start": "",
+        "group": "Phase 2 \u2014 KAIF registry & run control",
+        "owner": "Klalter \u2014 with KAIF Admin / registry review",
+        "start": "2026-08-04",
         "status": "New",
-        "target": "",
+        "target": "2026-08-06",
         "title": "Kill-run API: terminate stuck Argo runs via registry (KAIF Admin)"
       },
+      "owner": "Klalter \u2014 with KAIF Admin / registry review",
+      "start": "2026-08-04",
       "status": "New",
+      "target": "2026-08-06",
       "title": "Kill-run API: terminate stuck Argo runs via registry (KAIF Admin)"
     },
     {
       "created": "2026-08-02",
       "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3ry8",
+      "group": "Phase 1 \u2014 AgentVisor E2E validation",
       "human_edited": {
         "start": {
           "at": "2026-08-02T14:45:54Z",
@@ -976,34 +1049,67 @@
         "blocked": "",
         "body_hash": "e3b0c44298fc1c14",
         "depends_on": "",
-        "group": "",
-        "owner": "",
+        "group": "Phase 1 \u2014 AgentVisor E2E validation",
+        "owner": "Klalter",
         "start": "2026-07-02",
         "status": "Complete",
         "target": "2026-07-02",
         "title": "\u2713 Instant-approve HITL proof on MANETU (wrapped agent5, #272 live)"
       },
+      "owner": "Klalter",
       "start": "2026-07-02",
       "status": "Complete",
       "target": "2026-07-02",
       "title": "Instant-approve HITL proof on MANETU (wrapped agent5, #272 live)"
     },
     {
+      "attachments": [
+        {
+          "kind": "md",
+          "note": "the 5x5 matrix evidence this closes out",
+          "path": "evidence/evidence-5agents-3tenants-e2e-2026-08-01.md"
+        },
+        {
+          "kind": "url",
+          "note": "registry #275 \u2014 the fix that must be live on cto-dev",
+          "path": "https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/275"
+        },
+        {
+          "kind": "md",
+          "note": "master status \u2014 \u00a74.1 is this task",
+          "path": "plan-master-status-2026-08-01.md"
+        }
+      ],
+      "body": "Close out the last non-green cell of the 5x5 matrix (plan-master-status-2026-08-01.md \u00a74.1).\n\nTwo things left:\n1. cto-dev still shows the false FAILED at 20:11 on KAIF-AGENTVISOR-TEST, raised\n   after the registry pod rebooted at 18:01:31. Prove that the running registry\n   image on cto-dev actually carries cc34b8f (registry #275) \u2014 either via ArgoCD\n   or with a refreshed grafana-cto-dev-token \u2014 then re-run the agent3 cell.\n2. Guest exit-1 shutdown fix: the wrapped guest exits 1 on a clean shutdown,\n   which the reporting layer scores as a failure.\n\nDone when: cto-dev reproduces the POC result (create-then-poll visible in the\ninvoke pod log, \"finished with status=completed\") and the matrix cell is green\non business output, not just pipeline status.",
       "created": "2026-08-02",
+      "depends_on": [
+        "t7"
+      ],
       "draft_id": "DI_lAHOCPZR3M4BfHqNzgK3rzY",
+      "group": "Phase 1 \u2014 AgentVisor E2E validation",
+      "human_edited": {
+        "status": {
+          "at": "2026-08-02T17:41:40Z",
+          "value": "In progress",
+          "was": "New"
+        }
+      },
       "id": "t11",
       "last_pushed": {
-        "blocked": "",
-        "body_hash": "e3b0c44298fc1c14",
-        "depends_on": "",
-        "group": "",
-        "owner": "",
-        "start": "",
-        "status": "New",
-        "target": "",
+        "blocked": "Ready",
+        "body_hash": "cd1ed6d9a1cd1c3d",
+        "depends_on": "t7 \u00b7 Full 5-agent x 3-tenant E2E\u2026",
+        "group": "Phase 1 \u2014 AgentVisor E2E validation",
+        "owner": "Klalter (needs a refreshed grafana-cto-dev-token)",
+        "start": "2026-08-03",
+        "status": "In progress",
+        "target": "2026-08-05",
         "title": "Flake remainder: guest exit-1 shutdown fix + registry #272/#275 rollout on cto-dev"
       },
-      "status": "New",
+      "owner": "Klalter (needs a refreshed grafana-cto-dev-token)",
+      "start": "2026-08-03",
+      "status": "In progress",
+      "target": "2026-08-05",
       "title": "Flake remainder: guest exit-1 shutdown fix + registry #272/#275 rollout on cto-dev"
     }
   ],

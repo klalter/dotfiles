@@ -4,7 +4,7 @@
       "github_project": {
         "id": "PVT_kwHOCPZR3M4BfHqN",
         "number": 3,
-        "title": "Flake remainder: guest exit-1 shutdown fix + registry #272/#275 rollout on cto-dev",
+        "title": "feat/agent-kaif-deploy",
         "url": "https://github.com/users/klalter_kyndryl/projects/3"
       },
       "lane": "feat",
