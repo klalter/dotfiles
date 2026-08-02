@@ -88,6 +88,49 @@ like `--commit` inside an unquoted title break argparse).
   retitles update the same item; never delete or copy `draft_id` by hand.
 - `task set <name> <id> <status> [new title...]` also retitles.
 
+### `✓ ` on a Complete task — why the title carries the marker
+
+A task item is a **draft issue**, and a draft issue has **no open/closed state**:
+its dashed-circle icon is byte-identical whether the task is `New` or `Complete`,
+on the board and — the part that actually hurts — inside a roadmap bar, where the
+`Status` column is not shown at all. Drafts are kept on purpose (a real issue
+would need a home repo, and the board is private for now), so **the title text is
+the only completion signal that reaches a roadmap bar.** Hence: a task whose
+status is `Complete` is *written* to the board as `✓ <title>`.
+
+It is a **render-time decoration, never data**:
+
+- `board_title()` adds it on push, `strip_done_marker()` takes it off on pull;
+  `DONE_MARKER = "✓ "` at the top of the script switches it (`""` disables).
+- The manifest, `task list` and `projects/README.md` only ever hold the clean
+  title. Nothing stores the ✓.
+- `last_pushed.title` **does** hold the decorated title, because the snapshot's
+  contract is "what the last push actually wrote to the board". Storing the clean
+  title there would make the very next pull read our own ✓ back, diff it against
+  a clean snapshot, and stamp a bogus `human_edited.title` on every completed
+  task — freezing them behind `--ack-human` for no reason.
+- Pull strips a leading `✓ ` from **both** sides before comparing, and merges the
+  stripped text, so a human who retitles a completed task round-trips and never
+  bakes the marker in. Deleting the ✓ by hand is *not* read as an edit; the next
+  push puts it back. Moving `Complete → In progress` removes it on the next push.
+- Expected one-off: the first push after this landed retitles every
+  already-Complete task. It converges — the push after that is `0 title/body
+  edit(s)` again.
+
+`scripts/test_worktree_sync.py` (offline, stdlib only, no network) locks all of
+that down, including the bogus-`human_edited` trap. Run it after touching the
+push/pull layer: `python3 skills/worktree-sync/scripts/test_worktree_sync.py`.
+
+### Never hand-click "Convert to issue"
+
+**Do not convert a task item to an issue in the GitHub UI.** Conversion swaps the
+item's content for an `Issue` node with a **different node id**, so the
+`draft_id` in the manifest stops resolving. The next push then finds no item for
+that task, **creates a duplicate draft**, and — since the converted item is no
+longer in the manifest — **archives the issue it just made**. If issues are ever
+wanted, the tool has to do the conversion and record the new issue id; there is
+no recovery path that starts with a hand-click.
+
 Everything past `id`/`title`/`status`/`created` is **optional and pruned when
 empty**, so a manifest written before any of it existed round-trips byte-for-byte:
 
@@ -196,7 +239,8 @@ source of truth for anything a *human* changed there. The bridge is a per-task
   touched it, the manifest wins as before. Board value **!=** `last_pushed` → a
   human moved it, so **the board wins**: the value is merged into the manifest and
   stamped `human_edited: {field: {at, value, was}}`.
-- Pulled fields are `Status`, `Group`, `Owner`, `Start`, `Target`, the title, and
+- Pulled fields are `Status`, `Group`, `Owner`, `Start`, `Target`, the title (with
+  the `✓ ` completion marker stripped off both sides first — see above), and
   the prose half of the body. A task with no `last_pushed` yet is skipped — without a
   snapshot there is nothing to compare, and guessing would manufacture fake human
   edits. A Task dragged into a PR lane (`Merged`, …) is ignored with a warning.

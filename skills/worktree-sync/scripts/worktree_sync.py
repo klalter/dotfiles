@@ -251,6 +251,13 @@ ATTACH_KINDS = {".drawio": "drawio", ".pptx": "pptx", ".ppt": "pptx",
                 ".md": "md", ".png": "image", ".jpg": "image", ".jpeg": "image",
                 ".gif": "image", ".svg": "image", ".webp": "image"}
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+# Tasks are DRAFT issues, and a draft issue has no open/closed state: its dashed
+# circle looks identical whether the task is New or Complete, on the board and
+# inside a roadmap bar. So the title carries the only completion signal that
+# survives into a bar — a Complete task is written to the board as "✓ <title>".
+# Render-time only: the manifest, `task list` and the dashboard keep the clean
+# title. Set to "" to turn the whole thing off.
+DONE_MARKER = "✓ "
 
 
 def task_num(t) -> int:
@@ -393,15 +400,43 @@ def body_hash(text) -> str:
     return hashlib.sha256((text or "").encode()).hexdigest()[:16]
 
 
+def board_title(task) -> str:
+    """The title as written to the board — decorated, never stored.
+
+    A Complete task gets DONE_MARKER prepended; anything else is the manifest
+    title verbatim, which is what removes the marker again when a task moves
+    back out of Complete. Idempotent: an already-marked title is left alone, so
+    a marker a human typed by hand is not doubled.
+    """
+    title = task["title"]
+    if not DONE_MARKER or task.get("status") != "Complete":
+        return title
+    return title if title.startswith(DONE_MARKER) else DONE_MARKER + title
+
+
+def strip_done_marker(title) -> str:
+    """The clean title behind a board title. The inverse of board_title."""
+    title = title or ""
+    if DONE_MARKER and title.startswith(DONE_MARKER):
+        return title[len(DONE_MARKER):]
+    return title
+
+
 def task_snapshot(task, deps_text, blocked, body_text) -> dict:
     """Exactly what a push wrote, so the next pull can tell a human edit from
     manifest drift. Rendered-only fields are hashed/stored too, but only the
-    PULL_FIELDS half is ever compared back."""
+    PULL_FIELDS half is ever compared back.
+
+    "title" is the DECORATED board title, not the manifest one: the snapshot has
+    to hold what is really on the board, or the next pull would read the ✓ back,
+    diff it against a clean snapshot and stamp a bogus human_edited on every
+    completed task.
+    """
     return {"blocked": blocked, "body_hash": body_hash(body_text),
             "depends_on": deps_text, "group": (task.get("group") or "").strip(),
             "owner": (task.get("owner") or "").strip(),
             "start": task.get("start") or "", "status": task["status"],
-            "target": task.get("target") or "", "title": task["title"]}
+            "target": task.get("target") or "", "title": board_title(task)}
 
 
 def conflicts(task, fields=None):
@@ -1265,6 +1300,7 @@ def push_project(entry, manifest, dry_run=False, ack=False):
     by_id = {t["id"]: t for t in tasks}
     for t in ordered_tasks(tasks):
         body = render_body(t)
+        title = board_title(t)      # decorated for the board; the manifest stays clean
         item = drafts_by_id.get(t.get("draft_id"))
         if not item:
             item = items.get(f'task:{t["id"]}')   # adopt a pre-rename 't1 · …' item
@@ -1273,15 +1309,15 @@ def push_project(entry, manifest, dry_run=False, ack=False):
                 added["Task"] += 1
                 continue
             data = gql(f'mutation{{addProjectV2DraftIssue(input:{{'
-                       f'projectId:{s(project["id"])},title:{s(t["title"])},'
+                       f'projectId:{s(project["id"])},title:{s(title)},'
                        f'body:{s(body)}}})'
                        f'{{projectItem{{id content{{... on DraftIssue{{id}}}}}}}}}}')
             node = data["addProjectV2DraftIssue"]["projectItem"]
-            item = {"id": node["id"], "values": {}, "title": t["title"],
+            item = {"id": node["id"], "values": {}, "title": title,
                     "body": body, "content_id": node["content"]["id"]}
             added["Task"] += 1
-        elif item.get("title") != t["title"] or (item.get("body") or "") != body:
-            drafts.append((item["content_id"], t["title"], body))
+        elif item.get("title") != title or (item.get("body") or "") != body:
+            drafts.append((item["content_id"], title, body))
         if t.get("draft_id") != item.get("content_id"):
             t["draft_id"] = item["content_id"]
             manifest_dirty = True
@@ -1458,9 +1494,20 @@ def pull_project(entry, manifest, dry_run=False):
             else:
                 t[key] = board
             snap[key] = board
-        if (item.get("title") or "") != snap.get("title"):
-            stamp(t, "title", item["title"], snap.get("title"))
-            t["title"] = snap["title"] = item["title"]
+        # Titles are compared and merged with DONE_MARKER stripped off BOTH
+        # sides: the board title of a Complete task carries the ✓, the manifest
+        # never does. Without the strip the first pull after a completed task is
+        # pushed would read its own marker back and stamp a bogus human_edited
+        # on every completed task — and a real human retitle would bake the ✓
+        # into the manifest. The snapshot keeps the raw board value, since that
+        # is what is actually on the board; the next push re-decorates it.
+        board_title_now = item.get("title") or ""
+        clean_board = strip_done_marker(board_title_now)
+        clean_snap = strip_done_marker(snap.get("title"))
+        if clean_board != clean_snap:
+            stamp(t, "title", clean_board, clean_snap)
+            t["title"] = clean_board
+            snap["title"] = board_title_now
         board_body = item.get("body") or ""
         if body_hash(board_body) != snap.get("body_hash"):
             own = split_body(board_body)
