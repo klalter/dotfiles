@@ -5,7 +5,7 @@ Source of truth is the per-project JSON next to this file.
 
 ## agent-kaif-deploy
 
-`/workspaces/.wt/feat/agent-kaif-deploy` · lane `feat` · 17 repos · 29 PRs · 7 tasks · synced 2026-08-01T23:24:34Z
+`/workspaces/.wt/feat/agent-kaif-deploy` · lane `feat` · 17 repos · 29 PRs · 8 tasks · synced 2026-08-01T23:24:34Z
 
 Board: [feat/agent-kaif-deploy](https://github.com/users/klalter_kyndryl/projects/3)
 
@@ -18,8 +18,9 @@ Board: [feat/agent-kaif-deploy](https://github.com/users/klalter_kyndryl/project
 | `t3` | New | Point daily-report at projects/agent-kaif-deploy.json as its PR source |
 | `t4` | New | Wire 'project push' into 'sync --commit' as one call |
 | `t5` | Complete | Redesign GitHub project: per-worktree, Tasks + PR views |
-| `t6` | In progress | Remove the work feature from dev-shell (CLI, daemon, UI) — agent on feat/remove-work-feature |
+| `t6` | Complete | Remove the work feature from dev-shell (CLI, daemon, UI) — agent on feat/remove-work-feature |
 | `t7` | Complete | Full 5-agent x 3-tenant E2E: wrapped + pure-KAIF matrices, Grafana-confirmed, deck 2026-08-02-e2e-matrix.pptx |
+| `t8` | New | Push feat/remove-work-feature and open the dev-shell PR for team review |
 
 | Repo | Branch | Base | Ahead/Behind | PRs |
 | --- | --- | --- | --- | --- |
@@ -44,3 +45,15 @@ Board: [feat/agent-kaif-deploy](https://github.com/users/klalter_kyndryl/project
 **Branches with no PR yet:** `kyndryl-agentic-ai/bdg-sw-agents-actionable-insights-agent-agentvisor-test:klalter/chatops-test`, `kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test:release-2026.07.28`, `kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test:test/channel-lift-28jul`, `kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test:wt-agentvisor-build`, `kyndryl-agentic-ai/bdg-sw-agents-debugging-remediation-v2:test/agentvisor-build`, `kyndryl-agentic-ai/bdg-sw-agents-it-modernization-agent-v2-agentvisor-test:test/agentvisor-build`, `kyndryl-agentic-ai/bdg-sw-agents-it-modernization-agent-v2-agentvisor-test:wt-agentvisor-build`, `kyndryl-agentic-ai/bdg-sw-agents-quality-parameter-check:test/agentvisor-build`, `kyndryl-agentic-ai/bdg-sw-agents-quality-parameter-check:wt-a3`, `kyndryl-agentic-ai/bdg-sw-agents-rca-auto-generation:test/agentvisor-build`, `kyndryl-agentic-ai/bdg-sw-aifn-change-request-risk-assessment:test/agentvisor-build`, `kyndryl-agentic-ai/bridge-kaif-reusable-workflows:feat/pdp-bundle-identifier`, `kyndryl-cto/bdg-sw-aifn-agent-registry:feat/pdp-bundle-identifier`, `kyndryl-cto/bdg-sw-aifn-jobengine:klalter/temp-test`, `kyndryl-cto/bdg-sw-auto-orch-helm-chart:klalter/temp-test`, `kyndryl-cto/bdg-sw-plcy-kyn-base:demo/chatops-deny`, `kyndryl-cto/bdg-sw-plcy-kyn-base:klalter/temp-test`, `kyndryl-cto/bdg-sw-plcy-kyn-base:stage`, `kyndryl-cto/bdg-sw-plcy-policy-service:klalter/temp-test`
 
 [All PRs for this worktree](https://github.com/pulls?q=is%3Apr%20head%3Afeat%2Fagentvisor-license-guardrail%20head%3Afeat%2Fagentvisor-v0.5.0-55.202%20head%3Afeat%2Fchatops-egress-permanent%20head%3Afeat%2Fegress-platform-postgres%20head%3Afeat%2Fgrafana-generic-log-tools%20head%3Afeat%2Fhitl-agentvisor-v2%20head%3Afeat%2Fhitl-agentvisor-v3%20head%3Afeat%2Fiam-authz-tools%20head%3Afeat%2Flangfuse-connection%20head%3Afeat%2Flangfuse-provider%20head%3Afeat%2Fmanetu-egress-allow%20head%3Afeat%2Fmemory-host-relay%20head%3Afeat%2Fsidecar-memory-env%20head%3Afeat%2Fupdates-kaif-tests%20head%3Afix%2Fagentvisor-guest-memory-env%20head%3Afix%2Fhitl-async-node-sync-bridge%20head%3Afix%2Fhitl-resume-input%20head%3Afix%2Fhitl-resume-suspend-race%20head%3Afix%2Fhitl-wrapper-updates%20head%3Afix%2Finvoke-run-poll%20head%3Afix%2Fklalter-28-jul%20head%3Afix%2Fporting-agent-data%20head%3Afix%2Fquery-alias-28jul%20head%3Afix%2Fsidecar-memory-resources%20head%3Afix%2Fwrapper-updates%20repo%3Akyndryl-agentic-ai%2Fbdg-sw-agents-autonomous-doc-creation-agentvisor-test%20repo%3Akyndryl-agentic-ai%2Fbridge-kaif-reusable-workflows%20repo%3Akyndryl-cto%2Fbdg-sw-aifn-agent-registry%20repo%3Akyndryl-cto%2Fbdg-sw-aifn-common-services-gateway%20repo%3Akyndryl-cto%2Fbdg-sw-auto-dev-shell-mcp%20repo%3Akyndryl-cto%2Fbdg-sw-base-foundation-connections-metadata%20repo%3Akyndryl-cto%2Fbdg-sw-plcy-kyn-base)
+
+## dev-shell-remove-work
+
+`/workspaces/.wt/feat/dev-shell-remove-work` · lane `feat` · 1 repos · 0 PRs · 0 tasks · synced 2026-08-02T03:40:29Z
+
+Board: [feat/dev-shell-remove-work](https://github.com/users/klalter_kyndryl/projects/4)
+
+| Repo | Branch | Base | Ahead/Behind | PRs |
+| --- | --- | --- | --- | --- |
+| [kyndryl-cto/bdg-sw-auto-console-dev-shell](https://github.com/kyndryl-cto/bdg-sw-auto-console-dev-shell) | `feat/remove-work-feature` | `main` | +5 / −0 | — |
+
+**Branches with no PR yet:** `kyndryl-cto/bdg-sw-auto-console-dev-shell:feat/remove-work-feature`

@@ -11,6 +11,18 @@
       "name": "agent-kaif-deploy",
       "status": "active",
       "worktree": "/workspaces/.wt/feat/agent-kaif-deploy"
+    },
+    {
+      "github_project": {
+        "id": "PVT_kwHOCPZR3M4BfINa",
+        "number": 4,
+        "title": "feat/dev-shell-remove-work",
+        "url": "https://github.com/users/klalter_kyndryl/projects/4"
+      },
+      "lane": "feat",
+      "name": "dev-shell-remove-work",
+      "status": "active",
+      "worktree": "/workspaces/.wt/feat/dev-shell-remove-work"
     }
   ]
 }

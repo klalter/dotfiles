@@ -1,0 +1,34 @@
+{
+  "branches": {},
+  "branches_no_pr": [
+    "kyndryl-cto/bdg-sw-auto-console-dev-shell:feat/remove-work-feature"
+  ],
+  "exclude_prs": [],
+  "extra_prs": [],
+  "generated_at": "2026-08-02T03:40:29Z",
+  "lane": "feat",
+  "name": "dev-shell-remove-work",
+  "notes": [],
+  "prs": [],
+  "repos": [
+    {
+      "ahead": 5,
+      "base": "main",
+      "behind": 0,
+      "branch": "feat/remove-work-feature",
+      "dir": "bdg-sw-auto-console-dev-shell",
+      "dirty": false,
+      "last_commit": {
+        "date": "2026-08-02T03:37:33Z",
+        "sha": "ddca85a",
+        "subject": "chore: remove remaining work-feature config, docs and scripts"
+      },
+      "prs": [],
+      "slug": "kyndryl-cto/bdg-sw-auto-console-dev-shell"
+    }
+  ],
+  "since": null,
+  "tasks": [],
+  "view": {},
+  "worktree": "/workspaces/.wt/feat/dev-shell-remove-work"
+}
