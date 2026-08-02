@@ -5,7 +5,7 @@ Source of truth is the per-project JSON next to this file.
 
 ## agent-kaif-deploy
 
-`/workspaces/.wt/feat/agent-kaif-deploy` · lane `feat` · 17 repos · 30 PRs · 11 tasks · synced 2026-08-02T14:45:54Z
+`/workspaces/.wt/feat/agent-kaif-deploy` · lane `feat` · 17 repos · 31 PRs · 11 tasks · synced 2026-08-02T16:18:10Z
 
 Board: [feat/agent-kaif-deploy](https://github.com/users/klalter_kyndryl/projects/3)
 
@@ -31,23 +31,23 @@ Board: [feat/agent-kaif-deploy](https://github.com/users/klalter_kyndryl/project
 | [kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test](https://github.com/kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test) | `wt-agentvisor-build` | `main` | +16 / −1 | [#9](https://github.com/kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test/pull/9) Open |
 | [kyndryl-agentic-ai/bdg-sw-agents-debugging-remediation-v2](https://github.com/kyndryl-agentic-ai/bdg-sw-agents-debugging-remediation-v2) | `test/agentvisor-build` | `main` | +1 / −0 | — |
 | [kyndryl-agentic-ai/bdg-sw-agents-it-modernization-agent-v2-agentvisor-test](https://github.com/kyndryl-agentic-ai/bdg-sw-agents-it-modernization-agent-v2-agentvisor-test) | `wt-agentvisor-build` | `main` | +20 / −2 | — |
-| [kyndryl-agentic-ai/bdg-sw-agents-quality-parameter-check](https://github.com/kyndryl-agentic-ai/bdg-sw-agents-quality-parameter-check) | `wt-a3` | `main` | +3 / −0 | — |
+| [kyndryl-agentic-ai/bdg-sw-agents-quality-parameter-check](https://github.com/kyndryl-agentic-ai/bdg-sw-agents-quality-parameter-check) | `test/agentvisor-build` | `main` | +4 / −0 | — |
 | [kyndryl-agentic-ai/bdg-sw-agents-rca-auto-generation](https://github.com/kyndryl-agentic-ai/bdg-sw-agents-rca-auto-generation) | `test/agentvisor-build` | `main` | +1 / −0 | — |
 | [kyndryl-cto/bdg-sw-aifn-agent-registry](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry) | `fix/invoke-run-poll` | `main` | +1 / −1 | [#247](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/247) Merged<br>[#255](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/255) Merged<br>[#256](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/256) Open<br>[#258](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/258) Cancelled<br>[#269](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/269) Merged<br>[#271](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/271) Merged<br>[#272](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/272) Merged<br>[#273](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/273) Merged<br>[#274](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/274) Merged<br>[#275](https://github.com/kyndryl-cto/bdg-sw-aifn-agent-registry/pull/275) Merged |
 | [kyndryl-agentic-ai/bdg-sw-aifn-change-request-risk-assessment](https://github.com/kyndryl-agentic-ai/bdg-sw-aifn-change-request-risk-assessment) | `test/agentvisor-build` | `main` | +1 / −0 | — |
 | [kyndryl-cto/bdg-sw-aifn-common-services-gateway](https://github.com/kyndryl-cto/bdg-sw-aifn-common-services-gateway) | `feat/langfuse-provider` | `main` | +1 / −12 | [#79](https://github.com/kyndryl-cto/bdg-sw-aifn-common-services-gateway/pull/79) Open |
 | [kyndryl-cto/bdg-sw-aifn-jobengine](https://github.com/kyndryl-cto/bdg-sw-aifn-jobengine) | `klalter/temp-test` | `main` | +0 / −40 | — |
-| [kyndryl-cto/bdg-sw-auto-dev-shell-mcp](https://github.com/kyndryl-cto/bdg-sw-auto-dev-shell-mcp) | `feat/iam-authz-tools` | `main` | +0 / −4 | [#10](https://github.com/kyndryl-cto/bdg-sw-auto-dev-shell-mcp/pull/10) Merged<br>[#11](https://github.com/kyndryl-cto/bdg-sw-auto-dev-shell-mcp/pull/11) Cancelled<br>[#6](https://github.com/kyndryl-cto/bdg-sw-auto-dev-shell-mcp/pull/6) Merged<br>[#9](https://github.com/kyndryl-cto/bdg-sw-auto-dev-shell-mcp/pull/9) Merged |
+| [kyndryl-cto/bdg-sw-auto-dev-shell-mcp](https://github.com/kyndryl-cto/bdg-sw-auto-dev-shell-mcp) | `feat/iam-authz-tools` | `main` | +0 / −5 | [#10](https://github.com/kyndryl-cto/bdg-sw-auto-dev-shell-mcp/pull/10) Merged<br>[#11](https://github.com/kyndryl-cto/bdg-sw-auto-dev-shell-mcp/pull/11) Cancelled<br>[#6](https://github.com/kyndryl-cto/bdg-sw-auto-dev-shell-mcp/pull/6) Merged<br>[#9](https://github.com/kyndryl-cto/bdg-sw-auto-dev-shell-mcp/pull/9) Merged |
 | [kyndryl-cto/bdg-sw-auto-orch-helm-chart](https://github.com/kyndryl-cto/bdg-sw-auto-orch-helm-chart) | `klalter/temp-test` | `master` | +23 / −0 | — |
 | [kyndryl-cto/bdg-sw-base-foundation-connections-metadata](https://github.com/kyndryl-cto/bdg-sw-base-foundation-connections-metadata) | `feat/langfuse-connection` | `main` | +2 / −5 | [#264](https://github.com/kyndryl-cto/bdg-sw-base-foundation-connections-metadata/pull/264) Merged |
 | [kyndryl-agentic-ai/bdg-sw-it-modernization-agent-v2](https://github.com/kyndryl-agentic-ai/bdg-sw-it-modernization-agent-v2) | `main` | `main` | +0 / −0 | — |
 | [kyndryl-cto/bdg-sw-plcy-kyn-base](https://github.com/kyndryl-cto/bdg-sw-plcy-kyn-base) | `feat/egress-platform-postgres` | `main` | +1 / −1 | [#5](https://github.com/kyndryl-cto/bdg-sw-plcy-kyn-base/pull/5) Merged<br>[#6](https://github.com/kyndryl-cto/bdg-sw-plcy-kyn-base/pull/6) Merged<br>[#8](https://github.com/kyndryl-cto/bdg-sw-plcy-kyn-base/pull/8) Merged |
-| [kyndryl-cto/bdg-sw-plcy-policy-service](https://github.com/kyndryl-cto/bdg-sw-plcy-policy-service) | `klalter/temp-test` | `main` | +0 / −59 | — |
-| [kyndryl-agentic-ai/bridge-kaif-reusable-workflows](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows) | `fix/guest-exit-diagnostics` | `agentvisortest` | +1 / −0 | [#33](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/33) Merged<br>[#34](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/34) Merged<br>[#35](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/35) Merged<br>[#36](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/36) Merged<br>[#37](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/37) Merged<br>[#38](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/38) Merged<br>[#39](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/39) Merged<br>[#40](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/40) Merged<br>[#41](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/41) Merged<br>[#42](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/42) Open |
+| [kyndryl-cto/bdg-sw-plcy-policy-service](https://github.com/kyndryl-cto/bdg-sw-plcy-policy-service) | `klalter/temp-test` | `main` | +0 / −64 | — |
+| [kyndryl-agentic-ai/bridge-kaif-reusable-workflows](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows) | `fix/terminal-relay-size-cap` | `agentvisortest` | +1 / −0 | [#33](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/33) Merged<br>[#34](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/34) Merged<br>[#35](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/35) Merged<br>[#36](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/36) Merged<br>[#37](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/37) Merged<br>[#38](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/38) Merged<br>[#39](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/39) Merged<br>[#40](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/40) Merged<br>[#41](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/41) Merged<br>[#42](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/42) Merged<br>[#43](https://github.com/kyndryl-agentic-ai/bridge-kaif-reusable-workflows/pull/43) Open |
 
 **Branches with no PR yet:** `kyndryl-agentic-ai/bdg-sw-agents-actionable-insights-agent-agentvisor-test:klalter/chatops-test`, `kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test:release-2026.07.28`, `kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test:test/channel-lift-28jul`, `kyndryl-agentic-ai/bdg-sw-agents-autonomous-doc-creation-agentvisor-test:wt-agentvisor-build`, `kyndryl-agentic-ai/bdg-sw-agents-debugging-remediation-v2:test/agentvisor-build`, `kyndryl-agentic-ai/bdg-sw-agents-it-modernization-agent-v2-agentvisor-test:test/agentvisor-build`, `kyndryl-agentic-ai/bdg-sw-agents-it-modernization-agent-v2-agentvisor-test:wt-agentvisor-build`, `kyndryl-agentic-ai/bdg-sw-agents-quality-parameter-check:test/agentvisor-build`, `kyndryl-agentic-ai/bdg-sw-agents-quality-parameter-check:wt-a3`, `kyndryl-agentic-ai/bdg-sw-agents-rca-auto-generation:test/agentvisor-build`, `kyndryl-agentic-ai/bdg-sw-aifn-change-request-risk-assessment:test/agentvisor-build`, `kyndryl-agentic-ai/bridge-kaif-reusable-workflows:feat/pdp-bundle-identifier`, `kyndryl-cto/bdg-sw-aifn-agent-registry:feat/pdp-bundle-identifier`, `kyndryl-cto/bdg-sw-aifn-jobengine:klalter/temp-test`, `kyndryl-cto/bdg-sw-auto-orch-helm-chart:klalter/temp-test`, `kyndryl-cto/bdg-sw-plcy-kyn-base:demo/chatops-deny`, `kyndryl-cto/bdg-sw-plcy-kyn-base:klalter/temp-test`, `kyndryl-cto/bdg-sw-plcy-kyn-base:stage`, `kyndryl-cto/bdg-sw-plcy-policy-service:klalter/temp-test`
 
-[All PRs for this worktree](https://github.com/pulls?q=is%3Apr%20head%3Afeat%2Fagentvisor-license-guardrail%20head%3Afeat%2Fagentvisor-v0.5.0-55.202%20head%3Afeat%2Fchatops-egress-permanent%20head%3Afeat%2Fegress-platform-postgres%20head%3Afeat%2Fgrafana-generic-log-tools%20head%3Afeat%2Fhitl-agentvisor-v2%20head%3Afeat%2Fhitl-agentvisor-v3%20head%3Afeat%2Fiam-authz-tools%20head%3Afeat%2Flangfuse-connection%20head%3Afeat%2Flangfuse-provider%20head%3Afeat%2Fmanetu-egress-allow%20head%3Afeat%2Fmemory-host-relay%20head%3Afeat%2Fsidecar-memory-env%20head%3Afeat%2Fupdates-kaif-tests%20head%3Afix%2Fagentvisor-guest-memory-env%20head%3Afix%2Fguest-exit-diagnostics%20head%3Afix%2Fhitl-async-node-sync-bridge%20head%3Afix%2Fhitl-resume-input%20head%3Afix%2Fhitl-resume-suspend-race%20head%3Afix%2Fhitl-wrapper-updates%20head%3Afix%2Finvoke-run-poll%20head%3Afix%2Fklalter-28-jul%20head%3Afix%2Fporting-agent-data%20head%3Afix%2Fquery-alias-28jul%20head%3Afix%2Fsidecar-memory-resources%20head%3Afix%2Fwrapper-updates%20repo%3Akyndryl-agentic-ai%2Fbdg-sw-agents-autonomous-doc-creation-agentvisor-test%20repo%3Akyndryl-agentic-ai%2Fbridge-kaif-reusable-workflows%20repo%3Akyndryl-cto%2Fbdg-sw-aifn-agent-registry%20repo%3Akyndryl-cto%2Fbdg-sw-aifn-common-services-gateway%20repo%3Akyndryl-cto%2Fbdg-sw-auto-dev-shell-mcp%20repo%3Akyndryl-cto%2Fbdg-sw-base-foundation-connections-metadata%20repo%3Akyndryl-cto%2Fbdg-sw-plcy-kyn-base)
+[All PRs for this worktree](https://github.com/pulls?q=is%3Apr%20head%3Afeat%2Fagentvisor-license-guardrail%20head%3Afeat%2Fagentvisor-v0.5.0-55.202%20head%3Afeat%2Fchatops-egress-permanent%20head%3Afeat%2Fegress-platform-postgres%20head%3Afeat%2Fgrafana-generic-log-tools%20head%3Afeat%2Fhitl-agentvisor-v2%20head%3Afeat%2Fhitl-agentvisor-v3%20head%3Afeat%2Fiam-authz-tools%20head%3Afeat%2Flangfuse-connection%20head%3Afeat%2Flangfuse-provider%20head%3Afeat%2Fmanetu-egress-allow%20head%3Afeat%2Fmemory-host-relay%20head%3Afeat%2Fsidecar-memory-env%20head%3Afeat%2Fupdates-kaif-tests%20head%3Afix%2Fagentvisor-guest-memory-env%20head%3Afix%2Fguest-exit-diagnostics%20head%3Afix%2Fhitl-async-node-sync-bridge%20head%3Afix%2Fhitl-resume-input%20head%3Afix%2Fhitl-resume-suspend-race%20head%3Afix%2Fhitl-wrapper-updates%20head%3Afix%2Finvoke-run-poll%20head%3Afix%2Fklalter-28-jul%20head%3Afix%2Fporting-agent-data%20head%3Afix%2Fquery-alias-28jul%20head%3Afix%2Fsidecar-memory-resources%20head%3Afix%2Fterminal-relay-size-cap%20head%3Afix%2Fwrapper-updates%20repo%3Akyndryl-agentic-ai%2Fbdg-sw-agents-autonomous-doc-creation-agentvisor-test%20repo%3Akyndryl-agentic-ai%2Fbridge-kaif-reusable-workflows%20repo%3Akyndryl-cto%2Fbdg-sw-aifn-agent-registry%20repo%3Akyndryl-cto%2Fbdg-sw-aifn-common-services-gateway%20repo%3Akyndryl-cto%2Fbdg-sw-auto-dev-shell-mcp%20repo%3Akyndryl-cto%2Fbdg-sw-base-foundation-connections-metadata%20repo%3Akyndryl-cto%2Fbdg-sw-plcy-kyn-base)
 
 ## dev-shell-remove-work
 
@@ -65,7 +65,7 @@ Board: [feat/dev-shell-remove-work](https://github.com/users/klalter_kyndryl/pro
 
 `/workspaces/.wt/feat/sandbox-cicd` · lane `feat` · 6 repos · 7 PRs · 25 tasks · synced 2026-08-02T13:35:27Z
 
-Board: [feat/sandbox-cicd](https://github.com/users/klalter_kyndryl/projects/5)
+Board: [DRAFT · POA Step 5 — verify the poa-sandbox deploy](https://github.com/users/klalter_kyndryl/projects/5)
 
 > Enable `development` → cto-dev-kpr for Bridge Policy via a second TechOps application, `policy-sandbox`. PLAN.md §9 is the reusable recipe (kaif-sandbox next).
 > §4 settled: Option B, branch-dependent image names. §5 Step 4 settled: replace — the sandbox app ships the whole environment.
@@ -73,43 +73,48 @@ Board: [feat/sandbox-cicd](https://github.com/users/klalter_kyndryl/projects/5)
 
 **Phase 1 — Policy PoC**
 
-| Task | Status | Depends on | Dates | Title | Notes |
-| --- | --- | --- | --- | --- | --- |
-| `t1` | Complete | — | 2026-07-30 → 2026-07-31 | Step 0 — create development branches on policy-service and policy-console | — |
-| `t3` | Complete | — | 2026-07-30 → 2026-07-31 | Step 2 — policy-sandbox chart in policy-helm-charts (PR #231) | — |
-| `t2` | Complete | `t3` | 2026-07-31 → 2026-07-31 | Step 1 — policy-sandbox onboard-input content (PR #1) | — |
-| `t9` | New | `t1` | 2026-08-08 → 2026-08-12 | Decide branch protection for the new development branches (main ruleset is ~DEFAULT_BRANCH only) | — |
-| `t4` | Complete | `t2` | 2026-07-31 → 2026-07-31 | Step 2b — helm-charts build.yaml job for the sandbox chart (PR #233) | — |
-| `t6` | In progress | `t2` | 2026-08-03 → 2026-08-07 | Step 4 — review TechOps BOM PRs: bom-input#971 and bom-calculator#226 | — |
-| `t8` | New | `t2` | 2026-08-13 → 2026-08-17 | Ask TechOps to add the three bdg-eng-tops-* teams to the two phm-*-policy-sandbox repos | — |
-| `t5` | In progress | `t6` **blocked** | 2026-08-08 → 2026-08-12 | Step 3 — development build triggers + Option B image names (service #465, console #266) | — |
-| `t7` | New | `t5` **blocked** | 2026-08-23 → 2026-08-27 | Step 5 — verify the sandbox deploy on cto-dev-kpr | — |
-| `t10` | New | `t5`, `t6`, `t7` **blocked** | 2026-08-28 → 2026-09-01 | Validation gate — prove Phase 1 E2E, then rewrite the KAIF and POA DRAFT tasks from what actually worked | body |
-| `t11` | New | `t10` **blocked** | 2026-09-02 → 2026-09-06 | Document the E2E sandbox flow for TechOps — draw.io diagram + PPT deck + docs/e2e-flow.md | body |
+| Task | Status | Owner | Depends on | Dates | Title | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| `t1` | Complete | Bridge Policy (Klalter) | — | 2026-07-30 → 2026-07-31 | Step 0 — create development branches on policy-service and policy-console | — |
+| `t3` | Complete | Bridge Policy (Klalter) | — | 2026-07-30 → 2026-07-31 | Step 2 — policy-sandbox chart in policy-helm-charts (PR #231) | — |
+| `t2` | Complete | Bridge Policy (Klalter) | `t3` | 2026-07-31 → 2026-07-31 | Step 1 — policy-sandbox onboard-input content (PR #1) | — |
+| `t9` | New | Bridge Policy (Klalter) | `t1` | 2026-08-03 → 2026-08-04 | Decide branch protection for the new development branches (main ruleset is ~DEFAULT_BRANCH only) | — |
+| `t4` | Complete | Bridge Policy (Klalter) | `t2` | 2026-07-31 → 2026-07-31 | Step 2b — helm-charts build.yaml job for the sandbox chart (PR #233) | — |
+| `t6` | In progress | TechOps (Patricia) | `t2` | 2026-08-03 → 2026-08-03 | Step 4 — review TechOps BOM PRs: bom-input#971 and bom-calculator#226 | — |
+| `t8` | New | TechOps (Patricia) | `t2` | 2026-08-03 → 2026-08-04 | Ask TechOps to add the three bdg-eng-tops-* teams to the two phm-*-policy-sandbox repos | — |
+| `t5` | In progress | Bridge Policy (Klalter) | `t6` **blocked** | 2026-08-04 → 2026-08-04 | Step 3 — development build triggers + Option B image names (service #465, console #266) | — |
+| `t7` | New | Bridge Policy (Klalter) | `t5` **blocked** | 2026-08-05 → 2026-08-05 | Step 5 — verify the sandbox deploy on cto-dev-kpr | — |
+
+**Phase 4 — Validation & Documentation**
+
+| Task | Status | Owner | Depends on | Dates | Title | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| `t10` | New | Bridge Policy (Klalter) | `t5`, `t6`, `t7` **blocked** | 2026-08-05 → 2026-08-05 | Validation gate — prove Phase 1 E2E, then rewrite the KAIF and POA DRAFT tasks from what actually worked | body |
+| `t11` | New | Bridge Policy (Klalter) | `t10` **blocked** | 2026-08-06 → 2026-08-08 | Document the E2E sandbox flow for TechOps — draw.io diagram + PPT deck + docs/e2e-flow.md | body |
 
 **Phase 2 — KAIF**
 
-| Task | Status | Depends on | Dates | Title | Notes |
-| --- | --- | --- | --- | --- | --- |
-| `t12` | New | `t10` **blocked** | 2026-09-02 → 2026-09-06 | DRAFT · KAIF Step 0 — create the pre-trunk branch on every two-stream KAIF repo | body |
-| `t14` | New | `t12` **blocked** | 2026-09-07 → 2026-09-11 | DRAFT · KAIF Step 2 — add the kaif-sandbox chart to the KAIF chart repo | body |
-| `t13` | New | `t12`, `t14` **blocked** | 2026-09-12 → 2026-09-16 | DRAFT · KAIF Step 1 — populate the kaif-sandbox onboard-input repo | body |
-| `t15` | New | `t13` **blocked** | 2026-09-17 → 2026-09-21 | DRAFT · KAIF Step 2b — add the sandbox job to the chart repo's build.yaml | body |
-| `t17` | New | `t13` **blocked** | 2026-09-17 → 2026-09-21 | DRAFT · KAIF Step 4 — BOM: register kaif-sandbox and switch the environment over | body |
-| `t16` | New | `t17` **blocked** | 2026-09-22 → 2026-09-26 | DRAFT · KAIF Step 3 — build triggers on the pre-trunk branch + branch-dependent image names | body |
-| `t18` | New | `t16` **blocked** | 2026-09-27 → 2026-10-01 | DRAFT · KAIF Step 5 — verify the kaif-sandbox deploy | body |
+| Task | Status | Owner | Depends on | Dates | Title | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| `t12` | New | KAIF (TBD) | `t10` **blocked** | 2026-08-06 → 2026-08-06 | DRAFT · KAIF Step 0 — create the pre-trunk branch on every two-stream KAIF repo | body |
+| `t14` | New | KAIF (TBD) | `t12` **blocked** | 2026-08-06 → 2026-08-06 | DRAFT · KAIF Step 1 — add the kaif-sandbox chart to the KAIF chart repo | body |
+| `t13` | New | KAIF (TBD) | `t12`, `t14` **blocked** | 2026-08-06 → 2026-08-06 | DRAFT · KAIF Step 2 — populate the kaif-sandbox onboard-input repo | body |
+| `t15` | New | KAIF (TBD) | `t13` **blocked** | 2026-08-07 → 2026-08-07 | DRAFT · KAIF Step 2b — add the sandbox job to the chart repo's build.yaml | body |
+| `t17` | New | TechOps (Patricia) | `t13` **blocked** | 2026-08-07 → 2026-08-07 | DRAFT · KAIF Step 3 — BOM: register kaif-sandbox and switch the environment over | body |
+| `t16` | New | KAIF (TBD) | `t17` **blocked** | 2026-08-07 → 2026-08-07 | DRAFT · KAIF Step 4 — build triggers on the pre-trunk branch + branch-dependent image names | body |
+| `t18` | New | KAIF (TBD) | `t16` **blocked** | 2026-08-07 → 2026-08-07 | DRAFT · KAIF Step 5 — verify the kaif-sandbox deploy | body |
 
 **Phase 3 — POA**
 
-| Task | Status | Depends on | Dates | Title | Notes |
-| --- | --- | --- | --- | --- | --- |
-| `t19` | New | `t10`, `t18` **blocked** | 2026-10-02 → 2026-10-06 | DRAFT · POA Step 0 — create the pre-trunk branch on every two-stream POA repo | body |
-| `t21` | New | `t19` **blocked** | 2026-10-07 → 2026-10-11 | DRAFT · POA Step 2 — add the poa-sandbox chart to the POA chart repo | body |
-| `t20` | New | `t19`, `t21` **blocked** | 2026-10-12 → 2026-10-16 | DRAFT · POA Step 1 — populate the poa-sandbox onboard-input repo | body |
-| `t22` | New | `t20` **blocked** | 2026-10-17 → 2026-10-21 | DRAFT · POA Step 2b — add the sandbox job to the chart repo's build.yaml | body |
-| `t24` | New | `t20` **blocked** | 2026-10-17 → 2026-10-21 | DRAFT · POA Step 4 — BOM: register poa-sandbox and switch the environment over | body |
-| `t23` | New | `t24` **blocked** | 2026-10-22 → 2026-10-26 | DRAFT · POA Step 3 — build triggers on the pre-trunk branch + branch-dependent image names | body |
-| `t25` | New | `t23` **blocked** | 2026-10-27 → 2026-10-31 | DRAFT · POA Step 5 — verify the poa-sandbox deploy | body |
+| Task | Status | Owner | Depends on | Dates | Title | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| `t19` | New | POA / Orch (TBD) | `t10` **blocked** | 2026-08-06 → 2026-08-06 | DRAFT · POA Step 0 — create the pre-trunk branch on every two-stream POA repo | body |
+| `t21` | New | POA / Orch (TBD) | `t19` **blocked** | 2026-08-06 → 2026-08-06 | DRAFT · POA Step 1 — add the poa-sandbox chart to the POA chart repo | body |
+| `t20` | New | POA / Orch (TBD) | `t19`, `t21` **blocked** | 2026-08-06 → 2026-08-06 | DRAFT · POA Step 2 — populate the poa-sandbox onboard-input repo | body |
+| `t22` | New | POA / Orch (TBD) | `t20` **blocked** | 2026-08-07 → 2026-08-07 | DRAFT · POA Step 2b — add the sandbox job to the chart repo's build.yaml | body |
+| `t24` | New | TechOps (Patricia) | `t20` **blocked** | 2026-08-07 → 2026-08-07 | DRAFT · POA Step 3 — BOM: register poa-sandbox and switch the environment over | body |
+| `t23` | New | POA / Orch (TBD) | `t24` **blocked** | 2026-08-07 → 2026-08-07 | DRAFT · POA Step 4 — build triggers on the pre-trunk branch + branch-dependent image names | body |
+| `t25` | New | POA / Orch (TBD) | `t23` **blocked** | 2026-08-07 → 2026-08-07 | DRAFT · POA Step 5 — verify the poa-sandbox deploy | body |
 
 | Repo | Branch | Base | Ahead/Behind | PRs |
 | --- | --- | --- | --- | --- |
