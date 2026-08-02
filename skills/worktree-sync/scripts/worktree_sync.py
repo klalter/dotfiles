@@ -474,15 +474,21 @@ TASK_ALIASES = {"new": "New", "todo": "New",
                 "wip": "In progress", "started": "In progress",
                 "in-progress": "In progress", "progress": "In progress",
                 "done": "Complete", "complete": "Complete", "completed": "Complete"}
-# The four views, created/repaired on every push. Both filter on the custom
+# The four views, created/repaired on every push. All filter on the custom
 # Kind field: the built-in "type:pr" qualifier rendered an EMPTY view when
 # tried, while custom-field filters are proven to work. (Kind is named Kind,
 # not Type, so its filter can't collide with the built-in type qualifier.)
+# The last element is the visible-column list — without it the PR views show
+# the built-in Status column, which PRs never fill, reading as "No status".
 VIEW_SPEC = [
-    ("Tasks · Board", "BOARD_LAYOUT", "kind:Task"),
-    ("Tasks · List", "TABLE_LAYOUT", "kind:Task"),
-    ("PRs · Board", "BOARD_LAYOUT", "kind:PR"),
-    ("PRs · List", "TABLE_LAYOUT", "kind:PR"),
+    ("Tasks · Board", "BOARD_LAYOUT", "kind:Task",
+     ["Title", "Status", "Last sync"]),
+    ("Tasks · List", "TABLE_LAYOUT", "kind:Task",
+     ["Title", "Status", "Last sync"]),
+    ("PRs · Board", "BOARD_LAYOUT", "kind:PR",
+     ["Title", "PR status", "Review", "Repo slug"]),
+    ("PRs · List", "TABLE_LAYOUT", "kind:PR",
+     ["Title", "PR status", "Review", "Repo slug", "Branch", "Base", "Last sync"]),
 ]
 
 
@@ -698,7 +704,7 @@ def apply_updates(project_id, updates, dry_run=False):
     return len(updates)
 
 
-def ensure_views(project_id, dry_run=False):
+def ensure_views(project_id, fields, dry_run=False):
     """Create/repair the four standard views; drop the stock 'View 1'.
 
     The one thing the API cannot do: set a board's COLUMN field
@@ -708,10 +714,11 @@ def ensure_views(project_id, dry_run=False):
     ⌄ next to the view name → Column field → PR status.
     """
     data = gql(f'query{{node(id:{s(project_id)}){{... on ProjectV2{{'
-               f'views(first:20){{nodes{{id name layout filter}}}}}}}}}}')
+               f'views(first:20){{nodes{{id name layout filter '
+               f'fields(first:30){{nodes{{... on ProjectV2FieldCommon{{id}}}}}}}}}}}}}}}}')
     existing = {v["name"]: v for v in data["node"]["views"]["nodes"] if v}
     touched = []
-    for name, layout, flt in VIEW_SPEC:
+    for name, layout, flt, columns in VIEW_SPEC:
         view = existing.get(name)
         if not view:
             if dry_run:
@@ -723,11 +730,21 @@ def ensure_views(project_id, dry_run=False):
             view = {"id": data["createProjectV2View"]["projectV2View"]["id"],
                     "filter": None, "layout": layout}
             touched.append(name)
-        if view.get("filter") != flt and not dry_run:
+        want_cols = [fields[c]["id"] for c in columns if c in fields]
+        have_cols = [f["id"] for f in (view.get("fields") or {}).get("nodes", []) if f]
+        parts = []
+        if view.get("filter") != flt:
+            parts.append(f"filter:{s(flt)}")
+        # GitHub does not preserve visibleFieldIds order, so compare as sets —
+        # an ordered diff re-sends the config on every push, forever.
+        if want_cols and set(have_cols) != set(want_cols):
+            ids = ",".join(s(i) for i in want_cols)
+            parts.append(f"configuration:{{visibleFieldIds:[{ids}]}}")
+        if parts and not dry_run:
             gql(f'mutation{{updateProjectV2View(input:{{viewId:{s(view["id"])},'
-                f'filter:{s(flt)}}}){{projectV2View{{id}}}}}}')
+                f'{",".join(parts)}}}){{projectV2View{{id}}}}}}')
             if name not in touched:
-                touched.append(f"{name} (filter)")
+                touched.append(f"{name} (config)")
     stock = existing.get("View 1")
     if stock and len(existing) > 1 or (stock and touched):
         if not dry_run:
@@ -746,7 +763,7 @@ def push_project(entry, manifest, dry_run=False):
     fields, created = ensure_fields(project["id"], field_spec(), dry_run)
     if created:
         print(f"  fields {'to create' if dry_run else 'reconciled'}: {', '.join(created)}")
-    views = ensure_views(project["id"], dry_run)
+    views = ensure_views(project["id"], fields, dry_run)
     if views:
         print(f"  views {'to create' if dry_run else 'reconciled'}: {', '.join(views)}")
 
