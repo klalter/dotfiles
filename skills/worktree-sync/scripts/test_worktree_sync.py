@@ -138,9 +138,13 @@ class BoardHarness(unittest.TestCase):
                     {"projectItem": {"id": item["id"], "content": {"id": cid}}}}
         return {}
 
-    def push(self, manifest, dry_run=False, as_json=False, ack=False):
+    def push(self, manifest, dry_run=False, as_json=False, ack=False, pull=True):
         """The real push_project against the fake board. Returns the titles it
-        wrote through updateProjectV2DraftIssue, and the printed summary."""
+        wrote through updateProjectV2DraftIssue, and the printed summary.
+
+        `pull` defaults to True exactly like the real command: a push pulls
+        first, so the fake board is also the pull source here.
+        """
         written = []
 
         def apply_drafts(drafts, dry=False):
@@ -151,6 +155,7 @@ class BoardHarness(unittest.TestCase):
         with mock.patch.object(ws, "ensure_project", lambda *a, **k: dict(PROJECT)), \
              mock.patch.object(ws, "ensure_fields", lambda *a, **k: (FIELDS, [])), \
              mock.patch.object(ws, "ensure_views", lambda *a, **k: []), \
+             mock.patch.object(ws, "find_project", lambda *a, **k: dict(PROJECT)), \
              mock.patch.object(ws, "list_items", self.board.list_items), \
              mock.patch.object(ws, "apply_drafts", apply_drafts), \
              mock.patch.object(ws, "apply_updates", self.board.apply_updates), \
@@ -158,7 +163,7 @@ class BoardHarness(unittest.TestCase):
              mock.patch.object(ws, "gql", self._gql), \
              redirect_stdout(out):
             ws.push_project(ENTRY, manifest, dry_run=dry_run, ack=ack,
-                            as_json=as_json)
+                            as_json=as_json, pull=pull)
         return written, out.getvalue()
 
     def pull(self, manifest, dry_run=True):
@@ -521,12 +526,12 @@ class ExitCodeCase(BoardHarness):
         # the prose block still goes to stderr, so it can be relayed verbatim
         self.assertIn("HUMAN-EDITED ON THE BOARD", err.getvalue())
 
-    def test_ack_human_lets_the_push_through(self):
+    def test_ack_human_lets_the_push_through_and_releases_the_field(self):
         m = base_manifest([self.conflicted()])
         written, _ = self.push(m, ack=True)
         self.assertEqual(written, [])          # created fresh, nothing to retitle
-        self.assertEqual(m["tasks"][0]["human_edited"]["status"]["acked_value"],
-                         "Complete")
+        # ack RELEASES: the stamp is gone, not turned into a one-value whitelist
+        self.assertNotIn("human_edited", m["tasks"][0])
 
     def test_only_the_conflict_path_ever_exits_3(self):
         """Grep the source: every `sys.exit(3)` must be an EXIT_HITL, and every
@@ -550,6 +555,221 @@ class ExitCodeCase(BoardHarness):
                                     "DOTFILES_DIR": str(self.dir.parent)})
             self.assertIn(r.returncode, (1, 2), f"{argv} -> {r.returncode}")
             self.assertNotEqual(r.returncode, ws.EXIT_HITL, argv)
+
+
+class PushPullsFirstCase(BoardHarness):
+    """A bare `project push` must never destroy a fresh board edit.
+
+    The field test that produced this class: a human set Status on the board,
+    a bare push ran, and the edit was gone — 1 field value set, exit 0, no
+    stamp, no warning. `sync` was safe only because it pulls first. The guard
+    refuses on ALREADY-STAMPED fields, and a fresh edit has no stamp yet, so
+    push had nothing to refuse. The fix is that push pulls first by default.
+    """
+
+    def pushed_task(self, status="In progress"):
+        """A task already on the board, with a matching last_pushed snapshot."""
+        t = task(status=status)
+        m = base_manifest([t])
+        t["draft_id"] = self.board.add("Ship the thing")
+        self.push(m)
+        return t, m
+
+    def test_bare_push_does_not_revert_a_fresh_board_edit(self):
+        t, m = self.pushed_task()
+        cid = t["draft_id"]
+        self.board.items[cid]["values"]["Status"] = "Complete"   # human, on github.com
+
+        _written, summary = self.push(m)                          # a bare push
+
+        self.assertEqual(self.board.items[cid]["values"]["Status"], "Complete")
+        self.assertEqual(t["status"], "Complete")                 # merged, not reverted
+        self.assertEqual(t["human_edited"]["status"]["value"], "Complete")
+        self.assertIn("HUMAN: t1.status", summary)                # and it says so
+        # the manifest on disk carries the merge, so the next run agrees
+        on_disk = json.loads((self.dir / "demo.json").read_text())
+        self.assertEqual(on_disk["tasks"][0]["status"], "Complete")
+
+    def test_no_pull_is_the_documented_unsafe_opt_out(self):
+        """--no-pull is exactly the old behaviour, kept for the caller that has
+        just pulled. It reverts — which is why it is not the default."""
+        t, m = self.pushed_task()
+        cid = t["draft_id"]
+        self.board.items[cid]["values"]["Status"] = "Complete"
+
+        self.push(m, pull=False)
+
+        self.assertEqual(self.board.items[cid]["values"]["Status"], "In progress")
+        self.assertNotIn("human_edited", t)
+
+    def test_dry_run_push_pulls_but_writes_nothing(self):
+        t, m = self.pushed_task()
+        self.board.items[t["draft_id"]]["values"]["Status"] = "Complete"
+        before = (self.dir / "demo.json").read_text()
+
+        self.push(m, dry_run=True)
+
+        self.assertEqual((self.dir / "demo.json").read_text(), before)
+
+    def test_push_json_reports_what_the_pull_merged(self):
+        t, m = self.pushed_task()
+        self.board.items[t["draft_id"]]["values"]["Status"] = "Complete"
+        _written, out = self.push(m, as_json=True)
+        data = json.loads(out)
+        self.assertEqual(len(data["merged_from_board"]), 1)
+        self.assertEqual(data["merged_from_board"][0]["field"], "status")
+
+    def test_project_push_help_documents_no_pull(self):
+        r = subprocess.run([sys.executable, str(Path(ws.__file__)), "project", "--help"],
+                           capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("--no-pull", r.stdout)
+        self.assertIn("pull first", r.stdout)
+
+
+class AckReleaseCase(BoardHarness):
+    """--ack-human RELEASES the guard on a field; it does not ratchet it.
+
+    The old ack whitelisted only the value it acked, so the next write of a
+    different value exited 3 again quoting the same original board value —
+    a field slowly became uneditable without the one flag the skill says never
+    to pass on your own judgement.
+    """
+
+    def edited_on_the_board(self, board_value="New"):
+        """A task the human moved on the board, pulled and stamped."""
+        t = task(status="In progress")
+        m = base_manifest([t])
+        t["draft_id"] = self.board.add("Ship the thing")
+        self.push(m)
+        self.board.items[t["draft_id"]]["values"]["Status"] = board_value
+        self.pull(m, dry_run=False)
+        self.assertEqual(t["human_edited"]["status"]["value"], board_value)
+        return t, m
+
+    def task_cmd(self, action, *rest, **kw):
+        args = Namespace(action=action, name="demo", rest=list(rest), json=False,
+                         status="new", group=None, owner=None, note=None, kind=None,
+                         file=None, text=None, start_from=None, days=5,
+                         overwrite=False, ack_human=kw.get("ack", False),
+                         push=False)
+        out = io.StringIO()
+        with redirect_stdout(out):
+            ws.cmd_task(args)
+        return out.getvalue()
+
+    def test_ack_then_a_different_value_needs_no_second_ack(self):
+        t, _m = self.edited_on_the_board()
+        self.task_cmd("set", "t1", "wip", ack=True)          # owner said: go ahead
+        reloaded = json.loads((self.dir / "demo.json").read_text())["tasks"][0]
+        self.assertNotIn("human_edited", reloaded)
+        # a LATER, different value — the ratchet case — now just works
+        self.task_cmd("set", "t1", "done")
+        reloaded = json.loads((self.dir / "demo.json").read_text())["tasks"][0]
+        self.assertEqual(reloaded["status"], "Complete")
+        self.assertNotIn("human_edited", reloaded)
+
+    def test_without_ack_it_still_exits_3(self):
+        self.edited_on_the_board()
+        err = io.StringIO()
+        with self.assertRaises(SystemExit) as cm, redirect_stderr(err):
+            self.task_cmd("set", "t1", "done")
+        self.assertEqual(cm.exception.code, ws.EXIT_HITL)
+        self.assertIn("HUMAN-EDITED ON THE BOARD", err.getvalue())
+
+    def test_a_new_human_edit_re_arms_the_released_guard(self):
+        t, m = self.edited_on_the_board()
+        ws.ack_human(t)
+        self.assertNotIn("human_edited", t)
+        self.push(m, pull=False)                    # re-snapshot at the tool's value
+        self.board.items[t["draft_id"]]["values"]["Status"] = "Complete"  # human again
+        self.pull(m, dry_run=False)
+
+        self.assertEqual(t["human_edited"]["status"]["value"], "Complete")
+        t["status"] = "New"                         # the tool wants something else
+        self.assertEqual([r[0] for r in ws.conflicts(t)], ["status"])
+
+    def test_ack_human_returns_the_fields_it_released(self):
+        t = task()
+        t["human_edited"] = {"status": {"at": "x", "value": "New", "was": "Complete"},
+                             "owner": {"at": "x", "value": "P", "was": ""}}
+        self.assertEqual(ws.ack_human(t, ["owner"]), ["owner"])
+        self.assertEqual(sorted(t["human_edited"]), ["status"])
+        self.assertEqual(ws.ack_human(t), ["status"])
+        self.assertNotIn("human_edited", t)
+
+    def test_a_legacy_acked_stamp_no_longer_ratchets(self):
+        """Manifests written before this change carry acked_value/acked_at. Such
+        a stamp is a RELEASED one and must not block a different value."""
+        t = task(status="Complete")
+        t["human_edited"] = {"status": {"at": "2026-08-01T10:00:00Z", "value": "New",
+                                        "was": "In progress",
+                                        "acked_value": "In progress",
+                                        "acked_at": "2026-08-01T11:00:00Z"}}
+        self.assertEqual(ws.conflicts(t), [])
+        self.assertFalse(ws.stamp_blocks(t["human_edited"]["status"], "Complete"))
+
+
+class CommitCase(unittest.TestCase):
+    """`commit` must name the branch it actually pushed.
+
+    It used to print "pushed to origin/main" whatever the target was. An agent
+    relays that verbatim, and a false claim of a push to main is the single most
+    dangerous sentence this tool can produce.
+    """
+
+    def git(self, *args, cwd=None):
+        subprocess.run(["git", "-C", str(cwd or self.repo), *args], check=True,
+                       capture_output=True, text=True)
+
+    def setUp(self):
+        self.tmp = TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        root = Path(self.tmp.name)
+        self.remote, self.repo = root / "remote.git", root / "dotfiles"
+        subprocess.run(["git", "init", "--bare", "-q", str(self.remote)], check=True)
+        subprocess.run(["git", "init", "-q", "-b", "main", str(self.repo)], check=True)
+        self.git("config", "user.email", "t@example.com")
+        self.git("config", "user.name", "T")
+        # The Codespace installs a global core.hooksPath whose pre-commit refuses
+        # commits on main outside a known repo. This throwaway repo is not it.
+        self.git("config", "core.hooksPath", str(self.repo / ".no-hooks"))
+        self.git("remote", "add", "origin", str(self.remote))
+        (self.repo / "projects").mkdir()
+        (self.repo / "projects" / "seed.json").write_text("{}\n")
+        self.git("add", "-A")
+        self.git("commit", "-qm", "seed")
+        self.git("push", "-q", "origin", "main")
+        p = mock.patch.object(ws, "dotfiles_dir", lambda: self.repo)
+        p.start()
+        self.addCleanup(p.stop)
+
+    def commit(self, message="chore(projects): test"):
+        out = io.StringIO()
+        with redirect_stdout(out):
+            ws.do_commit(message)
+        return out.getvalue()
+
+    def test_it_names_the_feature_branch_it_pushed(self):
+        self.git("checkout", "-qb", "feat/task-groups-deps")
+        (self.repo / "projects" / "seed.json").write_text('{"a": 1}\n')
+
+        out = self.commit()
+
+        self.assertIn("pushed to origin/feat/task-groups-deps", out)
+        self.assertNotIn("origin/main", out)
+        # and the push really went to that branch, not to main
+        refs = subprocess.run(["git", "-C", str(self.remote), "for-each-ref",
+                               "--format=%(refname:short)"],
+                              capture_output=True, text=True, check=True).stdout.split()
+        self.assertIn("feat/task-groups-deps", refs)
+
+    def test_on_main_it_still_says_main(self):
+        (self.repo / "projects" / "seed.json").write_text('{"a": 2}\n')
+        self.assertIn("pushed to origin/main", self.commit())
+
+    def test_nothing_to_commit_is_quiet_and_pushes_nothing(self):
+        self.assertIn("nothing to commit", self.commit())
 
 
 class HelpCase(unittest.TestCase):

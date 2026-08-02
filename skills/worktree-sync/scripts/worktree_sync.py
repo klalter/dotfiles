@@ -11,7 +11,7 @@ so `git status` staying clean *is* the "nothing moved" signal.
     worktree_sync.py render                       # regenerate projects/README.md
     worktree_sync.py commit                       # commit + push dotfiles (current branch)
     worktree_sync.py project pull <name>          # board -> manifest (human wins)
-    worktree_sync.py project push <name>          # GitHub Projects v2 (gated)
+    worktree_sync.py project push <name>          # pull, then manifest -> board
 
 `sync --commit` chains sync -> render -> commit, and is the everyday call.
 
@@ -514,6 +514,19 @@ def task_snapshot(task, deps_text, blocked, body_text) -> dict:
             "target": task.get("target") or "", "title": board_title(task)}
 
 
+def stamp_blocks(stamp, want) -> bool:
+    """Does this human_edited stamp still guard a write of `want`?
+
+    No, if: there is no stamp; the write is the human's own value; or the stamp
+    was already acknowledged. `acked_at` only appears on stamps written before
+    ack started CLEARING the stamp (see ack_human) — an acked stamp is a
+    released one, never a permanent ratchet on the field.
+    """
+    if not stamp or stamp.get("acked_at"):
+        return False
+    return want != stamp.get("value") and want != stamp.get("acked_value")
+
+
 def conflicts(task, fields=None):
     """[(field, human_value, tool_value, when)] where the manifest now wants to
     change something a human set on the board and nobody acknowledged it."""
@@ -523,7 +536,7 @@ def conflicts(task, fields=None):
             continue
         want = task.get(field) if field != "status" else task["status"]
         want = (want or "") if isinstance(want, str) else want
-        if want == stamp.get("value") or want == stamp.get("acked_value"):
+        if not stamp_blocks(stamp, want):
             continue
         out.append((field, stamp.get("value"), want, stamp.get("at", "?")))
     return out
@@ -567,13 +580,25 @@ def print_conflict(project, task, rows):
 
 
 def ack_human(task, fields=None):
-    """Record that the owner approved overwriting his own board edit."""
-    for field, stamp in (task.get("human_edited") or {}).items():
-        if fields and field not in fields:
-            continue
-        want = task.get(field) if field != "status" else task["status"]
-        stamp["acked_value"] = want
-        stamp["acked_at"] = now_iso()
+    """The owner approved overwriting his own board edit — RELEASE the guard.
+
+    Ack clears the stamp. It used to only whitelist the one acked value, which
+    ratcheted: a later write of a DIFFERENT value, with no new human
+    involvement, exited 3 again quoting the original board value, so the field
+    drifted toward being uneditable without the one flag the skill says never to
+    pass on your own judgement. Clearing puts the field back to normal until a
+    human next edits it on the board — `pull_project` re-stamps it then, so
+    nothing is lost, and the very next push re-snapshots `last_pushed`.
+
+    Returns the fields it released.
+    """
+    stamps = task.get("human_edited") or {}
+    released = [f for f in sorted(stamps) if not fields or f in fields]
+    for field in released:
+        del stamps[field]
+    if not stamps:
+        task.pop("human_edited", None)
+    return released
 
 
 # ---------------------------------------------------------------- commands
@@ -934,7 +959,11 @@ def do_commit(message, dry_run=False):
               "http.extraheader with the 'klalter' token, then re-run "
               "`worktree_sync.py commit`.", file=sys.stderr)
         sys.exit(1)
-    print("pushed to origin/main")
+    # Name the branch that was actually pushed. This line used to read
+    # "pushed to origin/main" no matter where the push went; an agent relays it
+    # verbatim, and falsely claiming a push to main is the single most dangerous
+    # thing this tool can say.
+    print(f"pushed to origin/{branch}")
 
 
 def cmd_commit(args):
@@ -1366,9 +1395,11 @@ def conflict_json(project, task, rows):
 def guard_human_edits(entry, manifest, ack=False, dry_run=False, as_json=False):
     """Refuse to push over a field a human changed on the board.
 
-    Runs before any mutation. With --ack-human the owner has consciously
-    superseded his own edit, so the stamp records the value he approved and the
-    guard stays quiet until a human touches that field again.
+    Runs before any mutation, and after the pull that push_project does first —
+    so a board edit made since the last pull is a merge or a conflict here, never
+    a silent revert. With --ack-human the owner has consciously superseded his
+    own edit: the stamp is CLEARED, so the field behaves normally again until a
+    human next edits it on the board.
 
     On a conflict this exits EXIT_HITL (3) — never 1. The human-readable block
     always goes to stderr, because a calling agent must relay it verbatim; with
@@ -1403,14 +1434,30 @@ def guard_human_edits(entry, manifest, ack=False, dry_run=False, as_json=False):
     return acked
 
 
-def push_project(entry, manifest, dry_run=False, ack=False, as_json=False, emit=True):
+def push_project(entry, manifest, dry_run=False, ack=False, as_json=False, emit=True,
+                 pull=True):
     """Render the manifest onto the GitHub project. Returns the summary dict.
 
     `as_json` swaps the printed summary for that dict; `emit=False` prints
     nothing at all and leaves the caller to nest the return value (which is what
     `task … --push --json` does, so one command still prints one object).
+
+    **A push PULLS FIRST by default.** Without that, a bare `project push`
+    silently reverts a board edit made since the last pull: the guard only
+    refuses on an ALREADY-STAMPED field, and a fresh edit has no stamp yet, so
+    the push just writes the manifest's value back over it. Pulling first turns
+    that fresh edit into either a merge (the board wins, quietly) or an exit 3
+    (the manifest wants something else, so the owner decides). `pull=False` is
+    for the one caller that has just pulled — `autosync` — so it does not pay
+    for two round-trips at session end.
     """
     index = load_index()
+    merged = []
+    if pull:
+        merged = pull_project(entry, manifest, dry_run=dry_run)
+        if emit and not as_json:
+            for rec in merged:
+                print(f"  HUMAN: {pull_line(rec)}")
     guard_human_edits(entry, manifest, ack, dry_run, as_json)
     # NOT named `title`: the task loop below binds that to each board title, and
     # a shared name silently stamped the LAST task's title into index.json's
@@ -1420,7 +1467,7 @@ def push_project(entry, manifest, dry_run=False, ack=False, as_json=False, emit=
     if not project:
         summary = {"command": "push", "project": entry["name"], "dry_run": True,
                    "status": "would_create_project", "board_url": None,
-                   "board_title": project_title}
+                   "board_title": project_title, "merged_from_board": merged}
         if emit:
             if as_json:
                 emit_json(summary)
@@ -1591,6 +1638,8 @@ def push_project(entry, manifest, dry_run=False, ack=False, as_json=False, emit=
         "values_set": n_updates, "values_cleared": n_clears,
         "rows_reordered": moved, "archived": len(stale),
         "skipped_prs": skipped,
+        # what the pull-first step merged back before writing anything
+        "merged_from_board": merged,
     }
     if as_json and emit:
         emit_json(summary)
@@ -1947,7 +1996,9 @@ def cmd_autosync(args):
         write_if_changed(path, dump(manifest))
         render()
         do_commit(f"chore(projects): autosync {entry['name']}")
-        push_project(entry, manifest, dry_run=False)
+        # pull=False: the pull above already ran, and session end is the one
+        # place where a second round-trip is felt as latency.
+        push_project(entry, manifest, dry_run=False, pull=False)
         print(f"[worktree-sync] autosync done for {entry['name']}")
     except SystemExit as e:          # sys.exit from helpers (e.g. missing scope)
         if e.code == EXIT_HITL:
@@ -2014,7 +2065,7 @@ def cmd_task(args):
     def guarded(task, field, value):
         """A human's board edit is never overwritten without an explicit ack."""
         stamp = (task.get("human_edited") or {}).get(field)
-        if not stamp or value in (stamp.get("value"), stamp.get("acked_value")):
+        if not stamp_blocks(stamp, value):
             return
         if not args.ack_human:
             rows = [(field, stamp.get("value"), value, stamp.get("at", "?"))]
@@ -2024,10 +2075,11 @@ def cmd_task(args):
                            "status": "needs_human", "exit_code": EXIT_HITL,
                            "conflicts": conflict_json(entry["name"], task, rows)})
             sys.exit(EXIT_HITL)
-        stamp["acked_value"] = value
-        stamp["acked_at"] = now_iso()
+        human = stamp.get("value")
+        ack_human(task, [field])          # release, do not whitelist one value
         say(f"  ack: {task['id']}.{field} — overriding the human's "
-            f"{stamp.get('value')!r} with {value!r}")
+            f"{human!r} with {value!r}; the guard on this field is released "
+            f"until he edits it on the board again")
 
     def label(task):
         tags = "".join(f" [{task[k]}]" for k in ("group", "owner") if task.get(k))
@@ -2279,7 +2331,11 @@ def cmd_project(args):
     if args.action == "pull":
         cmd_pull(entry, manifest, args.dry_run, args.json)
     else:
-        push_project(entry, manifest, args.dry_run, args.ack_human, as_json=args.json)
+        # Pull-then-push is the default: a bare push that skipped the pull would
+        # silently revert a board edit made since the last one. --no-pull is for
+        # a caller that has just pulled.
+        push_project(entry, manifest, args.dry_run, args.ack_human,
+                     as_json=args.json, pull=not args.no_pull)
 
 
 EXIT_CODE_HELP = """exit codes:
@@ -2416,8 +2472,9 @@ def main():
 
     p = sub.add_parser(
         "project", help="GitHub Projects v2 board: push or pull",
-        description="push: render the manifest onto the board (idempotent — it "
-                    "diffs and writes only differences). "
+        description="push: pull first (the board wins), then render the manifest "
+                    "onto the board (idempotent — it diffs and writes only "
+                    "differences). "
                     "pull: merge human board edits back into the manifest; the "
                     "board wins and each merged field is stamped human_edited.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -2437,7 +2494,12 @@ def main():
     p.add_argument("--json", action="store_true", help="print the summary as JSON")
     p.add_argument("--ack-human", action="store_true",
                    help="push: take the owner's answer forward over a field he "
-                        "edited on the board. Never pass this on your own judgement.")
+                        "edited on the board, and release the guard on it. "
+                        "Never pass this on your own judgement.")
+    p.add_argument("--no-pull", action="store_true",
+                   help="push: skip the pull that runs first. Only for a caller "
+                        "that has just pulled — a bare push without it can "
+                        "revert a fresh board edit.")
     p.set_defaults(func=cmd_project)
 
     p = sub.add_parser(
@@ -2514,7 +2576,8 @@ def main():
                    help="schedule: also redate tasks that already have dates")
     p.add_argument("--ack-human", action="store_true",
                    help="take the owner's answer forward over a field he edited on "
-                        "the board. Never pass this on your own judgement.")
+                        "the board, and release the guard on it. Never pass this "
+                        "on your own judgement.")
     p.add_argument("--push", action="store_true",
                    help="push the board right after the change")
     p.add_argument("--json", action="store_true",
